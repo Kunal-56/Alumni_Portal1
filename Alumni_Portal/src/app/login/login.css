@@ -1,0 +1,37 @@
+/* ─────────────────────────────────────────
+   Login Page Styles
+   File: src/app/login/login.css
+───────────────────────────────────────── */
+
+/* Login page body - fixed height, no scroll */
+.login-body {
+  overflow: hidden;
+  max-height: 100vh;
+  background-color: #F6EFEA;
+}
+
+/* Soft cream background theme */
+.bg-portal-theme {
+  background-color: #F6EFEA;
+}
+
+/* Ambient dot pattern (decorative background) */
+.bg-dot-matrix {
+  background-image: radial-gradient(#D3B8B2 1px, transparent 1px);
+  background-size: 14px 14px;
+  opacity: 0.6;
+}
+
+/* Login card soft elevation shadow */
+.custom-card-shadow,
+.custom-shadow-card {
+  box-shadow:
+    0 30px 60px -12px rgba(165, 91, 99, 0.08),
+    0 10px 25px -5px rgba(0, 0, 0, 0.03);
+}
+
+/* Login submit button shadow */
+.custom-button-shadow,
+.custom-shadow-button {
+  box-shadow: 0 8px 20px -4px rgba(165, 91, 99, 0.35);
+}
