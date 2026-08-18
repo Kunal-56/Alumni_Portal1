@@ -1,0 +1,49 @@
+/* ─────────────────────────────────────────
+   Global Styles
+   File: src/app/globals.css
+
+   - Page-specific styles are in:
+       src/app/login/login.css       (Login page)
+       src/app/dashboard.css         (Dashboard page)
+───────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables / Design Tokens ── */
+:root {
+  --font-outfit: 'Outfit', sans-serif;
+  --font-inter: 'Inter', sans-serif;
+  --maroon: #9B2335;
+  --maroon-dark: #7a1b28;
+  --maroon-light: #f8edef;
+}
+
+/* ── Base Reset ── */
+html,
+body {
+  height: 100%;
+  font-family: var(--font-outfit);
+  color: #1F2937;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Shared Maroon Button (used on both pages) ── */
+.btn-maroon {
+  background: #9B2335;
+  color: white;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-maroon:hover {
+  background: #7a1b28;
+  transform: translateY(-1px);
+}
