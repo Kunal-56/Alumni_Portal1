@@ -16,12 +16,12 @@ import "../../dashboard.css";
 const ALL_MEMBERS = [
   { id: 1, name: "Daksh Ahir", degree: "B.Tech", year: "2025", dept: "CSE", company: "Google", role: "Software Engineer", location: "Bangalore, India", email: "daksh.ahir@alumni.tolani.ac.in", phone: "+91 98765 43210", linkedin: "www.linkedin.com/in/daksh-ahir-759a863a7/", bio: "Passionate software engineer at Google, working on large-scale distributed systems. Former gold medalist at Tolani. Love open-source contributions and community building.", skills: ["React", "Node.js", "Python", "Cloud", "Kubernetes"], achievements: ["Dean's List 2024–25", "Best Project Award 2025", "Smart India Hackathon Winner"], verified: true },
   { id: 2, name: "Kunal Solanki", degree: "B.Tech", year: "2024", dept: "CSE", company: "Microsoft", role: "Product Manager", location: "Hyderabad, India", email: "kunal.solanki@alumni.tolani.ac.in", phone: "+91 87654 32109", linkedin: "https://www.linkedin.com/in/kunal-solanki-3093613a8/", bio: "Product Manager at Microsoft Azure, driving cloud innovation. Alumni mentor and startup advisor.", skills: ["Product Strategy", "Agile", "Azure", "Data Analytics", "Leadership"], achievements: ["Microsoft Rising Star 2025", "Alumni Mentor of the Year"], verified: true },
-  { id: 3, name: "Khushal Bhatiya", degree: "BA (J&MC)", year: "2026", dept: "Journalism", company: "Zomato", role: "Content Strategist", location: "Gurugram, India", email: "khushal.bhatiya@alumni.tolani.ac.in", phone: "+91 76543 21098", linkedin: "linkedin.com/in/khushalbhatiya", bio: "Content Strategist at Zomato, crafting brand narratives. Passionate about digital media and creative storytelling.", skills: ["Content Strategy", "SEO", "Social Media", "Brand Writing", "Analytics"], achievements: ["Best Journalist Award 2026", "Editor, Tolani Times"], verified: true },
+  { id: 3, name: "Khushal Bhatiya", degree: "BA (J&MC)", year: "2026", dept: "Journalism", company: "Zomato", role: "Content Strategist", location: "Gurugram, India", email: "khushal.bhatiya@alumni.tolani", phone: "+91 76543 21098", linkedin: "https://www.linkedin.com/in/khushal-bhatiya-33864942b/", bio: "Content Strategist at Zomato, crafting brand narratives. Passionate about digital media and creative storytelling.", skills: ["Content Strategy", "SEO", "Social Media", "Brand Writing", "Analytics"], achievements: ["Best Journalist Award 2026", "Editor, Tolani Times"], verified: true },
   { id: 4, name: "Raghav Rathod", degree: "BBA", year: "2026", dept: "Business", company: "Deloitte", role: "Business Analyst", location: "Mumbai, India", email: "raghav.rathod@alumni.tolani.ac.in", phone: "+91 65432 10987", linkedin: "https://www.linkedin.com/in/raghav-rathod-6b7945402/", bio: "Business Analyst at Deloitte Consulting. Expert in financial modelling and digital transformation.", skills: ["Financial Modelling", "Consulting", "Excel", "Power BI", "Strategy"], achievements: ["Deloitte Rising Talent 2026", "CFA Level 1"], verified: true },
   { id: 5, name: "Bhoomi Sumbad", degree: "B.Tech", year: "2026", dept: "CSE", company: "Amazon", role: "SDE II", location: "Chennai, India", email: "bhoomi.sumbad@alumni.tolani.ac.in", phone: "+91 54321 09876", linkedin: "https://www.linkedin.com/in/bhoomi-sumbad-1131683ba/", bio: "Software Development Engineer at Amazon Web Services. Backend systems enthusiast and competitive programmer.", skills: ["Java", "AWS", "System Design", "Microservices", "DSA"], achievements: ["Amazon Star Performer Q2 2026", "Open Source Contributor"], verified: true },
-  { id: 6, name: "Dev Gouswami", degree: "BA (J&MC)", year: "2020", dept: "Journalism", company: "Times Of India", role: "Senior Reporter", location: "Kolkata, India", email: "dev.gouswami@alumni.tolani.ac.in", phone: "+91 43210 98765", linkedin: "https://www.linkedin.com/in/dev-goswami-61467b2b9/", bio: "Senior Reporter at Times of India covering politics, culture and social affairs.", skills: ["Investigative Journalism", "Reporting", "Editing", "Video Production"], achievements: ["Press Club Award 2024", "Tolani Distinguished Alumnus"], verified: true },
+  { id: 6, name: "Dev Goswami", degree: "BA (J&MC)", year: "2020", dept: "Journalism", company: "Times Of India", role: "Senior Reporter", location: "Kolkata, India", email: "dev.gouswami@alumni.tolani.ac.in", phone: "+91 43210 98765", linkedin: "https://www.linkedin.com/in/dev-goswami-61467b2b9/", bio: "Senior Reporter at Times of India covering politics, culture and social affairs.", skills: ["Investigative Journalism", "Reporting", "Editing", "Video Production"], achievements: ["Press Club Award 2024", "Tolani Distinguished Alumnus"], verified: true },
   { id: 7, name: "Parth Pitroda", degree: "B.Tech", year: "2023", dept: "IT", company: "Infosys", role: "Tech Lead", location: "Pune, India", email: "parth.pitroda@alumni.tolani.ac.in", phone: "+91 32109 87654", linkedin: "https://www.linkedin.com/in/parth-pitroda1/", bio: "Tech Lead at Infosys managing enterprise application development. Passionate about clean code and agile methodologies.", skills: ["Java EE", "Spring Boot", "Docker", "CI/CD", "Oracle DB"], achievements: ["Infosys Insta Award 2025", "Certified Scrum Master"], verified: true },
-  { id: 8, name: "Solanki Yashvi", degree: "BBA", year: "2021", dept: "Business", company: "Accenture", role: "Management Consultant", location: "Noida, India", email: "yashvi.solanki@alumni.tolani.ac.in", phone: "+91 21098 76543", linkedin: "linkedin.com/in/solankiyashvi", bio: "Management Consultant at Accenture Strategy. Specialist in digital transformation and ERP implementations.", skills: ["Management Consulting", "SAP", "Change Management", "ERP", "PMO"], achievements: ["Accenture ACE Award 2024", "Tolani Top 10 Graduates"], verified: true },
+  { id: 8, name: "Solanki Yashvi", degree: "BBA", year: "2021", dept: "Business", company: "Accenture", role: "Management Consultant", location: "Noida, India", email: "yashvi.solanki@alumni.tolani.ac.in", phone: "+91 21098 76543", linkedin: "https://www.linkedin.com/in/yashvi-solanki-b2546a412/", bio: "Management Consultant at Accenture Strategy. Specialist in digital transformation and ERP implementations.", skills: ["Management Consulting", "SAP", "Change Management", "ERP", "PMO"], achievements: ["Accenture ACE Award 2024", "Tolani Top 10 Graduates"], verified: true },
   { id: 9, name: "Priya Nair", degree: "B.Tech", year: "2022", dept: "ECE", company: "TCS", role: "Embedded Engineer", location: "Kochi, India", email: "priya.nair@alumni.tolani.ac.in", phone: "+91 91234 56789", linkedin: "linkedin.com/in/priyanair", bio: "Embedded systems engineer working on IoT devices at TCS Innovation Labs. Robotics enthusiast and IEEE volunteer.", skills: ["Embedded C", "RTOS", "IoT", "PCB Design", "ARM Cortex"], achievements: ["TCS Star of the Month", "IEEE Best Paper Award", "Robotics Club Founder"], verified: true },
   { id: 10, name: "Vikram Tiwari", degree: "M.Tech", year: "2021", dept: "CSE", company: "Wipro", role: "Senior Architect", location: "Bhopal, India", email: "vikram.tiwari@alumni.tolani.ac.in", phone: "+91 82345 67890", linkedin: "linkedin.com/in/vikramtiwari", bio: "Senior Solution Architect at Wipro. Specializes in enterprise cloud migrations and DevOps transformations. Guest faculty at Tolani.", skills: ["Cloud Architecture", "DevOps", "Terraform", "Azure", "Solution Design"], achievements: ["Wipro Pinnacle Award", "Guest Faculty Tolani 2024", "AWS Certified Architect"], verified: true },
   { id: 11, name: "Meera Joshi", degree: "B.Tech", year: "2020", dept: "IT", company: "HCL", role: "Data Scientist", location: "Delhi, India", email: "meera.joshi@alumni.tolani.ac.in", phone: "+91 73456 78901", linkedin: "linkedin.com/in/meerajoshi", bio: "Data Scientist at HCL Analytics building ML models for financial predictions. Kaggle expert. Published researcher in AI ethics.", skills: ["Python", "Machine Learning", "TensorFlow", "SQL", "Data Visualization"], achievements: ["Kaggle Expert Badge", "HCL Excellence Award", "Published AI Research Paper"], verified: true },
@@ -295,14 +295,14 @@ export default function MemberProfilePage() {
       {/* ── Footer ── */}
       <footer className="footer-dark pt-12 pb-0 mt-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-10">
-            <div className="lg:col-span-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 pb-10">
+            <div className="lg:col-span-3">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="relative w-9 h-9 bg-white rounded-full p-1">
                   <Image src="/logo.jpg" alt="Tolani" fill className="object-contain" unoptimized />
                 </div>
                 <div>
-                  <div className="text-xs font-extrabold tracking-widest text-white">TOLANI</div>
+                  <div className="text-xs font-extrabold tracking-widest text-white whitespace-nowrap">TOLANI F.G POLYTECHNIC</div>
                   <div className="text-[10px] font-bold tracking-wider" style={{ color: "#c0586a" }}>ALUMNI PORTAL</div>
                 </div>
               </div>
@@ -315,25 +315,25 @@ export default function MemberProfilePage() {
                 ))}
               </div>
             </div>
-            <div>
+            <div className="lg:col-span-2">
               <h4 className="text-sm font-bold text-white mb-4">Quick Links</h4>
               {["Members", "Jobs & Internships", "Events", "Gallery", "Contact Us"].map(l => (
                 <a key={l} href="#" className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l}</a>
               ))}
             </div>
-            <div>
+            <div className="lg:col-span-2">
               <h4 className="text-sm font-bold text-white mb-4">Resources</h4>
               {["News Corner", "Success Stories", "Mentorship", "Batchmates", "Help & Support"].map(l => (
                 <a key={l} href="#" className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l}</a>
               ))}
             </div>
-            <div>
+            <div className="lg:col-span-2">
               <h4 className="text-sm font-bold text-white mb-4">Support</h4>
               {["FAQs", "Privacy Policy", "Terms of Use"].map(l => (
                 <a key={l} href="#" className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l}</a>
               ))}
             </div>
-            <div>
+            <div className="lg:col-span-3">
               <h4 className="text-sm font-bold text-white mb-4">Stay Connected</h4>
               <div className="flex gap-2 mb-3">
                 <input type="email" placeholder="Enter your email" className="flex-1 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#9B2335]" />
@@ -345,8 +345,10 @@ export default function MemberProfilePage() {
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-800 py-4 text-center">
-          <p className="text-[12px] text-gray-600">© 2026 Tolani Alumni Portal. All Rights Reserved.</p>
+        <div className="border-t border-gray-800 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 text-left">
+            <p className="text-[12px] text-gray-600">© 2026 Tolani Alumni Portal. All Rights Reserved.</p>
+          </div>
         </div>
       </footer>
     </div>

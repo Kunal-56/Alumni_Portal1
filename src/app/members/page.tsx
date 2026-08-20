@@ -49,7 +49,7 @@ const DEPARTMENTS = ["Computer", "Civil", "Electrical", "Mechanical", "CDDM", "C
 const INDUSTRIES = ["Technology", "Finance", "Media", "Manufacturing", "Consulting", "E-commerce"];
 const LOCATIONS = ["Delhi, India", "Mumbai, India", "Bangalore, India", "Hyderabad, India", "Chennai, India", "Pune, India", "Kolkata, India"];
 
-const TOTAL = 5559;
+const TOTAL = 16;
 const PER_PAGE = 8;
 
 /* ─── Avatar placeholder colors ─── */
@@ -308,17 +308,16 @@ export default function MembersPage() {
         )}
       </div>
 
-      {/* ── Footer ── */}
       <footer className="footer-dark pt-12 pb-0 mt-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 pb-10">
-            <div className="lg:col-span-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 pb-10">
+            <div className="lg:col-span-3">
               <div className="flex items-center gap-2.5 mb-3">
                 <div className="relative w-9 h-9 bg-white rounded-full p-1">
                   <Image src="/logo.jpg" alt="Tolani" fill className="object-contain" unoptimized />
                 </div>
                 <div>
-                  <div className="text-xs font-extrabold tracking-widest text-white">TOLANI</div>
+                  <div className="text-xs font-extrabold tracking-widest text-white whitespace-nowrap">TOLANI F.G. POLYTECHNIC</div>
                   <div className="text-[10px] font-bold tracking-wider" style={{ color: "#c0586a" }}>ALUMNI PORTAL</div>
                 </div>
               </div>
@@ -331,25 +330,25 @@ export default function MembersPage() {
                 ))}
               </div>
             </div>
-            <div>
+            <div className="lg:col-span-2">
               <h4 className="text-sm font-bold text-white mb-4">Quick Links</h4>
               {["Members", "Jobs & Internships", "Events", "Gallery", "Contact Us"].map(l => (
                 <a key={l} href="#" className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l}</a>
               ))}
             </div>
-            <div>
+            <div className="lg:col-span-2">
               <h4 className="text-sm font-bold text-white mb-4">Resources</h4>
               {["News Corner", "Success Stories", "Mentorship", "Batchmates", "Help & Support"].map(l => (
                 <a key={l} href="#" className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l}</a>
               ))}
             </div>
-            <div>
+            <div className="lg:col-span-2">
               <h4 className="text-sm font-bold text-white mb-4">Support</h4>
               {["FAQs", "Privacy Policy", "Terms of Use"].map(l => (
                 <a key={l} href="#" className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l}</a>
               ))}
             </div>
-            <div>
+            <div className="lg:col-span-3">
               <h4 className="text-sm font-bold text-white mb-4">Stay Connected</h4>
               <div className="flex gap-2 mb-3">
                 <input type="email" placeholder="Enter your email" className="flex-1 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg border border-gray-700 focus:outline-none focus:border-[#9B2335]" />
@@ -361,8 +360,10 @@ export default function MembersPage() {
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-800 py-4 text-center">
-          <p className="text-[12px] text-gray-600">© 2026 Tolani Alumni Portal. All Rights Reserved.</p>
+        <div className="border-t border-gray-800 py-4">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 text-left">
+            <p className="text-[12px] text-gray-600">© 2026 Tolani Alumni Portal. All Rights Reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
