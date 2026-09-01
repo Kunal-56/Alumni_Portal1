@@ -189,31 +189,133 @@ export default function DashboardPage() {
       </div>
 
       {/* ── Departments ── */}
-      <section id="departments" className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-        <div className="flex items-center justify-between mb-1">
-          <div>
-            <h2 className="text-2xl font-extrabold text-gray-900 text-center w-full">Our Departments</h2>
-            <div className="section-underline mx-auto" />
+      <section id="departments" className="py-16 overflow-hidden" style={{ background: "#fafafa" }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          {/* Section Header */}
+          <div className="relative mb-8 text-center">
+            <div className="absolute right-0 top-1 hidden sm:block">
+              <a href="#" className="text-sm font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
+                View All Departments <ChevronRight size={15} />
+              </a>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-serif text-gray-900 tracking-tight mb-2">
+              Our <span style={{ color: "#9B2335" }}>Departments</span>
+            </h2>
+            <p className="text-sm font-medium text-gray-500 max-w-xl mx-auto">
+              Explore departments and connect with alumni from your field.
+            </p>
+            <div className="sm:hidden mt-3 flex justify-center">
+              <a href="#" className="text-sm font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
+                View All Departments <ChevronRight size={15} />
+              </a>
+            </div>
           </div>
-          <a href="#" className="text-sm font-bold flex items-center gap-1" style={{ color: "#9B2335" }}>
-            View All Departments <ChevronRight size={15} />
-          </a>
         </div>
 
-        <div className="relative mt-8">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            {DEPARTMENTS.map((d, i) => (
-              <div key={i} className={`dept-card p-5 text-center${i === 0 ? " active" : ""}`}>
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3" style={{ background: "#fef0f2", color: "#9B2335" }}>
-                  {d.icon}
+        {/* Infinite Right-to-Left Marquee Slider */}
+        <div className="dept-marquee-outer">
+          <div className="dept-fade-left" />
+          <div className="dept-fade-right" />
+          <div className="dept-marquee-track">
+            {[...DEPARTMENTS, ...DEPARTMENTS, ...DEPARTMENTS].map((d, index) => {
+              const i = index % DEPARTMENTS.length;
+              return (
+                <div
+                  key={index}
+                  className={`dept-card group relative flex flex-col items-center text-center transition-all p-5 w-[250px] sm:w-[270px] shrink-0${i === 0 ? " active" : ""}`}
+                  style={{ borderRadius: "24px" }}
+                >
+                  {/* Sketch Illustration */}
+                  <div className="w-full flex-1 flex items-center justify-center pt-2" style={{ color: "#9B2335", opacity: 0.28, minHeight: "110px" }}>
+                    {i === 0 && (
+                      <svg viewBox="0 0 160 90" className="w-full h-[110px] fill-none stroke-current" strokeWidth="1.3">
+                        <rect x="18" y="22" width="124" height="63" rx="2" />
+                        <polygon points="18,22 80,4 142,22" />
+                        <rect x="30" y="32" width="20" height="22" />
+                        <rect x="62" y="32" width="36" height="22" />
+                        <rect x="110" y="32" width="20" height="22" />
+                        <rect x="70" y="60" width="20" height="25" />
+                        <line x1="8" y1="85" x2="152" y2="85" />
+                        <circle cx="10" cy="70" r="7" />
+                        <circle cx="150" cy="70" r="7" />
+                        <line x1="80" y1="4" x2="80" y2="22" />
+                      </svg>
+                    )}
+                    {i === 1 && (
+                      <svg viewBox="0 0 160 90" className="w-full h-[110px] fill-none stroke-current" strokeWidth="1.3">
+                        <line x1="35" y1="12" x2="35" y2="85" strokeWidth="2.2" />
+                        <line x1="125" y1="12" x2="125" y2="85" strokeWidth="2.2" />
+                        <line x1="28" y1="30" x2="42" y2="30" strokeWidth="1.5" />
+                        <line x1="118" y1="30" x2="132" y2="30" strokeWidth="1.5" />
+                        <path d="M 5,68 Q 35,28 80,68 Q 125,28 155,68" strokeWidth="1.4" />
+                        <line x1="5" y1="72" x2="155" y2="72" strokeWidth="2" />
+                        <line x1="48" y1="48" x2="48" y2="72" />
+                        <line x1="64" y1="60" x2="64" y2="72" />
+                        <line x1="80" y1="68" x2="80" y2="72" />
+                        <line x1="96" y1="60" x2="96" y2="72" />
+                        <line x1="112" y1="48" x2="112" y2="72" />
+                        <line x1="5" y1="85" x2="155" y2="85" />
+                      </svg>
+                    )}
+                    {i === 2 && (
+                      <svg viewBox="0 0 160 90" className="w-full h-[110px] fill-none stroke-current" strokeWidth="1.3">
+                        <polygon points="80,8 58,85 102,85" />
+                        <line x1="67" y1="50" x2="93" y2="50" />
+                        <line x1="71" y1="34" x2="89" y2="34" />
+                        <line x1="42" y1="34" x2="118" y2="34" />
+                        <line x1="36" y1="50" x2="124" y2="50" />
+                        <line x1="58" y1="85" x2="93" y2="50" />
+                        <line x1="102" y1="85" x2="67" y2="50" />
+                        <path d="M 8,75 Q 40,65 58,85" strokeWidth="1" />
+                        <path d="M 102,85 Q 120,65 152,75" strokeWidth="1" />
+                        <line x1="5" y1="85" x2="155" y2="85" />
+                      </svg>
+                    )}
+                    {i === 3 && (
+                      <svg viewBox="0 0 160 95" className="w-full h-[110px] fill-none stroke-current" strokeWidth="1.3">
+                        <circle cx="60" cy="52" r="25" strokeWidth="1.8" />
+                        <circle cx="60" cy="52" r="9" />
+                        <circle cx="108" cy="40" r="17" strokeWidth="1.8" />
+                        <circle cx="108" cy="40" r="6" />
+                        <path d="M57,24 L63,24 M57,80 L63,80 M32,49 L32,55 M88,49 L88,55" strokeWidth="3" />
+                        <path d="M106,20 L110,20 M106,60 L110,60 M88,38 L88,42 M128,38 L128,42" strokeWidth="3" />
+                        <line x1="8" y1="88" x2="152" y2="88" />
+                      </svg>
+                    )}
+                    {i === 4 && (
+                      <svg viewBox="0 0 160 90" className="w-full h-[110px] fill-none stroke-current" strokeWidth="1.3">
+                        <rect x="22" y="28" width="116" height="57" rx="3" />
+                        <line x1="22" y1="44" x2="138" y2="44" />
+                        <line x1="22" y1="60" x2="138" y2="60" />
+                        <line x1="53" y1="28" x2="53" y2="85" />
+                        <line x1="80" y1="28" x2="80" y2="85" />
+                        <line x1="107" y1="28" x2="107" y2="85" />
+                        <rect x="32" y="48" width="14" height="10" rx="1" />
+                        <rect x="60" y="48" width="14" height="10" rx="1" />
+                        <rect x="88" y="48" width="14" height="10" rx="1" />
+                        <rect x="116" y="48" width="14" height="10" rx="1" />
+                        <line x1="8" y1="85" x2="152" y2="85" />
+                        <polygon points="22,28 80,10 138,28" />
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* Name, Divider, Alumni, Button */}
+                  <div className="w-full pt-2 pb-1 px-2">
+                    <h3 className="text-base font-bold text-gray-900 leading-snug mb-2">{d.name}</h3>
+                    <div className="w-7 h-[2px] mx-auto mb-2 rounded-full" style={{ background: "#9B2335" }} />
+                    <div className="text-xs font-semibold text-gray-500 mb-4">{d.alumni}</div>
+                    <Link
+                      href="/departments/computer"
+                      className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold py-2.5 px-3 rounded-xl border transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
+                      style={{ borderColor: "#9B2335", color: "#9B2335" }}
+                    >
+                      Explore Department <ChevronRight size={13} />
+                    </Link>
+                  </div>
                 </div>
-                <div className="text-sm font-bold text-gray-900 mb-1">{d.name}</div>
-                <div className="text-xs text-gray-500 font-medium mb-3">{d.alumni}</div>
-                <a href="#" className="text-xs font-bold flex items-center justify-center gap-1" style={{ color: "#9B2335" }}>
-                  Explore <ChevronRight size={13} />
-                </a>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
