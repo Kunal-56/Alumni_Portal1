@@ -612,7 +612,7 @@ export default function ComputerDepartmentPage() {
               <p className="text-sm text-gray-500 font-medium">Reconnect. Collaborate. Grow Together.</p>
             </div>
           </div>
-          <Link href="/login" className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold">
+          <Link href="/invite" className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold">
             <UserPlus size={16} />
             Invite Alumni
           </Link>
