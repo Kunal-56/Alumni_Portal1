@@ -43,6 +43,7 @@ interface Stat {
 }
 
 interface Department {
+  slug: string;
   icon: React.ReactNode;
   name: string;
   alumni: string;
@@ -58,11 +59,11 @@ const STATS: Stat[] = [
 ];
 
 const DEPARTMENTS: Department[] = [
-  { icon: <Code2 size={28} />, name: "Computer Department", alumni: "5,248+ Alumni" },
-  { icon: <Layers size={28} />, name: "Civil Department", alumni: "3,126+ Alumni" },
-  { icon: <Zap size={28} />, name: "Electrical Department", alumni: "2,860+ Alumni" },
-  { icon: <Settings size={28} />, name: "Mechanical Department", alumni: "4,112+ Alumni" },
-  { icon: <BookOpen size={28} />, name: "CDDM Department", alumni: "2,340+ Alumni" },
+  { slug: "computer", icon: <Code2 size={28} />, name: "Computer Department", alumni: "5,248+ Alumni" },
+  { slug: "civil", icon: <Layers size={28} />, name: "Civil Department", alumni: "3,126+ Alumni" },
+  { slug: "electrical", icon: <Zap size={28} />, name: "Electrical Department", alumni: "2,860+ Alumni" },
+  { slug: "mechanical", icon: <Settings size={28} />, name: "Mechanical Department", alumni: "4,112+ Alumni" },
+  { slug: "cddm", icon: <BookOpen size={28} />, name: "CDDM Department", alumni: "2,340+ Alumni" },
 ];
 
 const EVENTS: Event[] = [
@@ -306,7 +307,7 @@ export default function DashboardPage() {
                     <div className="w-7 h-[2px] mx-auto mb-2 rounded-full" style={{ background: "#9B2335" }} />
                     <div className="text-xs font-semibold text-gray-500 mb-4">{d.alumni}</div>
                     <Link
-                      href="/departments/computer"
+                      href={`/departments/${d.slug}`}
                       className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold py-2.5 px-3 rounded-xl border transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
                       style={{ borderColor: "#9B2335", color: "#9B2335" }}
                     >
