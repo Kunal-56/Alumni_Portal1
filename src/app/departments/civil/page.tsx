@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,7 +9,7 @@ import {
   BookOpen, UserPlus, Heart, GraduationCap, FolderOpen,
   Tv, Sparkles, Building, Award,
   Lightbulb, Send, Facebook, Linkedin, Twitter,
-  Instagram, Youtube, Layers, Compass
+  Instagram, Youtube, CheckCircle2
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import "@/app/dashboard.css";
@@ -17,171 +17,178 @@ import "@/app/dashboard.css";
 /* ─── Data ─── */
 const DEPT_STATS = [
   { icon: <Users size={20} />, value: "3,126+", label: "Alumni" },
-  { icon: <Briefcase size={20} />, value: "780+", label: "Jobs Posted" },
-  { icon: <CalendarDays size={20} />, value: "65+", label: "Events Organized" },
+  { icon: <Briefcase size={20} />, value: "850+", label: "Jobs Posted" },
+  { icon: <CalendarDays size={20} />, value: "60+", label: "Events Organized" },
 ];
 
 const FEATURES = [
   {
     icon: <Users size={22} />,
     title: "Alumni Directory",
-    desc: "Connect with structural engineers and infrastructure leads worldwide."
+    desc: "Find and connect with fellow civil alumni worldwide."
   },
   {
     icon: <GraduationCap size={22} />,
     title: "Mentorship Program",
-    desc: "Get guidance from civil consultants, urban planners, and site leads."
+    desc: "Get guidance from experienced civil engineers and industry experts."
   },
   {
     icon: <Briefcase size={22} />,
     title: "Jobs & Internships",
-    desc: "Roles in L&T Construction, Shapoorji Pallonji, DLF, & Tata Projects."
+    desc: "Exclusive job and internship opportunities for civil alumni."
   },
   {
     icon: <FolderOpen size={22} />,
-    title: "Survey & GIS Hub",
-    desc: "Access land surveying datasets, CAD blueprints, and BIM models."
+    title: "Resources Hub",
+    desc: "Access notes, AutoCAD resources and helpful materials."
   },
   {
     icon: <Tv size={22} />,
-    title: "Tech Talks & Conclaves",
-    desc: "Join smart city webinars, bridge design talks, & green building expos."
+    title: "Tech Talks",
+    desc: "Join expert sessions, webinars and infrastructure discussions."
   },
   {
     icon: <Heart size={22} />,
     title: "Give Back",
-    desc: "Sponsor concrete testing labs, surveying kits, and site trips."
+    desc: "Support students, projects and the next generation."
   },
 ];
 
 const EVENTS = [
   {
-    day: "25",
-    month: "JUN",
-    title: "Smart Infrastructure Conclave 2026",
+    day: "12",
+    month: "JUL",
+    title: "Civil Alumni Global Meet 2026",
     time: "10:00 AM",
-    location: "Civil Seminar Hall",
-    desc: "Explore sustainable urban planning, smart highway designs, and eco-friendly structures.",
+    location: "Online",
+    desc: "Join civil alumni from across the world for an inspiring virtual meet.",
     img: "/campus-building.png"
   },
   {
-    day: "10",
+    day: "20",
     month: "JUL",
-    title: "Sustainable Concrete & Green Materials",
+    title: "Infrastructure Development Webinar",
     time: "04:00 PM",
     location: "Online",
-    desc: "Webinar on self-healing concrete, recycled aggregates, and low-carbon construction.",
+    desc: "Learn from industry experts about modern construction and infrastructure trends.",
     img: "/campus-building.png"
   },
   {
-    day: "18",
-    month: "AUG",
-    title: "Bridge Design & STAAD.Pro Challenge",
+    day: "05",
+    month: "SEP",
+    title: "Civil Engineers Meetup",
     time: "11:00 AM",
-    location: "CAD & GIS Lab",
-    desc: "A hands-on competition analyzing load capacity and structural integrity.",
+    location: "Tolani Campus",
+    desc: "A meetup for civil engineers to collaborate and build together.",
     img: "/campus-building.png"
   },
   {
-    day: "30",
-    month: "AUG",
-    title: "Civil Project Management Leadership Talk",
+    day: "22",
+    month: "SEP",
+    title: "Alumni Leadership Talk",
     time: "02:00 PM",
     location: "Tolani Auditorium",
-    desc: "Interactive session with top project heads managing megastructures & highways.",
+    desc: "An interactive session with accomplished civil engineering alumni leaders.",
     img: "/campus-building.png"
   },
 ];
 
 const BY_THE_NUMBERS = [
-  { label: "Established", value: "1994", icon: <Building size={16} /> },
-  { label: "Programs Offered", value: "Diploma in Civil", icon: <BookOpen size={16} /> },
-  { label: "Faculty Strength", value: "18+", icon: <Users size={16} /> },
-  { label: "Labs", value: "8+ Advanced Civil Labs", icon: <Award size={16} /> },
-  { label: "Research Projects", value: "28+", icon: <Lightbulb size={16} /> },
-  { label: "Student Strength", value: "380+", icon: <GraduationCap size={16} /> },
+  { label: "Established", value: "1984", icon: <Building size={16} /> },
+  { label: "Programs Offered", value: "Diploma, B.Tech", icon: <BookOpen size={16} /> },
+  { label: "Faculty Strength", value: "20+", icon: <Users size={16} /> },
+  { label: "Labs", value: "8+ Structural Labs", icon: <Award size={16} /> },
+  { label: "Research Projects", value: "8+", icon: <Lightbulb size={16} /> },
+  { label: "Student Strength", value: "400+", icon: <GraduationCap size={16} /> },
 ];
 
 const SPOTLIGHT = [
   {
-    name: "Devang Mehta",
-    role: "Senior Structural Engineer",
+    name: "Rohan Mehta",
+    role: "Site Engineer",
     company: "L&T Construction",
-    batch: "Batch 2023",
-    bg: "#1e293b",
-    initials: "DM"
-  },
-  {
-    name: "Ananya Roy",
-    role: "Infrastructure Consultant",
-    company: "Shapoorji Pallonji",
-    batch: "Batch 2024",
-    bg: "#9B2335",
-    initials: "AR"
-  },
-  {
-    name: "Harsh Vardhan",
-    role: "Project Manager",
-    company: "Tata Projects",
     batch: "Batch 2022",
-    bg: "#0f766e",
-    initials: "HV"
+    bg: "#1e293b",
+    initials: "RM"
   },
   {
-    name: "Riya Solanki",
-    role: "Urban Planner",
-    company: "DLF Infrastructure",
-    batch: "Batch 2025",
-    bg: "#6b21a8",
-    initials: "RS"
+    name: "Priya Shah",
+    role: "Structural Engineer",
+    company: "AECOM",
+    batch: "Batch 2023",
+    bg: "#9B2335",
+    initials: "PS"
   },
   {
-    name: "Jayesh Parmar",
-    role: "Geotechnical Consultant",
-    company: "Afcons Infrastructure",
+    name: "Karan Desai",
+    role: "Project Manager",
+    company: "Shapoorji Pallonji",
     batch: "Batch 2021",
+    bg: "#0f766e",
+    initials: "KD"
+  },
+  {
+    name: "Anjali Joshi",
+    role: "Design Engineer",
+    company: "Gammon India",
+    batch: "Batch 2020",
+    bg: "#6b21a8",
+    initials: "AJ"
+  },
+  {
+    name: "Vivek Rana",
+    role: "Site Supervisor",
+    company: "Hindustan Construction",
+    batch: "Batch 2024",
     bg: "#b45309",
-    initials: "JP"
+    initials: "VR"
   },
 ];
 
 const INITIATIVES = [
   {
-    icon: <Compass size={22} />,
-    title: "Site Inspection Trips",
-    desc: "Field visits to mega bridges & high-rise sites."
+    icon: <GraduationCap size={22} />,
+    title: "Student Mentorship",
+    desc: "One-on-one guidance for civil engineering students."
   },
   {
     icon: <Lightbulb size={22} />,
-    title: "BIM & GIS Training",
-    desc: "Hands-on Revit, STAAD.Pro & ArcGIS masterclasses."
+    title: "Green Building Challenges",
+    desc: "Encouraging sustainable and eco-friendly construction."
   },
   {
     icon: <Building size={22} />,
-    title: "Green Building Grants",
-    desc: "Funding eco-friendly construction material research."
+    title: "Industry Collaborations",
+    desc: "Building bridges with construction industry leaders."
   },
   {
     icon: <Trophy size={22} />,
-    title: "Structural Safety Awards",
-    desc: "Recognizing student seismic design solutions."
+    title: "Scholarships",
+    desc: "Supporting bright future civil engineers."
   },
   {
     icon: <Heart size={22} />,
     title: "Community Outreach",
-    desc: "Assisting local rural road & water facility planning."
+    desc: "Giving back to the society through infrastructure projects."
   },
 ];
 
 const GALLERY = [
-  { label: "Total Station Land Surveying", bg: "#1e293b" },
-  { label: "Concrete Testing & Compressive Strength", bg: "#9B2335" },
-  { label: "Smart City Infrastructure Model", bg: "#0f766e" },
-  { label: "Highway Construction Site Visit", bg: "#3b0764" },
-  { label: "Department Graduation 2026", bg: "#451a03" },
+  { label: "Structural Design Lab", bg: "#1e293b" },
+  { label: "Annual Civil Symposium", bg: "#9B2335" },
+  { label: "Site Visit 2026", bg: "#0f766e" },
+  { label: "Alumni Guest Lecture", bg: "#3b0764" },
+  { label: "Department Graduation", bg: "#451a03" },
 ];
 
 export default function CivilDepartmentPage() {
+  const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
+  
+  useEffect(() => {
+    setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
+  }, []);
+  const [spotlightIdx, setSpotlightIdx] = useState(0);
+
   return (
     <div className="dashboard-body min-h-screen" style={{ overflowY: "auto", overflowX: "hidden", background: "#fcfafb" }}>
 
@@ -201,26 +208,26 @@ export default function CivilDepartmentPage() {
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-extrabold text-gray-900 tracking-tight leading-[1.12]">
-              Structure The Future,<br />
-              Construct The <span style={{ color: "#9B2335" }}>World</span>
+              Build Today For<br />
+              Tomorrow's <span style={{ color: "#9B2335" }}>Future</span>
             </h1>
 
             {/* Description */}
             <p className="text-sm sm:text-base text-gray-600 font-medium max-w-xl leading-relaxed">
-              Uniting structural engineers, urban planners and construction leaders. The Civil Department alumni community builds strong foundations and resilient infrastructure for generations to come.
+              Uniting builders, designers and visionaries. The Civil Department alumni community empowers infrastructure leaders and builds a stronger tomorrow.
             </p>
 
             {/* Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link href="/login" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
-                Connect with Alumni <Users size={16} />
+              <Link href="/invite?dept=Civil+Engineering" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
+                Register for Alumni <Users size={16} />
               </Link>
               <a
-                href="#events"
+                href="#spotlight"
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold rounded-xl border bg-white transition-all hover:bg-gray-50"
                 style={{ borderColor: "#9B2335", color: "#9B2335" }}
               >
-                Explore Opportunities <ChevronRight size={16} />
+                Connect with Members <ChevronRight size={16} />
               </a>
             </div>
 
@@ -242,17 +249,19 @@ export default function CivilDepartmentPage() {
 
           {/* Right Hero Image Card */}
           <div className="lg:col-span-5 relative">
+            {/* Top Right Decorative Dots */}
             <div className="absolute -top-4 -right-4 w-20 h-20 text-[#9B2335] opacity-20 pointer-events-none grid grid-cols-4 gap-1.5 z-0">
               {Array.from({ length: 16 }).map((_, i) => (
                 <span key={i} className="w-1.5 h-1.5 rounded-full bg-current" />
               ))}
             </div>
 
+            {/* Main Image Container */}
             <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-gray-900 group">
               <div className="relative h-[320px] sm:h-[380px] w-full">
                 <Image
                   src="/campus-building.png"
-                  alt="Civil Engineering & Construction Site"
+                  alt="Civil Engineering"
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority
@@ -264,18 +273,18 @@ export default function CivilDepartmentPage() {
               {/* Floating Overlay Badge */}
               <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-gray-100 max-w-[240px]">
                 <div className="text-xs font-extrabold text-gray-900 mb-0.5">Stay Connected</div>
-                <div className="text-[11px] text-gray-500 font-medium mb-2.5">3,126+ Civil &amp; Structural Engineers.</div>
+                <div className="text-[11px] text-gray-500 font-medium mb-2.5">One network. Infinite possibilities.</div>
 
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2 overflow-hidden">
                     {["#9B2335", "#2563eb", "#059669", "#7c3aed", "#d97706"].map((bg, idx) => (
                       <div key={idx} className="inline-block h-6 w-6 rounded-full ring-2 ring-white text-[9px] font-bold text-white flex items-center justify-center" style={{ background: bg }}>
-                        {String.fromCharCode(67 + idx)}
+                        {String.fromCharCode(65 + idx)}
                       </div>
                     ))}
                   </div>
                   <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-50 text-[#9B2335] border border-red-100">
-                    +3.1K
+                    +1.5K
                   </span>
                 </div>
               </div>
@@ -289,10 +298,10 @@ export default function CivilDepartmentPage() {
       <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="mb-10">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            What's in it for You?
+            What&apos;s in it for You?
           </h2>
           <p className="text-sm text-gray-500 font-medium mt-1">
-            Tools, guidance and network tailored for civil engineers &amp; urban planners.
+            Everything you need to grow, give back and stay inspired.
           </p>
         </div>
 
@@ -335,52 +344,53 @@ export default function CivilDepartmentPage() {
                 Department Impact
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Building world-class infrastructure and structural foundations.
+                Empowering builders and creating lasting infrastructure.
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+
               <div className="md:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <GraduationCap size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Strong Structural Foundation</span>
+                  <span className="text-xs font-bold leading-snug">Strong Technical Foundation</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Building size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">BIM &amp; Smart City Curriculum</span>
+                  <span className="text-xs font-bold leading-snug">Industry Oriented Curriculum</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Tv size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Modern Testing &amp; GIS Labs</span>
+                  <span className="text-xs font-bold leading-snug">Modern Labs &amp; Infrastructure</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Lightbulb size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Green &amp; Resilient Design</span>
+                  <span className="text-xs font-bold leading-snug">Innovation &amp; Research Driven</span>
                 </div>
               </div>
 
               <div className="md:col-span-3 flex md:flex-col justify-around gap-4 border-y md:border-y-0 md:border-x border-white/20 py-4 md:py-0 md:px-6">
                 <div>
-                  <div className="text-3xl font-extrabold text-white">18+</div>
+                  <div className="text-3xl font-extrabold text-white">20+</div>
                   <div className="text-xs text-white/80 font-medium">Expert Faculty</div>
                 </div>
                 <div>
                   <div className="text-3xl font-extrabold text-white">8+</div>
-                  <div className="text-xs text-white/80 font-medium">Advanced Labs</div>
+                  <div className="text-xs text-white/80 font-medium">Structural Labs</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-extrabold text-white">380+</div>
+                  <div className="text-3xl font-extrabold text-white">400+</div>
                   <div className="text-xs text-white/80 font-medium">Students Strength</div>
                 </div>
               </div>
@@ -391,9 +401,10 @@ export default function CivilDepartmentPage() {
                     <Sparkles size={24} className="text-white" />
                   </div>
                   <div className="text-sm font-extrabold text-white mb-1">State-of-the-Art Labs</div>
-                  <div className="text-[11px] text-white/70">Structural Testing, Total Station Surveying &amp; Concrete Tech Labs.</div>
+                  <div className="text-[11px] text-white/70">Surveying, AutoCAD &amp; Structural Analysis Workstations.</div>
                 </div>
               </div>
+
             </div>
           </div>
 
@@ -404,7 +415,6 @@ export default function CivilDepartmentPage() {
       <section id="events" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* Left 8 Cols: Upcoming Events */}
           <div className="lg:col-span-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-extrabold text-gray-900">Upcoming Events</h2>
@@ -436,13 +446,18 @@ export default function CivilDepartmentPage() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
-                      style={{ borderColor: "#9B2335", color: "#9B2335" }}
-                    >
-                      Register Now <ChevronRight size={12} />
-                    </a>
+                    {registeredEvents.includes(ev.title) ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl text-green-700 bg-green-50 border border-green-200">
+                        <CheckCircle2 size={12} /> Registered
+                      </span>
+                    ) : (
+                      <a
+                        href={`/events/register?event=${encodeURIComponent(ev.title)}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border border-[#9B2335] text-[#9B2335] transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
+                      >
+                        Register Now <ChevronRight size={12} />
+                      </a>
+                    )}
                     <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 hidden sm:block">
                       <Image src={ev.img} alt={ev.title} fill className="object-cover" unoptimized />
                     </div>
@@ -452,8 +467,8 @@ export default function CivilDepartmentPage() {
             </div>
           </div>
 
-          {/* Right 4 Cols: By the Numbers & Expand Network */}
           <div className="lg:col-span-4 space-y-6">
+
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs">
               <h3 className="text-base font-extrabold text-gray-900 mb-4 pb-3 border-b border-gray-100">
                 By the Numbers
@@ -475,23 +490,24 @@ export default function CivilDepartmentPage() {
             <div className="rounded-2xl p-6 text-white relative overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #9B2335 0%, #701422 100%)" }}>
               <h4 className="text-base font-extrabold mb-1">Expand Your Network</h4>
               <p className="text-xs text-white/80 leading-relaxed font-medium mb-4">
-                Connect with civil engineers across top construction &amp; infrastructure firms.
+                Connect, collaborate and create meaningful impact together.
               </p>
-              <Link href="/login" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
+              <Link href="/invite?dept=Civil+Engineering" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
                 Join Alumni Network <ChevronRight size={14} />
               </Link>
             </div>
+
           </div>
 
         </div>
       </section>
 
       {/* ── Section: Alumni Members Spotlight ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section id="spotlight" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900">Alumni Members Spotlight</h2>
-            <p className="text-xs text-gray-500 font-medium">Accomplished leaders in structural engineering and infrastructure development.</p>
+            <p className="text-xs text-gray-500 font-medium">Accomplished leaders and infrastructure pioneers from Civil Department.</p>
           </div>
 
           <Link
@@ -530,7 +546,7 @@ export default function CivilDepartmentPage() {
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs">
           <div className="mb-6">
             <h2 className="text-xl font-extrabold text-gray-900">Our Initiatives</h2>
-            <p className="text-xs text-gray-500 font-medium">Empowering the next generation of civil &amp; structural engineers.</p>
+            <p className="text-xs text-gray-500 font-medium">Empowering the next generation of civil engineers.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -583,10 +599,13 @@ export default function CivilDepartmentPage() {
               <p className="text-sm text-gray-500 font-medium">Reconnect. Collaborate. Grow Together.</p>
             </div>
           </div>
-          <Link href="/invite" className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold">
+          <button
+            type="button"
+            className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold cursor-pointer"
+          >
             <UserPlus size={16} />
             Invite Alumni
-          </Link>
+          </button>
         </div>
       </section>
 

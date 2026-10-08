@@ -10,7 +10,7 @@ import {
   ChevronRight, ChevronLeft, MapPin, Clock, Globe,
   Code2, Cpu, Settings, Layers, Facebook, Linkedin,
   Twitter, Instagram, Youtube, Send, ArrowUp, BookOpen,
-  UserPlus, Zap
+  UserPlus, Zap, CheckCircle2
 } from "lucide-react";
 
 /* ─── Types ─── */
@@ -43,10 +43,10 @@ interface Stat {
 }
 
 interface Department {
-  slug: string;
   icon: React.ReactNode;
   name: string;
   alumni: string;
+  href: string;
 }
 
 /* ─── Data ─── */
@@ -59,11 +59,11 @@ const STATS: Stat[] = [
 ];
 
 const DEPARTMENTS: Department[] = [
-  { slug: "computer", icon: <Code2 size={28} />, name: "Computer Department", alumni: "5,248+ Alumni" },
-  { slug: "civil", icon: <Layers size={28} />, name: "Civil Department", alumni: "3,126+ Alumni" },
-  { slug: "electrical", icon: <Zap size={28} />, name: "Electrical Department", alumni: "2,860+ Alumni" },
-  { slug: "mechanical", icon: <Settings size={28} />, name: "Mechanical Department", alumni: "4,112+ Alumni" },
-  { slug: "cddm", icon: <BookOpen size={28} />, name: "CDDM Department", alumni: "2,340+ Alumni" },
+  { icon: <Code2 size={28} />, name: "Computer Department", alumni: "5,248+ Alumni", href: "/departments/computer" },
+  { icon: <Layers size={28} />, name: "Civil Department", alumni: "3,126+ Alumni", href: "/departments/civil" },
+  { icon: <Zap size={28} />, name: "Electrical Department", alumni: "2,860+ Alumni", href: "/departments/electrical" },
+  { icon: <Settings size={28} />, name: "Mechanical Department", alumni: "4,112+ Alumni", href: "/departments/mechanical" },
+  { icon: <BookOpen size={28} />, name: "CDDM Department", alumni: "2,340+ Alumni", href: "/departments/cddm" },
 ];
 
 const EVENTS: Event[] = [
@@ -100,11 +100,13 @@ export default function DashboardPage() {
   const [deptIdx, setDeptIdx] = useState(0);
   const [showTop, setShowTop] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const stored = sessionStorage.getItem("tolani_logged_in");
       setLoggedIn(stored === "true");
+      setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
     }
   }, []);
 
@@ -221,9 +223,10 @@ export default function DashboardPage() {
             {[...DEPARTMENTS, ...DEPARTMENTS, ...DEPARTMENTS].map((d, index) => {
               const i = index % DEPARTMENTS.length;
               return (
-                <div
+                <Link
                   key={index}
-                  className={`dept-card group relative flex flex-col items-center text-center transition-all p-5 w-[250px] sm:w-[270px] shrink-0${i === 0 ? " active" : ""}`}
+                  href={d.href}
+                  className="dept-card active group relative flex flex-col items-center text-center transition-all p-5 w-[250px] sm:w-[270px] shrink-0 block no-underline text-inherit"
                   style={{ borderRadius: "24px" }}
                 >
                   {/* Sketch Illustration */}
@@ -303,18 +306,15 @@ export default function DashboardPage() {
 
                   {/* Name, Divider, Alumni, Button */}
                   <div className="w-full pt-2 pb-1 px-2">
-                    <h3 className="text-base font-bold text-gray-900 leading-snug mb-2">{d.name}</h3>
+                    <h3 className="text-base font-bold text-gray-900 leading-snug mb-2 group-hover:text-[#9B2335] transition-colors">{d.name}</h3>
                     <div className="w-7 h-[2px] mx-auto mb-2 rounded-full" style={{ background: "#9B2335" }} />
                     <div className="text-xs font-semibold text-gray-500 mb-4">{d.alumni}</div>
-                    <Link
-                      href={`/departments/${d.slug}`}
-                      className="w-full inline-flex items-center justify-center gap-1.5 text-xs font-bold py-2.5 px-3 rounded-xl border transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
-                      style={{ borderColor: "#9B2335", color: "#9B2335" }}
-                    >
-                      Explore Department <ChevronRight size={13} />
-                    </Link>
+                    <div className="dept-btn">
+                      <span>Explore Department</span>
+                      <ChevronRight size={13} />
+                    </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
@@ -328,9 +328,9 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-extrabold text-gray-900">Upcoming Events</h2>
             <div className="section-underline" style={{ margin: "6px 0 0" }} />
           </div>
-          <a href="#" className="text-sm font-bold flex items-center gap-1" style={{ color: "#9B2335" }}>
+          <Link href="/events" className="text-sm font-bold flex items-center gap-1" style={{ color: "#9B2335" }}>
             View All Events <ChevronRight size={15} />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -354,9 +354,15 @@ export default function DashboardPage() {
                   <MapPin size={11} /> {ev.location}
                 </div>
                 <p className="text-[11px] text-gray-500 leading-relaxed mb-4">{ev.desc}</p>
-                <a href="#" className="inline-flex items-center gap-1 text-xs font-bold border rounded-lg px-3 py-1.5 transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]" style={{ borderColor: "#9B2335", color: "#9B2335" }}>
-                  Register Now <ChevronRight size={13} />
-                </a>
+                {registeredEvents.includes(ev.title) ? (
+                  <span className="inline-flex items-center gap-1 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+                    <CheckCircle2 size={13} /> Registered
+                  </span>
+                ) : (
+                  <a href={`/events/register?event=${encodeURIComponent(ev.title)}`} className="inline-flex items-center gap-1 text-xs font-bold border border-[#9B2335] text-[#9B2335] rounded-lg px-3 py-1.5 transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]">
+                    Register Now <ChevronRight size={13} />
+                  </a>
+                )}
               </div>
             </div>
           ))}
@@ -370,9 +376,9 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-extrabold text-gray-900">Gallery Highlights</h2>
             <div className="section-underline" style={{ margin: "6px 0 0" }} />
           </div>
-          <a href="#" className="text-sm font-bold flex items-center gap-1" style={{ color: "#9B2335" }}>
+          <Link href="/gallery" className="text-sm font-bold flex items-center gap-1" style={{ color: "#9B2335" }}>
             View All Gallery <ChevronRight size={15} />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-3 gap-3" style={{ gridTemplateRows: "auto auto" }}>
@@ -394,9 +400,9 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-extrabold text-gray-900">News &amp; Updates</h2>
             <div className="section-underline" style={{ margin: "6px 0 0" }} />
           </div>
-          <a href="#" className="text-sm font-bold flex items-center gap-1" style={{ color: "#9B2335" }}>
+          <Link href="/news" className="text-sm font-bold flex items-center gap-1" style={{ color: "#9B2335" }}>
             View All News <ChevronRight size={15} />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -426,10 +432,13 @@ export default function DashboardPage() {
               <p className="text-sm text-gray-500 font-medium">Reconnect. Collaborate. Grow Together.</p>
             </div>
           </div>
-          <Link href="/invite" className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0">
+          <button
+            type="button"
+            className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 cursor-pointer"
+          >
             <UserPlus size={16} />
             Invite Alumni
-          </Link>
+          </button>
         </div>
       </section>
 
@@ -462,8 +471,14 @@ export default function DashboardPage() {
             {/* Quick Links */}
             <div className="lg:col-span-2">
               <h4 className="text-sm font-bold text-white mb-4">Quick Links</h4>
-              {["Alumni Directory", "Jobs & Internships", "Events", "Gallery", "Contact Us"].map(l => (
-                <a key={l} href="#" className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l}</a>
+              {[
+                { name: "Alumni Directory", href: "/members" },
+                { name: "Jobs & Internships", href: "#" },
+                { name: "Events", href: "/events" },
+                { name: "Gallery", href: "/gallery" },
+                { name: "Contact Us", href: "/contact" },
+              ].map(l => (
+                <Link key={l.name} href={l.href} className="block text-[12px] text-gray-400 hover:text-white mb-2 transition-colors">{l.name}</Link>
               ))}
             </div>
 

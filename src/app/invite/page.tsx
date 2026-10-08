@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,16 @@ export default function InviteAlumniPage() {
   // Step 2
   const [degree, setDegree] = useState("B.Tech");
   const [dept, setDept] = useState("Computer Engineering");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlDept = new URLSearchParams(window.location.search).get("dept");
+      if (urlDept) {
+        const found = DEPARTMENTS.find(d => d.toLowerCase() === urlDept.toLowerCase());
+        if (found) setDept(found);
+      }
+    }
+  }, []);
   const [batchYear, setBatchYear] = useState("2025");
   const [institute, setInstitute] = useState("Tolani F. & Polytechnic");
   const [company, setCompany] = useState("");

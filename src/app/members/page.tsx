@@ -114,13 +114,13 @@ export default function MembersPage() {
 
           {/* Right Action & Total Count Badge */}
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/invite"
-              className="btn-maroon flex items-center gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm shadow-md hover:shadow-lg font-bold"
+            <button
+              type="button"
+              className="btn-maroon flex items-center gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm shadow-md hover:shadow-lg font-bold cursor-pointer"
             >
               <UserPlus size={16} />
               Invite Alumni
-            </Link>
+            </button>
 
             <div
               className="bg-white rounded-2xl shadow-md px-5 py-3.5 flex items-center gap-3.5 shrink-0"

@@ -39,6 +39,8 @@ export default function LoginPage() {
       if (typeof window !== "undefined") {
         sessionStorage.setItem("tolani_logged_in", "true");
         sessionStorage.setItem("tolani_user_email", email);
+        localStorage.setItem("tolani_logged_in", "true");
+        localStorage.setItem("tolani_user_email", email);
       }
       setMessage({ type: "success", text: "Welcome back! Redirecting to dashboard..." });
       setTimeout(() => router.push("/"), 1200);

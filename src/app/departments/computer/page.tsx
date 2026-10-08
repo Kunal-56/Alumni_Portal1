@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,7 +9,7 @@ import {
   BookOpen, UserPlus, Heart, GraduationCap, FolderOpen,
   Tv, Sparkles, Building, Award,
   Lightbulb, Send, Facebook, Linkedin, Twitter,
-  Instagram, Youtube
+  Instagram, Youtube, CheckCircle2
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import "@/app/dashboard.css";
@@ -182,6 +182,11 @@ const GALLERY = [
 ];
 
 export default function ComputerDepartmentPage() {
+  const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
+  
+  useEffect(() => {
+    setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
+  }, []);
   const [spotlightIdx, setSpotlightIdx] = useState(0);
 
   const prevSpotlight = () => {
@@ -224,15 +229,15 @@ export default function ComputerDepartmentPage() {
 
             {/* Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link href="/login" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
-                Connect with Alumni <Users size={16} />
+              <Link href="/invite?dept=Computer+Engineering" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
+                Register for Alumni <Users size={16} />
               </Link>
               <a
-                href="#events"
+                href="#spotlight"
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold rounded-xl border bg-white transition-all hover:bg-gray-50"
                 style={{ borderColor: "#9B2335", color: "#9B2335" }}
               >
-                Explore Opportunities <ChevronRight size={16} />
+                Connect with Members <ChevronRight size={16} />
               </a>
             </div>
 
@@ -460,13 +465,18 @@ export default function ComputerDepartmentPage() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
-                      style={{ borderColor: "#9B2335", color: "#9B2335" }}
-                    >
-                      Register Now <ChevronRight size={12} />
-                    </a>
+                    {registeredEvents.includes(ev.title) ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl text-green-700 bg-green-50 border border-green-200">
+                        <CheckCircle2 size={12} /> Registered
+                      </span>
+                    ) : (
+                      <a
+                        href={`/events/register?event=${encodeURIComponent(ev.title)}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border border-[#9B2335] text-[#9B2335] transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
+                      >
+                        Register Now <ChevronRight size={12} />
+                      </a>
+                    )}
                     <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 hidden sm:block">
                       <Image src={ev.img} alt={ev.title} fill className="object-cover" unoptimized />
                     </div>
@@ -504,7 +514,7 @@ export default function ComputerDepartmentPage() {
               <p className="text-xs text-white/80 leading-relaxed font-medium mb-4">
                 Connect, collaborate and create meaningful impact together.
               </p>
-              <Link href="/login" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
+              <Link href="/invite?dept=Computer+Engineering" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
                 Join Alumni Network <ChevronRight size={14} />
               </Link>
             </div>
@@ -515,7 +525,7 @@ export default function ComputerDepartmentPage() {
       </section>
 
       {/* ── Section: Alumni Members Spotlight ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section id="spotlight" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900">Alumni Members Spotlight</h2>
@@ -612,10 +622,13 @@ export default function ComputerDepartmentPage() {
               <p className="text-sm text-gray-500 font-medium">Reconnect. Collaborate. Grow Together.</p>
             </div>
           </div>
-          <Link href="/invite" className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold">
+          <button
+            type="button"
+            className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold cursor-pointer"
+          >
             <UserPlus size={16} />
             Invite Alumni
-          </Link>
+          </button>
         </div>
       </section>
 

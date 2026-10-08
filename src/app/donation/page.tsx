@@ -7,7 +7,9 @@ import {
   Users, GraduationCap, Building2, Heart, Star, Briefcase,
   ChevronRight, ArrowRight, ShieldCheck, Receipt, TrendingUp,
   Award, Clock, MapPin, Facebook, Linkedin, Twitter, Instagram,
-  Youtube, Send, ArrowUp, X, CheckCircle2
+  Youtube, Send, ArrowUp, X, CheckCircle2,
+  User, Mail, Phone, CreditCard, Landmark, Compass, Home, Building,
+  Check, ChevronDown
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import "../dashboard.css";
@@ -78,6 +80,19 @@ export default function DonationPage() {
   const [selectedInitiative, setSelectedInitiative] = useState<Initiative | null>(null);
   const [amount, setAmount] = useState("1000");
   const [customAmount, setCustomAmount] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("upi");
+  const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [donorForm, setDonorForm] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    pan: "",
+    houseNo: "",
+    area: "",
+    city: "",
+    state: "Gujarat",
+    pinCode: "",
+  });
   const [isSuccess, setIsSuccess] = useState(false);
   const [showTop, setShowTop] = useState(false);
 
@@ -89,13 +104,30 @@ export default function DonationPage() {
     return () => el?.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock background scroll when modal is open
+  React.useEffect(() => {
+    if (selectedInitiative) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [selectedInitiative]);
+
   const handleDonate = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreedToTerms) {
+      alert("Please agree to the Terms & Conditions and Privacy Policy");
+      return;
+    }
     setIsSuccess(true);
-    setTimeout(() => {
-      setIsSuccess(false);
-      setSelectedInitiative(null);
-    }, 3000);
+  };
+
+  const handleCloseModal = () => {
+    setIsSuccess(false);
+    setSelectedInitiative(null);
   };
 
   return (
@@ -547,97 +579,455 @@ export default function DonationPage() {
         </button>
       )}
 
-      {/* ── Donation Modal ── */}
+      {/* ── Donation Modal matching user image ── */}
       {selectedInitiative && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 relative shadow-2xl animate-slideup">
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-hidden"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseModal();
+          }}
+        >
+          <div className="bg-white rounded-[24px] sm:rounded-[28px] max-w-2xl w-full relative shadow-2xl animate-slideup border border-gray-100 max-h-[86vh] flex flex-col overflow-hidden">
             
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedInitiative(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1"
-            >
-              <X size={20} />
-            </button>
+            {/* ── Top Header Banner with soft warm blush styling ── */}
+            <div className="relative bg-[#fcf4f2] px-6 sm:px-8 py-5 sm:py-6 border-b border-[#f4eae7] shrink-0">
+              {/* Close Button */}
+              <button
+                onClick={handleCloseModal}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 p-1.5 rounded-full hover:bg-black/5 transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
 
-            {isSuccess ? (
-              <div className="text-center py-8 space-y-3">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto animate-bounce">
-                  <CheckCircle2 size={36} />
-                </div>
-                <h3 className="text-xl font-extrabold text-gray-900">Thank You for Your Support!</h3>
-                <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                  Your generous contribution of <strong>₹{customAmount || amount}</strong> towards <strong>{selectedInitiative.title}</strong> has been received. Tax exemption receipt (Section 80G) will be sent to your email.
+              {/* Calligraphic script text in top right */}
+              <div className="hidden sm:block absolute right-14 top-6 select-none pointer-events-none text-right">
+                <p
+                  className="text-[#9e525f] text-base leading-tight font-bold"
+                  style={{ fontFamily: "'Caveat', 'Segoe Script', 'Brush Script MT', cursive, sans-serif" }}
+                >
+                  Education<br />Creates<br />
+                  <span className="inline-flex items-center gap-1">Opportunities <span className="text-xs">♥</span></span>
                 </p>
               </div>
-            ) : (
-              <form onSubmit={handleDonate} className="space-y-4">
-                <div className="flex items-center gap-3 border-b pb-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold" style={{ background: "#9B2335" }}>
-                    <Heart size={20} fill="white" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-extrabold text-gray-900">Contribute to Initiative</h3>
-                    <p className="text-xs font-bold text-[#9B2335]">{selectedInitiative.title}</p>
-                  </div>
+
+              <div className="flex items-center gap-4 sm:gap-5 pr-0 sm:pr-24">
+                {/* Round badge with graduation cap & heart */}
+                <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#fdecef] flex items-center justify-center shrink-0 shadow-xs">
+                  <GraduationCap size={28} className="text-[#8B263E]" />
+                  <Heart size={14} className="text-[#8B263E] fill-[#8B263E] absolute bottom-2 right-2" />
                 </div>
 
-                {/* Amount Select */}
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-2">Select Donation Amount (₹)</label>
-                  <div className="grid grid-cols-4 gap-2 mb-2">
-                    {["500", "1000", "2500", "5000"].map((val) => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => { setAmount(val); setCustomAmount(""); }}
-                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${
-                          amount === val && !customAmount
-                            ? "bg-[#9B2335] text-white border-[#9B2335]"
-                            : "bg-gray-50 text-gray-700 border-gray-200 hover:border-[#9B2335]"
-                        }`}
-                      >
-                        ₹{val}
-                      </button>
-                    ))}
+                  <div className="text-xs sm:text-sm font-bold text-[#8B263E]">
+                    Contribute <span className="text-[#8B263E]/80 font-semibold">to Initiative</span>
                   </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight leading-tight">
+                    {selectedInitiative.title}
+                  </h2>
+                  <p className="text-xs text-gray-600 mt-1 max-w-md leading-relaxed font-medium">
+                    {selectedInitiative.desc}
+                  </p>
+                </div>
+              </div>
+            </div>
 
-                  <input
-                    type="number"
-                    placeholder="Or enter custom amount in ₹"
-                    value={customAmount}
-                    onChange={(e) => setCustomAmount(e.target.value)}
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 outline-none focus:border-[#9B2335]"
-                  />
+            {/* ── Form Body / Success Screen ── */}
+            {isSuccess ? (
+              <div className="p-8 sm:p-10 text-center space-y-5 overflow-y-auto flex-1 modal-scroll">
+                <div className="w-16 h-16 rounded-full bg-[#fdecef] text-[#8B263E] flex items-center justify-center mx-auto shadow-sm">
+                  <CheckCircle2 size={36} />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black text-gray-900">Thank You for Your Generous Support!</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 max-w-md mx-auto leading-relaxed">
+                    Dear <strong className="text-gray-900">{donorForm.fullName || "Valued Donor"}</strong>, your contribution of <strong className="text-[#8B263E]">₹{customAmount || amount}</strong> towards <strong className="text-gray-900">{selectedInitiative.title}</strong> has been received.
+                  </p>
                 </div>
 
-                {/* Donor Details */}
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    required
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 outline-none focus:border-[#9B2335]"
-                  />
-                  <input
-                    type="email"
-                    placeholder="Email Address (For Tax Receipt)"
-                    required
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 outline-none focus:border-[#9B2335]"
-                  />
-                  <input
-                    type="text"
-                    placeholder="PAN Card No. (Optional for 80G Receipt)"
-                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-900 outline-none focus:border-[#9B2335]"
-                  />
+                <div className="bg-[#faf7f6] p-4 rounded-2xl max-w-md mx-auto text-left border border-gray-100 space-y-2 text-xs">
+                  <div className="flex justify-between text-gray-500">
+                    <span>Reference ID:</span>
+                    <span className="font-mono font-bold text-gray-800">TXN{Date.now().toString().slice(-8)}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>Initiative:</span>
+                    <span className="font-bold text-gray-800">{selectedInitiative.title}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>Email for Receipt:</span>
+                    <span className="font-bold text-gray-800">{donorForm.email || "Sent to registered email"}</span>
+                  </div>
+                  <div className="flex justify-between text-gray-500">
+                    <span>Payment Mode:</span>
+                    <span className="font-bold uppercase text-[#8B263E]">{paymentMethod}</span>
+                  </div>
+                  <div className="pt-2 border-t border-gray-200 text-[11px] text-gray-500">
+                    Tax exemption receipt under Section 80G has been processed.
+                  </div>
                 </div>
 
                 <button
-                  type="submit"
-                  className="w-full btn-maroon py-3 text-xs font-extrabold flex items-center justify-center gap-2 shadow-md"
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="bg-[#8B263E] hover:bg-[#741c31] text-white font-bold px-8 py-3 rounded-xl text-xs sm:text-sm transition-all shadow-md cursor-pointer"
                 >
-                  Proceed to Pay ₹{customAmount || amount} <Heart size={14} fill="white" />
+                  Close &amp; Return
                 </button>
+              </div>
+            ) : (
+              <form onSubmit={handleDonate} className="p-5 sm:p-7 space-y-5 overflow-y-auto flex-1 modal-scroll">
+                
+                {/* ── 1. Select Donation Amount ── */}
+                <div>
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <Heart size={15} className="text-[#8B263E] fill-[#8B263E]" />
+                      <h3 className="text-xs sm:text-sm font-bold text-gray-900">Select Donation Amount (₹)</h3>
+                    </div>
+                    <span className="text-[11px] text-gray-400">Or enter a custom amount</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-2.5">
+                    {["500", "1000", "2500", "5000"].map((val) => {
+                      const isSelected = amount === val && !customAmount;
+                      return (
+                        <button
+                          type="button"
+                          key={val}
+                          onClick={() => {
+                            setAmount(val);
+                            setCustomAmount("");
+                          }}
+                          className={`relative py-2.5 px-3 rounded-xl font-bold text-xs sm:text-sm transition-all duration-150 cursor-pointer ${
+                            isSelected
+                              ? "bg-[#8B263E] text-white shadow-sm"
+                              : "bg-[#fbf9f8] text-gray-800 border border-[#ebe4e1] hover:border-[#8B263E]/40 hover:bg-[#f7f2f0]"
+                          }`}
+                        >
+                          ₹{val}
+                          {isSelected && (
+                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#691829] text-white flex items-center justify-center ring-2 ring-white">
+                              <Check size={10} strokeWidth={3} />
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom Amount input */}
+                  <div className="flex items-center rounded-xl border border-gray-200 bg-[#fbf9f8] overflow-hidden focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                    <div className="px-3.5 py-2.5 text-gray-400 font-semibold border-r border-gray-200 select-none text-xs sm:text-sm">
+                      ₹
+                    </div>
+                    <input
+                      type="number"
+                      placeholder="Enter custom amount"
+                      value={customAmount}
+                      onChange={(e) => {
+                        setCustomAmount(e.target.value);
+                        if (e.target.value) setAmount("");
+                      }}
+                      className="w-full px-3 py-2 text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                    />
+                  </div>
+                </div>
+
+                {/* ── 2. Personal Details ── */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <User size={15} className="text-[#8B263E]" />
+                    <h3 className="text-xs sm:text-sm font-bold text-gray-900">Personal Details</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Full Name */}
+                    <div>
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <User size={15} className="text-gray-400 shrink-0" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="Full Name *"
+                          value={donorForm.fullName}
+                          onChange={(e) => setDonorForm({ ...donorForm, fullName: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email Address */}
+                    <div>
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <Mail size={15} className="text-gray-400 shrink-0" />
+                        <input
+                          type="email"
+                          required
+                          placeholder="Email Address *"
+                          value={donorForm.email}
+                          onChange={(e) => setDonorForm({ ...donorForm, email: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-1 pl-1 font-medium">(For tax receipt)</p>
+                    </div>
+
+                    {/* Phone Number */}
+                    <div>
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <Phone size={15} className="text-gray-400 shrink-0" />
+                        <input
+                          type="tel"
+                          required
+                          placeholder="Phone Number *"
+                          value={donorForm.phone}
+                          onChange={(e) => setDonorForm({ ...donorForm, phone: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-1 pl-1 font-medium">(10 digits)</p>
+                    </div>
+
+                    {/* PAN Card */}
+                    <div>
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <CreditCard size={15} className="text-gray-400 shrink-0" />
+                        <input
+                          type="text"
+                          placeholder="PAN Card No. *"
+                          value={donorForm.pan}
+                          onChange={(e) => setDonorForm({ ...donorForm, pan: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-400 mt-1 pl-1 font-medium">(Optional for 80G receipt)</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── 3. Address ── */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <MapPin size={15} className="text-[#8B263E]" />
+                    <h3 className="text-xs sm:text-sm font-bold text-gray-900">Address</h3>
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {/* House No */}
+                    <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                      <MapPin size={15} className="text-gray-400 shrink-0" />
+                      <input
+                        type="text"
+                        required
+                        placeholder="House No. / Flat No. / Building *"
+                        value={donorForm.houseNo}
+                        onChange={(e) => setDonorForm({ ...donorForm, houseNo: e.target.value })}
+                        className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                      />
+                    </div>
+
+                    {/* Area & City */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <Building size={15} className="text-gray-400 shrink-0" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="Area / Locality *"
+                          value={donorForm.area}
+                          onChange={(e) => setDonorForm({ ...donorForm, area: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <Building2 size={15} className="text-gray-400 shrink-0" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="City *"
+                          value={donorForm.city}
+                          onChange={(e) => setDonorForm({ ...donorForm, city: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                        />
+                      </div>
+                    </div>
+
+                    {/* State & PIN */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <div className="relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <Compass size={15} className="text-gray-400 shrink-0" />
+                        <select
+                          value={donorForm.state}
+                          onChange={(e) => setDonorForm({ ...donorForm, state: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none font-medium text-gray-900 appearance-none cursor-pointer pr-6"
+                        >
+                          <option value="Gujarat">Gujarat</option>
+                          <option value="Maharashtra">Maharashtra</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Rajasthan">Rajasthan</option>
+                          <option value="Karnataka">Karnataka</option>
+                          <option value="Tamil Nadu">Tamil Nadu</option>
+                          <option value="Uttar Pradesh">Uttar Pradesh</option>
+                          <option value="Madhya Pradesh">Madhya Pradesh</option>
+                          <option value="Punjab">Punjab</option>
+                          <option value="West Bengal">West Bengal</option>
+                          <option value="Other">Other</option>
+                        </select>
+                        <ChevronDown size={15} className="text-gray-400 pointer-events-none absolute right-3" />
+                      </div>
+
+                      <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-[#fbf9f8] focus-within:border-[#8B263E] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                        <Mail size={15} className="text-gray-400 shrink-0" />
+                        <input
+                          type="text"
+                          required
+                          placeholder="PIN Code *"
+                          value={donorForm.pinCode}
+                          onChange={(e) => setDonorForm({ ...donorForm, pinCode: e.target.value })}
+                          className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── 4. Payment Method (UI only, as requested) ── */}
+                <div>
+                  <div className="flex items-center gap-1.5 mb-2.5">
+                    <CreditCard size={15} className="text-[#8B263E]" />
+                    <h3 className="text-xs sm:text-sm font-bold text-gray-900">Payment Method</h3>
+                  </div>
+
+                  {/* 4 Cards (UPI, Credit Card, Debit Card, Net Banking) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {/* UPI */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("upi")}
+                      className={`relative p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[72px] ${
+                        paymentMethod === "upi"
+                          ? "bg-[#fcf3f4] border-[#8B263E] ring-1 ring-[#8B263E]"
+                          : "bg-[#fbf9f8] border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      {paymentMethod === "upi" && (
+                        <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#8B263E] text-white flex items-center justify-center">
+                          <Check size={9} strokeWidth={3} />
+                        </span>
+                      )}
+                      <div className="flex items-center justify-center gap-0.5 mb-1 select-none">
+                        <span className="text-[#097939] font-black text-sm italic">/</span>
+                        <span className="text-[#ED752E] font-black text-sm italic -ml-1">/</span>
+                        <span className="font-extrabold text-xs text-gray-800 ml-0.5">UPI</span>
+                      </div>
+                      <span className="text-[11px] font-bold text-gray-700">UPI</span>
+                    </button>
+
+                    {/* Credit Card */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("credit")}
+                      className={`relative p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[72px] ${
+                        paymentMethod === "credit"
+                          ? "bg-[#fcf3f4] border-[#8B263E] ring-1 ring-[#8B263E]"
+                          : "bg-[#fbf9f8] border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      {paymentMethod === "credit" && (
+                        <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#8B263E] text-white flex items-center justify-center">
+                          <Check size={9} strokeWidth={3} />
+                        </span>
+                      )}
+                      <CreditCard size={20} className="text-gray-700 mb-1" />
+                      <span className="text-[11px] font-bold text-gray-700">Credit Card</span>
+                    </button>
+
+                    {/* Debit Card */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("debit")}
+                      className={`relative p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[72px] ${
+                        paymentMethod === "debit"
+                          ? "bg-[#fcf3f4] border-[#8B263E] ring-1 ring-[#8B263E]"
+                          : "bg-[#fbf9f8] border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      {paymentMethod === "debit" && (
+                        <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#8B263E] text-white flex items-center justify-center">
+                          <Check size={9} strokeWidth={3} />
+                        </span>
+                      )}
+                      <CreditCard size={20} className="text-gray-700 mb-1" />
+                      <span className="text-[11px] font-bold text-gray-700">Debit Card</span>
+                    </button>
+
+                    {/* Net Banking */}
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("netbanking")}
+                      className={`relative p-3 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center min-h-[72px] ${
+                        paymentMethod === "netbanking"
+                          ? "bg-[#fcf3f4] border-[#8B263E] ring-1 ring-[#8B263E]"
+                          : "bg-[#fbf9f8] border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      {paymentMethod === "netbanking" && (
+                        <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-[#8B263E] text-white flex items-center justify-center">
+                          <Check size={9} strokeWidth={3} />
+                        </span>
+                      )}
+                      <Landmark size={20} className="text-gray-700 mb-1" />
+                      <span className="text-[11px] font-bold text-gray-700">Net Banking</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── Terms & Conditions Checkbox ── */}
+                <div className="pt-1">
+                  <label className="flex items-center gap-2.5 cursor-pointer text-xs text-gray-700 select-none">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="w-4 h-4 rounded text-[#8B263E] accent-[#8B263E] border-gray-300 focus:ring-[#8B263E] cursor-pointer"
+                    />
+                    <span>
+                      I agree to the{" "}
+                      <a href="#" className="font-semibold text-gray-900 underline underline-offset-2 hover:text-[#8B263E]">
+                        Terms &amp; Conditions
+                      </a>{" "}
+                      and{" "}
+                      <a href="#" className="font-semibold text-gray-900 underline underline-offset-2 hover:text-[#8B263E]">
+                        Privacy Policy
+                      </a>
+                    </span>
+                  </label>
+                </div>
+
+                {/* ── Submit Button ── */}
+                <button
+                  type="submit"
+                  disabled={!agreedToTerms}
+                  className="w-full bg-[#8B263E] hover:bg-[#761c31] active:scale-[0.99] text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg shadow-[#8B263E]/25 transition-all flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ShieldCheck size={18} className="text-white fill-white/20" />
+                  <span>Proceed to Pay ₹{customAmount || amount || "1000"}</span>
+                  <ArrowRight size={16} className="text-white" />
+                </button>
+
+                {/* ── Footer Heart Line ── */}
+                <div className="text-center pt-1 pb-1">
+                  <div className="flex items-center justify-center gap-2.5 mb-1">
+                    <div className="h-[1px] w-12 bg-gray-200" />
+                    <span className="text-[#8B263E] text-xs">♥</span>
+                    <div className="h-[1px] w-12 bg-gray-200" />
+                  </div>
+                  <p className="text-[11px] text-gray-400 font-medium">
+                    Together we can make a difference ♡
+                  </p>
+                </div>
               </form>
             )}
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,7 +9,7 @@ import {
   BookOpen, UserPlus, Heart, GraduationCap, FolderOpen,
   Tv, Sparkles, Building, Award,
   Lightbulb, Send, Facebook, Linkedin, Twitter,
-  Instagram, Youtube, Wrench
+  Instagram, Youtube, CheckCircle2
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import "@/app/dashboard.css";
@@ -17,7 +17,7 @@ import "@/app/dashboard.css";
 /* ─── Data ─── */
 const DEPT_STATS = [
   { icon: <Users size={20} />, value: "4,112+", label: "Alumni" },
-  { icon: <Briefcase size={20} />, value: "950+", label: "Jobs Posted" },
+  { icon: <Briefcase size={20} />, value: "980+", label: "Jobs Posted" },
   { icon: <CalendarDays size={20} />, value: "70+", label: "Events Organized" },
 ];
 
@@ -25,163 +25,170 @@ const FEATURES = [
   {
     icon: <Users size={22} />,
     title: "Alumni Directory",
-    desc: "Connect with mechanical engineers and plant leads worldwide."
+    desc: "Find and connect with fellow mechanical alumni worldwide."
   },
   {
     icon: <GraduationCap size={22} />,
     title: "Mentorship Program",
-    desc: "Get guidance from CAD/CAM, robotics, and industrial experts."
+    desc: "Get guidance from experienced mechanical engineers and industry experts."
   },
   {
     icon: <Briefcase size={22} />,
     title: "Jobs & Internships",
-    desc: "Exclusive roles at Tata Motors, Tesla, Siemens, L&T, & Bosch."
+    desc: "Exclusive job and internship opportunities for mechanical alumni."
   },
   {
     icon: <FolderOpen size={22} />,
-    title: "CAD & Technical Hub",
-    desc: "Access blueprints, technical papers, and simulation software."
+    title: "Resources Hub",
+    desc: "Access notes, CAD resources and manufacturing materials."
   },
   {
     icon: <Tv size={22} />,
-    title: "Tech Talks & Expos",
-    desc: "Join robotics workshops, automotive webinars, & summits."
+    title: "Tech Talks",
+    desc: "Join expert sessions on manufacturing and emerging technologies."
   },
   {
     icon: <Heart size={22} />,
     title: "Give Back",
-    desc: "Sponsor Formula Student teams, EV prototypes, and lab tools."
+    desc: "Support students, projects and the next generation."
   },
 ];
 
 const EVENTS = [
   {
-    day: "25",
-    month: "JUN",
-    title: "National Automobile & EV Expo 2026",
+    day: "18",
+    month: "JUL",
+    title: "Mechanical Alumni Global Meet 2026",
     time: "10:00 AM",
-    location: "Mechanical Pavilion",
-    desc: "Explore cutting-edge EV prototypes and automotive innovations built by alumni & students.",
+    location: "Online",
+    desc: "Join mechanical alumni from across the world for an inspiring virtual meet.",
     img: "/campus-building.png"
   },
   {
-    day: "10",
-    month: "JUL",
-    title: "Robotics & Automation Masterclass",
+    day: "02",
+    month: "AUG",
+    title: "Manufacturing Innovation Webinar",
     time: "04:00 PM",
     location: "Online",
-    desc: "Learn industrial robotics, PLC programming, and mechatronics automation trends.",
+    desc: "Learn from industry experts about modern manufacturing and automation trends.",
     img: "/campus-building.png"
   },
   {
-    day: "18",
-    month: "AUG",
-    title: "CAD/CAM 3D Modeling Challenge",
+    day: "15",
+    month: "SEP",
+    title: "Mechanical Engineers Meetup",
     time: "11:00 AM",
-    location: "CAD/CAM Lab",
-    desc: "An intensive design hackathon using SolidWorks, ANSYS, and AutoCAD.",
+    location: "Tolani Campus",
+    desc: "A meetup for mechanical engineers to collaborate and innovate together.",
     img: "/campus-building.png"
   },
   {
-    day: "30",
-    month: "AUG",
-    title: "Industrial Leadership Summit",
+    day: "28",
+    month: "OCT",
+    title: "Alumni Leadership Talk",
     time: "02:00 PM",
     location: "Tolani Auditorium",
-    desc: "Keynote talks with accomplished alumni leading manufacturing & plant operations.",
+    desc: "An interactive session with accomplished mechanical engineering alumni leaders.",
     img: "/campus-building.png"
   },
 ];
 
 const BY_THE_NUMBERS = [
-  { label: "Established", value: "1993", icon: <Building size={16} /> },
-  { label: "Programs Offered", value: "Diploma in Mechanical", icon: <BookOpen size={16} /> },
-  { label: "Faculty Strength", value: "20+", icon: <Users size={16} /> },
-  { label: "Labs", value: "10+ Engineering Labs", icon: <Award size={16} /> },
-  { label: "Research Projects", value: "35+", icon: <Lightbulb size={16} /> },
+  { label: "Established", value: "1986", icon: <Building size={16} /> },
+  { label: "Programs Offered", value: "Diploma, B.Tech", icon: <BookOpen size={16} /> },
+  { label: "Faculty Strength", value: "22+", icon: <Users size={16} /> },
+  { label: "Labs", value: "9+ Manufacturing Labs", icon: <Award size={16} /> },
+  { label: "Research Projects", value: "9+", icon: <Lightbulb size={16} /> },
   { label: "Student Strength", value: "450+", icon: <GraduationCap size={16} /> },
 ];
 
 const SPOTLIGHT = [
   {
-    name: "Rajesh Varma",
-    role: "Mechanical Design Lead",
+    name: "Rahul Gupta",
+    role: "Design Engineer",
     company: "Tata Motors",
-    batch: "Batch 2023",
-    bg: "#1e293b",
-    initials: "RV"
-  },
-  {
-    name: "Sneha Kulkarni",
-    role: "Robotics Engineer",
-    company: "Tesla",
-    batch: "Batch 2024",
-    bg: "#9B2335",
-    initials: "SK"
-  },
-  {
-    name: "Aniket Shah",
-    role: "Plant Operations Lead",
-    company: "Siemens",
     batch: "Batch 2022",
+    bg: "#1e293b",
+    initials: "RG"
+  },
+  {
+    name: "Pooja Nair",
+    role: "Manufacturing Engineer",
+    company: "Bosch India",
+    batch: "Batch 2023",
+    bg: "#9B2335",
+    initials: "PN"
+  },
+  {
+    name: "Aditya Singh",
+    role: "Production Engineer",
+    company: "Mahindra & Mahindra",
+    batch: "Batch 2021",
     bg: "#0f766e",
     initials: "AS"
   },
   {
-    name: "Vikram Patel",
-    role: "Automotive Engineer",
-    company: "Mahindra",
-    batch: "Batch 2025",
+    name: "Kavya Reddy",
+    role: "Quality Engineer",
+    company: "Maruti Suzuki",
+    batch: "Batch 2020",
     bg: "#6b21a8",
-    initials: "VP"
+    initials: "KR"
   },
   {
-    name: "Pooja Joshi",
-    role: "Aerospace Analyst",
-    company: "L&T Heavy Engineering",
-    batch: "Batch 2021",
+    name: "Nikhil Thakur",
+    role: "R&D Engineer",
+    company: "ISRO",
+    batch: "Batch 2024",
     bg: "#b45309",
-    initials: "PJ"
+    initials: "NT"
   },
 ];
 
 const INITIATIVES = [
   {
-    icon: <Wrench size={22} />,
-    title: "Prototyping Grant",
-    desc: "Funding student mechanical & EV buggy projects."
+    icon: <GraduationCap size={22} />,
+    title: "Student Mentorship",
+    desc: "One-on-one guidance for mechanical engineering students."
   },
   {
     icon: <Lightbulb size={22} />,
-    title: "CAD Certification",
-    desc: "Free SolidWorks & ANSYS software masterclasses."
+    title: "Design Innovation",
+    desc: "Encouraging creative engineering and product design."
   },
   {
     icon: <Building size={22} />,
-    title: "Plant Exposure Visits",
-    desc: "Guided tours of automated manufacturing units."
+    title: "Industry Collaborations",
+    desc: "Building bridges with manufacturing industry leaders."
   },
   {
     icon: <Trophy size={22} />,
-    title: "Formula Student Backing",
-    desc: "Sponsoring student racing and EV chassis builds."
+    title: "Scholarships",
+    desc: "Supporting bright future mechanical engineers."
   },
   {
     icon: <Heart size={22} />,
     title: "Community Outreach",
-    desc: "Safety workshops and technical skill sharing."
+    desc: "Giving back through engineering and skills training."
   },
 ];
 
 const GALLERY = [
-  { label: "CAD/CAM Design Workshop", bg: "#1e293b" },
-  { label: "Robotics & Automation Lab", bg: "#9B2335" },
-  { label: "Engine Overhaul & Testing", bg: "#0f766e" },
-  { label: "Industrial Manufacturing Visit", bg: "#3b0764" },
-  { label: "Department Graduation 2026", bg: "#451a03" },
+  { label: "CNC & CAD Lab", bg: "#1e293b" },
+  { label: "Annual Mechanical Symposium", bg: "#9B2335" },
+  { label: "Industrial Visit 2026", bg: "#0f766e" },
+  { label: "Alumni Guest Lecture", bg: "#3b0764" },
+  { label: "Department Graduation", bg: "#451a03" },
 ];
 
 export default function MechanicalDepartmentPage() {
+  const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
+  
+  useEffect(() => {
+    setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
+  }, []);
+  const [spotlightIdx, setSpotlightIdx] = useState(0);
+
   return (
     <div className="dashboard-body min-h-screen" style={{ overflowY: "auto", overflowX: "hidden", background: "#fcfafb" }}>
 
@@ -194,37 +201,32 @@ export default function MechanicalDepartmentPage() {
 
           {/* Left Text & Actions */}
           <div className="lg:col-span-7 space-y-5">
-            {/* Department Tag */}
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase" style={{ background: "#fef0f2", color: "#9B2335", border: "1px solid #f8d7db" }}>
               MECHANICAL DEPARTMENT
             </div>
 
-            {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-extrabold text-gray-900 tracking-tight leading-[1.12]">
-              Design, Build &amp;<br />
-              Engineered For <span style={{ color: "#9B2335" }}>Motion</span>
+              Engineer Today For<br />
+              Tomorrow&apos;s <span style={{ color: "#9B2335" }}>Innovation</span>
             </h1>
 
-            {/* Description */}
             <p className="text-sm sm:text-base text-gray-600 font-medium max-w-xl leading-relaxed">
-              Uniting mechanical innovators, robotics pioneers and manufacturing leaders. The Mechanical Department alumni community drives industrial excellence and shapes the future of motion.
+              Uniting designers, manufacturers and innovators. The Mechanical Department alumni community empowers engineering leaders and drives industrial growth.
             </p>
 
-            {/* Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link href="/login" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
-                Connect with Alumni <Users size={16} />
+              <Link href="/invite?dept=Mechanical+Engineering" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
+                Register for Alumni <Users size={16} />
               </Link>
               <a
-                href="#events"
+                href="#spotlight"
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold rounded-xl border bg-white transition-all hover:bg-gray-50"
                 style={{ borderColor: "#9B2335", color: "#9B2335" }}
               >
-                Explore Opportunities <ChevronRight size={16} />
+                Connect with Members <ChevronRight size={16} />
               </a>
             </div>
 
-            {/* Stats Metric Bar */}
             <div className="pt-6 border-t border-gray-200/60 flex flex-wrap gap-6">
               {DEPT_STATS.map((s, i) => (
                 <div key={i} className="flex items-center gap-2.5">
@@ -252,7 +254,7 @@ export default function MechanicalDepartmentPage() {
               <div className="relative h-[320px] sm:h-[380px] w-full">
                 <Image
                   src="/campus-building.png"
-                  alt="Mechanical Engineering Lab"
+                  alt="Mechanical Engineering"
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority
@@ -261,21 +263,20 @@ export default function MechanicalDepartmentPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
               </div>
 
-              {/* Floating Overlay Badge */}
               <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-gray-100 max-w-[240px]">
                 <div className="text-xs font-extrabold text-gray-900 mb-0.5">Stay Connected</div>
-                <div className="text-[11px] text-gray-500 font-medium mb-2.5">4,112+ Mechanical Engineers Network.</div>
+                <div className="text-[11px] text-gray-500 font-medium mb-2.5">One network. Infinite possibilities.</div>
 
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2 overflow-hidden">
                     {["#9B2335", "#2563eb", "#059669", "#7c3aed", "#d97706"].map((bg, idx) => (
                       <div key={idx} className="inline-block h-6 w-6 rounded-full ring-2 ring-white text-[9px] font-bold text-white flex items-center justify-center" style={{ background: bg }}>
-                        {String.fromCharCode(77 + idx)}
+                        {String.fromCharCode(65 + idx)}
                       </div>
                     ))}
                   </div>
                   <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-50 text-[#9B2335] border border-red-100">
-                    +4.1K
+                    +2.0K
                   </span>
                 </div>
               </div>
@@ -289,10 +290,10 @@ export default function MechanicalDepartmentPage() {
       <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="mb-10">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            What's in it for You?
+            What&apos;s in it for You?
           </h2>
           <p className="text-sm text-gray-500 font-medium mt-1">
-            Tools, guidance and network designed for mechanical &amp; robotics engineers.
+            Everything you need to grow, give back and stay inspired.
           </p>
         </div>
 
@@ -335,49 +336,50 @@ export default function MechanicalDepartmentPage() {
                 Department Impact
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Empowering mechanical engineers to design the future.
+                Empowering innovators and driving industrial excellence.
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+
               <div className="md:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <GraduationCap size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Strong Mechanics Foundation</span>
+                  <span className="text-xs font-bold leading-snug">Strong Engineering Foundation</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Building size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">CAD/CAM &amp; Robotics Curriculum</span>
+                  <span className="text-xs font-bold leading-snug">Industry Oriented Curriculum</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Tv size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Modern CNC &amp; IC Engine Labs</span>
+                  <span className="text-xs font-bold leading-snug">Modern Labs &amp; Infrastructure</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Lightbulb size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Automobile &amp; EV Research</span>
+                  <span className="text-xs font-bold leading-snug">Innovation &amp; Research Driven</span>
                 </div>
               </div>
 
               <div className="md:col-span-3 flex md:flex-col justify-around gap-4 border-y md:border-y-0 md:border-x border-white/20 py-4 md:py-0 md:px-6">
                 <div>
-                  <div className="text-3xl font-extrabold text-white">20+</div>
+                  <div className="text-3xl font-extrabold text-white">22+</div>
                   <div className="text-xs text-white/80 font-medium">Expert Faculty</div>
                 </div>
                 <div>
-                  <div className="text-3xl font-extrabold text-white">10+</div>
-                  <div className="text-xs text-white/80 font-medium">Advanced Labs</div>
+                  <div className="text-3xl font-extrabold text-white">9+</div>
+                  <div className="text-xs text-white/80 font-medium">Manufacturing Labs</div>
                 </div>
                 <div>
                   <div className="text-3xl font-extrabold text-white">450+</div>
@@ -391,9 +393,10 @@ export default function MechanicalDepartmentPage() {
                     <Sparkles size={24} className="text-white" />
                   </div>
                   <div className="text-sm font-extrabold text-white mb-1">State-of-the-Art Labs</div>
-                  <div className="text-[11px] text-white/70">Robotics, CNC Machining, Thermal Systems &amp; 3D Prototyping.</div>
+                  <div className="text-[11px] text-white/70">CNC, CAD/CAM &amp; Thermal Engineering Workstations.</div>
                 </div>
               </div>
+
             </div>
           </div>
 
@@ -404,7 +407,6 @@ export default function MechanicalDepartmentPage() {
       <section id="events" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* Left 8 Cols: Upcoming Events */}
           <div className="lg:col-span-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-extrabold text-gray-900">Upcoming Events</h2>
@@ -436,13 +438,18 @@ export default function MechanicalDepartmentPage() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
-                      style={{ borderColor: "#9B2335", color: "#9B2335" }}
-                    >
-                      Register Now <ChevronRight size={12} />
-                    </a>
+                    {registeredEvents.includes(ev.title) ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl text-green-700 bg-green-50 border border-green-200">
+                        <CheckCircle2 size={12} /> Registered
+                      </span>
+                    ) : (
+                      <a
+                        href={`/events/register?event=${encodeURIComponent(ev.title)}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border border-[#9B2335] text-[#9B2335] transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
+                      >
+                        Register Now <ChevronRight size={12} />
+                      </a>
+                    )}
                     <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 hidden sm:block">
                       <Image src={ev.img} alt={ev.title} fill className="object-cover" unoptimized />
                     </div>
@@ -452,8 +459,8 @@ export default function MechanicalDepartmentPage() {
             </div>
           </div>
 
-          {/* Right 4 Cols: By the Numbers & Expand Network */}
           <div className="lg:col-span-4 space-y-6">
+
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs">
               <h3 className="text-base font-extrabold text-gray-900 mb-4 pb-3 border-b border-gray-100">
                 By the Numbers
@@ -475,23 +482,24 @@ export default function MechanicalDepartmentPage() {
             <div className="rounded-2xl p-6 text-white relative overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #9B2335 0%, #701422 100%)" }}>
               <h4 className="text-base font-extrabold mb-1">Expand Your Network</h4>
               <p className="text-xs text-white/80 leading-relaxed font-medium mb-4">
-                Connect with fellow mechanical engineers across top industrial firms.
+                Connect, collaborate and create meaningful impact together.
               </p>
-              <Link href="/login" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
+              <Link href="/invite?dept=Mechanical+Engineering" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
                 Join Alumni Network <ChevronRight size={14} />
               </Link>
             </div>
+
           </div>
 
         </div>
       </section>
 
       {/* ── Section: Alumni Members Spotlight ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section id="spotlight" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900">Alumni Members Spotlight</h2>
-            <p className="text-xs text-gray-500 font-medium">Accomplished leaders in robotics, CAD/CAM and plant operations.</p>
+            <p className="text-xs text-gray-500 font-medium">Accomplished leaders and engineering pioneers from Mechanical Department.</p>
           </div>
 
           <Link
@@ -530,7 +538,7 @@ export default function MechanicalDepartmentPage() {
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs">
           <div className="mb-6">
             <h2 className="text-xl font-extrabold text-gray-900">Our Initiatives</h2>
-            <p className="text-xs text-gray-500 font-medium">Empowering the next generation of mechanical &amp; robotics engineers.</p>
+            <p className="text-xs text-gray-500 font-medium">Empowering the next generation of mechanical engineers.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -583,10 +591,13 @@ export default function MechanicalDepartmentPage() {
               <p className="text-sm text-gray-500 font-medium">Reconnect. Collaborate. Grow Together.</p>
             </div>
           </div>
-          <Link href="/invite" className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold">
+          <button
+            type="button"
+            className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold cursor-pointer"
+          >
             <UserPlus size={16} />
             Invite Alumni
-          </Link>
+          </button>
         </div>
       </section>
 

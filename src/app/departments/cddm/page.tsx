@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,7 +9,7 @@ import {
   BookOpen, UserPlus, Heart, GraduationCap, FolderOpen,
   Tv, Sparkles, Building, Award,
   Lightbulb, Send, Facebook, Linkedin, Twitter,
-  Instagram, Youtube, Scissors, Sparkle
+  Instagram, Youtube, CheckCircle2
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import "@/app/dashboard.css";
@@ -17,7 +17,7 @@ import "@/app/dashboard.css";
 /* ─── Data ─── */
 const DEPT_STATS = [
   { icon: <Users size={20} />, value: "2,340+", label: "Alumni" },
-  { icon: <Briefcase size={20} />, value: "520+", label: "Jobs Posted" },
+  { icon: <Briefcase size={20} />, value: "580+", label: "Jobs Posted" },
   { icon: <CalendarDays size={20} />, value: "45+", label: "Events Organized" },
 ];
 
@@ -25,163 +25,170 @@ const FEATURES = [
   {
     icon: <Users size={22} />,
     title: "Alumni Directory",
-    desc: "Connect with fashion designers, merchandisers, and stylists worldwide."
+    desc: "Find and connect with fellow CDDM alumni worldwide."
   },
   {
     icon: <GraduationCap size={22} />,
     title: "Mentorship Program",
-    desc: "Get guidance from costume stylists, textile leads, and fashion buyers."
+    desc: "Get guidance from experienced design professionals and industry experts."
   },
   {
     icon: <Briefcase size={22} />,
     title: "Jobs & Internships",
-    desc: "Roles at Raymond, FabIndia, Arvind Mills, Zara, & Studio Trend."
+    desc: "Exclusive job and internship opportunities for CDDM alumni."
   },
   {
     icon: <FolderOpen size={22} />,
-    title: "Pattern & Styling Hub",
-    desc: "Access garment drafting patterns, swatches, and trend forecasts."
+    title: "Resources Hub",
+    desc: "Access design portfolios, tools and helpful creative resources."
   },
   {
     icon: <Tv size={22} />,
-    title: "Runway & Workshops",
-    desc: "Join annual fashion shows, eco-apparel webinars, & styling expos."
+    title: "Design Talks",
+    desc: "Join expert sessions on garment design and fashion industry trends."
   },
   {
     icon: <Heart size={22} />,
     title: "Give Back",
-    desc: "Sponsor sewing equipment, textile dye labs, and student runway shows."
+    desc: "Support students, creative projects and the next generation."
   },
 ];
 
 const EVENTS = [
   {
-    day: "25",
-    month: "JUN",
-    title: "Annual Fashion Runway Showcase 2026",
-    time: "06:00 PM",
-    location: "Tolani Main Auditorium",
-    desc: "Glamorous runway showcase featuring couture collections designed by alumni & graduating students.",
+    day: "20",
+    month: "JUL",
+    title: "CDDM Alumni Global Meet 2026",
+    time: "10:00 AM",
+    location: "Online",
+    desc: "Join CDDM alumni from across the world for an inspiring virtual meet.",
     img: "/campus-building.png"
   },
   {
     day: "10",
-    month: "JUL",
-    title: "Sustainable Apparel & Eco-Textile Conclave",
+    month: "AUG",
+    title: "Fashion Design Webinar",
     time: "04:00 PM",
     location: "Online",
-    desc: "Webinar on organic dyes, zero-waste garment construction, and sustainable fabrics.",
+    desc: "Learn from industry experts about modern fashion design and textile trends.",
     img: "/campus-building.png"
   },
   {
-    day: "18",
-    month: "AUG",
-    title: "Computerized Pattern Drafting & CAD Workshop",
+    day: "25",
+    month: "SEP",
+    title: "CDDM Design Meetup",
     time: "11:00 AM",
-    location: "CDDM CAD Studio",
-    desc: "Hands-on masterclass in digital garment creation and computerized grading.",
+    location: "Tolani Campus",
+    desc: "A creative meetup for CDDM alumni to collaborate and showcase designs.",
     img: "/campus-building.png"
   },
   {
-    day: "30",
-    month: "AUG",
-    title: "Fashion Merchandising & Retail Leadership Talk",
+    day: "15",
+    month: "NOV",
+    title: "Alumni Leadership Talk",
     time: "02:00 PM",
-    location: "CDDM Seminar Hall",
-    desc: "Interactive session with top retail buyers and fashion brand managers.",
+    location: "Tolani Auditorium",
+    desc: "An interactive session with accomplished CDDM alumni leaders.",
     img: "/campus-building.png"
   },
 ];
 
 const BY_THE_NUMBERS = [
-  { label: "Established", value: "1996", icon: <Building size={16} /> },
-  { label: "Programs Offered", value: "Diploma in CDDM", icon: <BookOpen size={16} /> },
-  { label: "Faculty Strength", value: "14+", icon: <Users size={16} /> },
-  { label: "Design Studios", value: "6+ Specialized Studios", icon: <Award size={16} /> },
-  { label: "Research Projects", value: "20+", icon: <Lightbulb size={16} /> },
+  { label: "Established", value: "2000", icon: <Building size={16} /> },
+  { label: "Programs Offered", value: "Diploma, B.Des", icon: <BookOpen size={16} /> },
+  { label: "Faculty Strength", value: "15+", icon: <Users size={16} /> },
+  { label: "Labs", value: "6+ Design Studios", icon: <Award size={16} /> },
+  { label: "Research Projects", value: "5+", icon: <Lightbulb size={16} /> },
   { label: "Student Strength", value: "280+", icon: <GraduationCap size={16} /> },
 ];
 
 const SPOTLIGHT = [
   {
-    name: "Radhika Merchant",
-    role: "Senior Fashion Designer",
-    company: "Raymond Fine Fabrics",
-    batch: "Batch 2023",
-    bg: "#1e293b",
-    initials: "RM"
-  },
-  {
-    name: "Alok Verma",
-    role: "Textile Merchandiser",
-    company: "FabIndia",
-    batch: "Batch 2024",
-    bg: "#9B2335",
-    initials: "AV"
-  },
-  {
-    name: "Kavya Trivedi",
-    role: "Costume Stylist",
-    company: "Studio Trend",
+    name: "Priya Kapoor",
+    role: "Fashion Designer",
+    company: "Myntra",
     batch: "Batch 2022",
-    bg: "#0f766e",
-    initials: "KT"
+    bg: "#1e293b",
+    initials: "PK"
   },
   {
-    name: "Mansi Shah",
-    role: "Apparel Design Lead",
-    company: "Arvind Mills",
-    batch: "Batch 2025",
-    bg: "#6b21a8",
-    initials: "MS"
+    name: "Ananya Bose",
+    role: "Textile Designer",
+    company: "Fabindia",
+    batch: "Batch 2023",
+    bg: "#9B2335",
+    initials: "AB"
   },
   {
-    name: "Nishant Saxena",
-    role: "Retail Fashion Buyer",
-    company: "Zara / Inditex",
+    name: "Simran Mehta",
+    role: "Product Designer",
+    company: "Raymond",
     batch: "Batch 2021",
+    bg: "#0f766e",
+    initials: "SM"
+  },
+  {
+    name: "Deepika Rao",
+    role: "Creative Director",
+    company: "Arvind Mills",
+    batch: "Batch 2020",
+    bg: "#6b21a8",
+    initials: "DR"
+  },
+  {
+    name: "Ishita Sharma",
+    role: "Fashion Stylist",
+    company: "Nykaa Fashion",
+    batch: "Batch 2024",
     bg: "#b45309",
-    initials: "NS"
+    initials: "IS"
   },
 ];
 
 const INITIATIVES = [
   {
-    icon: <Scissors size={22} />,
-    title: "Annual Runway Backing",
-    desc: "Sponsoring student final year couture collections."
+    icon: <GraduationCap size={22} />,
+    title: "Student Mentorship",
+    desc: "One-on-one guidance for CDDM students."
   },
   {
     icon: <Lightbulb size={22} />,
-    title: "Eco-Fabric Research",
-    desc: "Grants for natural dyeing & organic cotton research."
+    title: "Design Innovation",
+    desc: "Encouraging creative and sustainable fashion design."
   },
   {
     icon: <Building size={22} />,
-    title: "Fashion House Exposure",
-    desc: "Guided visits to garment manufacturing units."
+    title: "Industry Collaborations",
+    desc: "Building bridges with fashion and textile industry leaders."
   },
   {
     icon: <Trophy size={22} />,
-    title: "Apparel Styling Awards",
-    desc: "Recognizing innovative drape & garment designs."
+    title: "Scholarships",
+    desc: "Supporting bright future designers and creators."
   },
   {
     icon: <Heart size={22} />,
-    title: "Community Crafts Outreach",
-    desc: "Empowering local textile artisans & weavers."
+    title: "Community Outreach",
+    desc: "Giving back through design and creative skills training."
   },
 ];
 
 const GALLERY = [
-  { label: "Annual Fashion Show Runway Showcase", bg: "#1e293b" },
-  { label: "Eco-Textile Dyeing & Block Printing", bg: "#9B2335" },
-  { label: "Computerized Pattern Drafting Studio", bg: "#0f766e" },
-  { label: "Apparel Portfolio & Design Exhibition", bg: "#3b0764" },
-  { label: "Department Graduation 2026", bg: "#451a03" },
+  { label: "Annual Fashion Show", bg: "#1e293b" },
+  { label: "Design Exhibition 2026", bg: "#9B2335" },
+  { label: "Industry Visit", bg: "#0f766e" },
+  { label: "Alumni Guest Lecture", bg: "#3b0764" },
+  { label: "Department Graduation", bg: "#451a03" },
 ];
 
 export default function CDDMDepartmentPage() {
+  const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
+  
+  useEffect(() => {
+    setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
+  }, []);
+  const [spotlightIdx, setSpotlightIdx] = useState(0);
+
   return (
     <div className="dashboard-body min-h-screen" style={{ overflowY: "auto", overflowX: "hidden", background: "#fcfafb" }}>
 
@@ -194,37 +201,32 @@ export default function CDDMDepartmentPage() {
 
           {/* Left Text & Actions */}
           <div className="lg:col-span-7 space-y-5">
-            {/* Department Tag */}
             <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase" style={{ background: "#fef0f2", color: "#9B2335", border: "1px solid #f8d7db" }}>
               CDDM DEPARTMENT
             </div>
 
-            {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-[52px] font-extrabold text-gray-900 tracking-tight leading-[1.12]">
-              Weave Elegance,<br />
-              Craft Fashion <span style={{ color: "#9B2335" }}>Trends</span>
+              Design Today For<br />
+              Tomorrow&apos;s <span style={{ color: "#9B2335" }}>Style</span>
             </h1>
 
-            {/* Description */}
             <p className="text-sm sm:text-base text-gray-600 font-medium max-w-xl leading-relaxed">
-              Uniting costume designers, textile artists and fashion merchandisers. The CDDM Department alumni community crafts iconic styles and drives innovation in apparel technology.
+              Uniting designers, creators and fashion visionaries. The CDDM Department alumni community empowers design leaders and shapes a more creative tomorrow.
             </p>
 
-            {/* Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link href="/login" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
-                Connect with Alumni <Users size={16} />
+              <Link href="/invite?dept=CDDM" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
+                Register for Alumni <Users size={16} />
               </Link>
               <a
-                href="#events"
+                href="#spotlight"
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold rounded-xl border bg-white transition-all hover:bg-gray-50"
                 style={{ borderColor: "#9B2335", color: "#9B2335" }}
               >
-                Explore Opportunities <ChevronRight size={16} />
+                Connect with Members <ChevronRight size={16} />
               </a>
             </div>
 
-            {/* Stats Metric Bar */}
             <div className="pt-6 border-t border-gray-200/60 flex flex-wrap gap-6">
               {DEPT_STATS.map((s, i) => (
                 <div key={i} className="flex items-center gap-2.5">
@@ -252,7 +254,7 @@ export default function CDDMDepartmentPage() {
               <div className="relative h-[320px] sm:h-[380px] w-full">
                 <Image
                   src="/campus-building.png"
-                  alt="Costume Design & Fashion Studio"
+                  alt="CDDM Department"
                   fill
                   className="object-cover transition-transform duration-700 group-hover:scale-105"
                   priority
@@ -261,21 +263,20 @@ export default function CDDMDepartmentPage() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent" />
               </div>
 
-              {/* Floating Overlay Badge */}
               <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-xl border border-gray-100 max-w-[240px]">
                 <div className="text-xs font-extrabold text-gray-900 mb-0.5">Stay Connected</div>
-                <div className="text-[11px] text-gray-500 font-medium mb-2.5">2,340+ Costume &amp; Fashion Designers.</div>
+                <div className="text-[11px] text-gray-500 font-medium mb-2.5">One network. Infinite possibilities.</div>
 
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2 overflow-hidden">
                     {["#9B2335", "#2563eb", "#059669", "#7c3aed", "#d97706"].map((bg, idx) => (
                       <div key={idx} className="inline-block h-6 w-6 rounded-full ring-2 ring-white text-[9px] font-bold text-white flex items-center justify-center" style={{ background: bg }}>
-                        {String.fromCharCode(70 + idx)}
+                        {String.fromCharCode(65 + idx)}
                       </div>
                     ))}
                   </div>
                   <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-red-50 text-[#9B2335] border border-red-100">
-                    +2.3K
+                    +1.0K
                   </span>
                 </div>
               </div>
@@ -289,10 +290,10 @@ export default function CDDMDepartmentPage() {
       <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
         <div className="mb-10">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            What's in it for You?
+            What&apos;s in it for You?
           </h2>
           <p className="text-sm text-gray-500 font-medium mt-1">
-            Tools, guidance and network designed for fashion designers &amp; garment merchandisers.
+            Everything you need to grow, give back and stay inspired.
           </p>
         </div>
 
@@ -335,44 +336,45 @@ export default function CDDMDepartmentPage() {
                 Department Impact
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-                Empowering fashion artists and sustainable apparel designers.
+                Empowering designers and shaping the world of fashion.
               </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+
               <div className="md:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <GraduationCap size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Strong Garment Construction</span>
+                  <span className="text-xs font-bold leading-snug">Strong Creative Foundation</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Building size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Fashion Merchandising &amp; CAD</span>
+                  <span className="text-xs font-bold leading-snug">Industry Oriented Curriculum</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Tv size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Modern Styling Studios</span>
+                  <span className="text-xs font-bold leading-snug">Modern Design Studios</span>
                 </div>
 
                 <div className="flex items-center gap-2.5 bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10">
                   <div className="w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center shrink-0 text-white">
                     <Lightbulb size={16} />
                   </div>
-                  <span className="text-xs font-bold leading-snug">Eco-Textile &amp; Dye Research</span>
+                  <span className="text-xs font-bold leading-snug">Creative &amp; Research Driven</span>
                 </div>
               </div>
 
               <div className="md:col-span-3 flex md:flex-col justify-around gap-4 border-y md:border-y-0 md:border-x border-white/20 py-4 md:py-0 md:px-6">
                 <div>
-                  <div className="text-3xl font-extrabold text-white">14+</div>
+                  <div className="text-3xl font-extrabold text-white">15+</div>
                   <div className="text-xs text-white/80 font-medium">Expert Faculty</div>
                 </div>
                 <div>
@@ -391,9 +393,10 @@ export default function CDDMDepartmentPage() {
                     <Sparkles size={24} className="text-white" />
                   </div>
                   <div className="text-sm font-extrabold text-white mb-1">State-of-the-Art Studios</div>
-                  <div className="text-[11px] text-white/70">Fashion Styling, Textile Printing, Draping &amp; Computerized CAD.</div>
+                  <div className="text-[11px] text-white/70">Garment Construction, CAD Fashion &amp; Textile Design Studios.</div>
                 </div>
               </div>
+
             </div>
           </div>
 
@@ -404,7 +407,6 @@ export default function CDDMDepartmentPage() {
       <section id="events" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-          {/* Left 8 Cols: Upcoming Events */}
           <div className="lg:col-span-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-extrabold text-gray-900">Upcoming Events</h2>
@@ -436,13 +438,18 @@ export default function CDDMDepartmentPage() {
                   </div>
 
                   <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
-                    <a
-                      href="#"
-                      className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
-                      style={{ borderColor: "#9B2335", color: "#9B2335" }}
-                    >
-                      Register Now <ChevronRight size={12} />
-                    </a>
+                    {registeredEvents.includes(ev.title) ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl text-green-700 bg-green-50 border border-green-200">
+                        <CheckCircle2 size={12} /> Registered
+                      </span>
+                    ) : (
+                      <a
+                        href={`/events/register?event=${encodeURIComponent(ev.title)}`}
+                        className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border border-[#9B2335] text-[#9B2335] transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
+                      >
+                        Register Now <ChevronRight size={12} />
+                      </a>
+                    )}
                     <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 hidden sm:block">
                       <Image src={ev.img} alt={ev.title} fill className="object-cover" unoptimized />
                     </div>
@@ -452,8 +459,8 @@ export default function CDDMDepartmentPage() {
             </div>
           </div>
 
-          {/* Right 4 Cols: By the Numbers & Expand Network */}
           <div className="lg:col-span-4 space-y-6">
+
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs">
               <h3 className="text-base font-extrabold text-gray-900 mb-4 pb-3 border-b border-gray-100">
                 By the Numbers
@@ -475,23 +482,24 @@ export default function CDDMDepartmentPage() {
             <div className="rounded-2xl p-6 text-white relative overflow-hidden shadow-lg" style={{ background: "linear-gradient(135deg, #9B2335 0%, #701422 100%)" }}>
               <h4 className="text-base font-extrabold mb-1">Expand Your Network</h4>
               <p className="text-xs text-white/80 leading-relaxed font-medium mb-4">
-                Connect with fashion designers across top apparel houses &amp; retail brands.
+                Connect, collaborate and create meaningful impact together.
               </p>
-              <Link href="/login" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
+              <Link href="/invite?dept=CDDM" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#9B2335] text-xs font-extrabold shadow-sm hover:bg-gray-100 transition-all">
                 Join Alumni Network <ChevronRight size={14} />
               </Link>
             </div>
+
           </div>
 
         </div>
       </section>
 
       {/* ── Section: Alumni Members Spotlight ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section id="spotlight" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900">Alumni Members Spotlight</h2>
-            <p className="text-xs text-gray-500 font-medium">Accomplished fashion designers, costume stylists, and retail buyers.</p>
+            <p className="text-xs text-gray-500 font-medium">Accomplished leaders and design pioneers from CDDM Department.</p>
           </div>
 
           <Link
@@ -530,7 +538,7 @@ export default function CDDMDepartmentPage() {
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-xs">
           <div className="mb-6">
             <h2 className="text-xl font-extrabold text-gray-900">Our Initiatives</h2>
-            <p className="text-xs text-gray-500 font-medium">Empowering the next generation of fashion &amp; costume designers.</p>
+            <p className="text-xs text-gray-500 font-medium">Empowering the next generation of design professionals.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
@@ -583,10 +591,13 @@ export default function CDDMDepartmentPage() {
               <p className="text-sm text-gray-500 font-medium">Reconnect. Collaborate. Grow Together.</p>
             </div>
           </div>
-          <Link href="/invite" className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold">
+          <button
+            type="button"
+            className="btn-maroon flex items-center gap-2 px-5 py-3 text-sm shrink-0 font-bold cursor-pointer"
+          >
             <UserPlus size={16} />
             Invite Alumni
-          </Link>
+          </button>
         </div>
       </section>
 

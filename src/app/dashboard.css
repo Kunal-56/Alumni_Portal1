@@ -156,15 +156,52 @@
   padding-top: 24px;
   min-height: 340px;
   flex-shrink: 0;
+  text-decoration: none !important;
+  color: inherit !important;
 }
 .dept-card:hover {
   border-color: #9B2335;
   box-shadow: 0 12px 32px rgba(155, 35, 53, 0.18);
   transform: translateY(-4px);
+  text-decoration: none !important;
+  color: inherit !important;
 }
 .dept-card.active {
   border-color: #9B2335;
   box-shadow: 0 8px 24px rgba(155, 35, 53, 0.12);
+}
+
+/* Department Explore Button */
+.dept-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #9B2335;
+  color: #9B2335;
+  background-color: transparent;
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.dept-card:hover .dept-btn,
+.dept-btn:hover,
+.dept-btn:focus,
+.dept-btn:active {
+  background-color: #9B2335 !important;
+  color: #ffffff !important;
+  border-color: #9B2335 !important;
+}
+
+.dept-card:hover .dept-btn svg,
+.dept-btn:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
 }
 
 /* ── Event Cards ── */

@@ -96,12 +96,12 @@ export default function MemberProfilePage() {
           <ArrowLeft size={16} /> Back to Members
         </Link>
 
-        <Link
-          href="/invite"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B2335] bg-rose-50 hover:bg-rose-100 px-3.5 py-1.5 rounded-xl transition-colors"
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-[#9B2335] bg-rose-50 hover:bg-rose-100 px-3.5 py-1.5 rounded-xl transition-colors cursor-pointer"
         >
           <UserPlus size={14} /> Invite New Alumni
-        </Link>
+        </button>
       </div>
 
       {/* ── Profile Card ── */}
