@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -45,10 +45,29 @@ export default function MemberProfilePage() {
   const params = useParams();
   const id = Number(params?.id);
   const { members, isLoaded } = useAlumniMembers();
+  const [dbMember, setDbMember] = useState<any>(null);
+  const [loadingDirect, setLoadingDirect] = useState(false);
 
-  const member = members.find((m) => m.id === id);
+  const foundInStore = members.find((m) => m.id === id);
 
-  if (!isLoaded) {
+  useEffect(() => {
+    if (!foundInStore && id) {
+      setLoadingDirect(true);
+      fetch(`/api/alumni/${id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.member) {
+            setDbMember(data.member);
+          }
+        })
+        .catch((err) => console.error("Error fetching single member from DB:", err))
+        .finally(() => setLoadingDirect(false));
+    }
+  }, [foundInStore, id]);
+
+  const member = foundInStore || dbMember;
+
+  if (!isLoaded || (loadingDirect && !member)) {
     return (
       <div className="dashboard-body min-h-screen flex items-center justify-center" style={{ background: "#faf8f8" }}>
         <div className="flex flex-col items-center gap-3">
@@ -231,7 +250,7 @@ export default function MemberProfilePage() {
                     <Globe size={15} style={{ color: "#9B2335" }} /> Skills
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    {skillsList.map((s, i) => (
+                    {skillsList.map((s: string, i: number) => (
                       <span
                         key={i}
                         className="px-3 py-1 rounded-full text-xs font-bold shadow-sm"
@@ -249,7 +268,7 @@ export default function MemberProfilePage() {
                     <Award size={15} style={{ color: "#9B2335" }} /> Achievements
                   </h2>
                   <ul className="space-y-2">
-                    {achievementsList.map((a, i) => (
+                    {achievementsList.map((a: string, i: number) => (
                       <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
                         <CheckCircle2 size={14} style={{ color: "#22c55e" }} className="shrink-0" />
                         {a}

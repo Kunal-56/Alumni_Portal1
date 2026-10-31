@@ -103,31 +103,80 @@ export default function InviteAlumniPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleFinalSubmit = (e: React.FormEvent) => {
+  const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const newMemberData: Omit<Member, "id"> = {
+    setErrors({});
+
+    const memberEmail = verificationMethod === "email" ? (verificationEmail.trim() || email.trim()) : email.trim();
+    const payload = {
       name: fullName.trim(),
-      email: verificationMethod === "email" ? (verificationEmail.trim() || email.trim()) : email.trim(),
+      email: memberEmail,
       phone: `+91 ${phoneNumber}`.trim(),
-      dob, gender,
+      dob: dob || undefined,
+      gender: gender || undefined,
       location: currentLocation.trim(),
-      linkedin: linkedin.trim() || `https://linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, "-")}`,
+      linkedin_url: linkedin.trim() || `https://linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, "-")}`,
       bio: shortBio.trim() || bioAchievements.trim(),
-      degree, dept, year: batchYear,
-      institute: institute.trim() || "Tolani F. & Polytechnic",
-      company: company.trim(), role: jobTitle.trim(),
-      experience: experience || "1",
+      degree,
+      department: dept,
+      graduation_year: batchYear,
+      institute: institute.trim() || "Tolani F. G. Polytechnic",
+      company: company.trim(),
+      role: jobTitle.trim(),
+      experience_years: parseInt(experience, 10) || 1,
       skills: skills.length > 0 ? skills : ["Engineering"],
       achievements: ["Tolani Verified Alumni", bioAchievements.trim() || `${jobTitle} at ${company}`],
-      verified: true, verificationMethod, avatar: "/avatars/m1.jpg",
+      verified: true,
+      verification_method: verificationMethod,
+      avatar_url: "/avatars/m1.jpg",
     };
-    setTimeout(() => {
-      const created = addMember(newMemberData);
-      setCreatedMember(created);
-      setIsSubmitting(false);
+
+    try {
+      // Direct PostgreSQL Database insertion via REST API
+      const res = await fetch("/api/alumni", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || "Failed to store alumni member in PostgreSQL database");
+      }
+
+      const dbMember: Member = {
+        id: json.member.id,
+        name: json.member.name,
+        email: json.member.email,
+        phone: json.member.phone,
+        degree: json.member.degree,
+        year: json.member.graduation_year,
+        dept: json.department?.short_name || json.department?.name || dept,
+        company: json.member.company,
+        role: json.member.role,
+        location: json.member.location,
+        linkedin: json.member.linkedin_url,
+        bio: json.member.bio,
+        skills: json.member.skills || [],
+        achievements: json.member.achievements || [],
+        verified: json.member.verified,
+        experience: json.member.experience_years ? String(json.member.experience_years) : "1",
+        institute: json.member.institute,
+      };
+
+      // Sync into verified cache and dispatch event for immediate UI update
+      addMember(dbMember);
+      setCreatedMember(dbMember);
       setIsSuccessModalOpen(true);
-    }, 800);
+    } catch (err: any) {
+      console.error("Error submitting alumni member to database:", err);
+      setErrors({
+        submit: err.message || "Failed to register alumni member in database. Please verify your details.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   /* ─── Input helper ─── */
@@ -478,6 +527,14 @@ export default function InviteAlumniPage() {
                   <p className="text-xs text-gray-600 leading-relaxed">Verification helps us ensure authentic alumni community and prevents fake profiles.</p>
                 </div>
               </div>
+
+              {/* Error Banner */}
+              {errors.submit && (
+                <div className="mt-4 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+                  <AlertCircle size={16} className="shrink-0 text-red-600" />
+                  <span>{errors.submit}</span>
+                </div>
+              )}
             </div>
 
             {/* Bottom */}

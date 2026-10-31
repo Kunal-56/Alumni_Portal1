@@ -9,9 +9,10 @@ import {
   BookOpen, UserPlus, Heart, GraduationCap, FolderOpen,
   Tv, Sparkles, Building, Award,
   Lightbulb, Send, Facebook, Linkedin, Twitter,
-  Instagram, Youtube, CheckCircle2
+  Instagram, Youtube, CheckCircle2, Database, RefreshCw
 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { AddAlumniModal } from "@/components/AddAlumniModal";
 import "@/app/dashboard.css";
 
 /* ─── Data ─── */
@@ -183,10 +184,32 @@ const GALLERY = [
 
 export default function ComputerDepartmentPage() {
   const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
-  
+  const [dbData, setDbData] = useState<any>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [loadingDb, setLoadingDb] = useState(true);
+
+  const fetchDepartmentData = async () => {
+    try {
+      setLoadingDb(true);
+      const res = await fetch("/api/departments/computer");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.department) {
+          setDbData(json.department);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch department API data", err);
+    } finally {
+      setLoadingDb(false);
+    }
+  };
+
   useEffect(() => {
     setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
+    fetchDepartmentData();
   }, []);
+
   const [spotlightIdx, setSpotlightIdx] = useState(0);
 
   const prevSpotlight = () => {
@@ -197,13 +220,15 @@ export default function ComputerDepartmentPage() {
     setSpotlightIdx(i => (i + 1) % SPOTLIGHT.length);
   };
 
+  const spotlightMembers = SPOTLIGHT;
+
+  const liveAlumniCount = dbData?.alumni_count ? `${dbData.alumni_count.toLocaleString()}+` : "5,248+";
+
   return (
     <div className="dashboard-body min-h-screen" style={{ overflowY: "auto", overflowX: "hidden", background: "#fcfafb" }}>
 
       {/* ── Header ── */}
       <Header activePage="departments" />
-
-
 
       {/* ── Department Hero Section ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -211,9 +236,15 @@ export default function ComputerDepartmentPage() {
 
           {/* Left Text & Actions */}
           <div className="lg:col-span-7 space-y-5">
-            {/* Department Tag */}
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase" style={{ background: "#fef0f2", color: "#9B2335", border: "1px solid #f8d7db" }}>
-              COMPUTER DEPARTMENT
+            {/* Department Tag & DB Live Status */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase" style={{ background: "#fef0f2", color: "#9B2335", border: "1px solid #f8d7db" }}>
+                COMPUTER DEPARTMENT
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                PostgreSQL API Live ({loadingDb ? "Loading..." : `${dbData?.total_registered_alumni ?? 0} in DB`})
+              </div>
             </div>
 
             {/* Headline */}
@@ -230,30 +261,46 @@ export default function ComputerDepartmentPage() {
             {/* Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link href="/invite?dept=Computer+Engineering" className="btn-maroon inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold shadow-md">
-                Register for Alumni <Users size={16} />
+                Register Form <Users size={16} />
               </Link>
-              <a
-                href="#spotlight"
+              <Link
+                href="/members"
                 className="inline-flex items-center gap-2 px-6 py-3.5 text-sm font-bold rounded-xl border bg-white transition-all hover:bg-gray-50"
                 style={{ borderColor: "#9B2335", color: "#9B2335" }}
               >
-                Connect with Members <ChevronRight size={16} />
-              </a>
+                View Members <ChevronRight size={16} />
+              </Link>
             </div>
 
             {/* Stats Metric Bar */}
             <div className="pt-6 border-t border-gray-200/60 flex flex-wrap gap-6">
-              {DEPT_STATS.map((s, i) => (
-                <div key={i} className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef0f2", color: "#9B2335" }}>
-                    {s.icon}
-                  </div>
-                  <div>
-                    <div className="text-base font-extrabold text-gray-900 leading-tight">{s.value}</div>
-                    <div className="text-[10px] text-gray-500 font-semibold">{s.label}</div>
-                  </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef0f2", color: "#9B2335" }}>
+                  <Users size={20} />
                 </div>
-              ))}
+                <div>
+                  <div className="text-base font-extrabold text-gray-900 leading-tight">{liveAlumniCount}</div>
+                  <div className="text-[10px] text-gray-500 font-semibold">Alumni Members</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef0f2", color: "#9B2335" }}>
+                  <Briefcase size={20} />
+                </div>
+                <div>
+                  <div className="text-base font-extrabold text-gray-900 leading-tight">1,250+</div>
+                  <div className="text-[10px] text-gray-500 font-semibold">Jobs Posted</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef0f2", color: "#9B2335" }}>
+                  <CalendarDays size={20} />
+                </div>
+                <div>
+                  <div className="text-base font-extrabold text-gray-900 leading-tight">85+</div>
+                  <div className="text-[10px] text-gray-500 font-semibold">Events Organized</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -542,7 +589,7 @@ export default function ComputerDepartmentPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-          {SPOTLIGHT.map((alumni, i) => (
+          {spotlightMembers.map((alumni: any, i: number) => (
             <div
               key={i}
               className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center group cursor-pointer"

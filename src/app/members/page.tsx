@@ -23,7 +23,6 @@ const LOCATIONS = [
   "Hyderabad, India", "Chennai, India", "Pune, India", "Kolkata, India"
 ];
 
-const BASE_TOTAL = 5559;
 const PER_PAGE = 8;
 
 /* ─── Avatar placeholder colors ─── */
@@ -51,7 +50,7 @@ function AvatarPlaceholder({ name, index }: { name: string; index: number }) {
 }
 
 export default function MembersPage() {
-  const { members } = useAlumniMembers();
+  const { members, loadingDb, isLoaded, refresh } = useAlumniMembers();
 
   const [search, setSearch] = useState("");
   const [year, setYear] = useState("");
@@ -66,20 +65,18 @@ export default function MembersPage() {
     const matchSearch =
       !q ||
       m.name.toLowerCase().includes(q) ||
-      m.company.toLowerCase().includes(q) ||
-      m.dept.toLowerCase().includes(q) ||
+      (m.company && m.company.toLowerCase().includes(q)) ||
+      (m.dept && m.dept.toLowerCase().includes(q)) ||
       (m.role && m.role.toLowerCase().includes(q)) ||
-      m.degree.toLowerCase().includes(q);
+      (m.degree && m.degree.toLowerCase().includes(q));
 
     const matchYear = !year || m.year === year;
     const matchDept =
       !dept ||
-      m.dept.toLowerCase().includes(dept.toLowerCase()) ||
-      dept.toLowerCase().includes(m.dept.toLowerCase());
+      (m.dept && (m.dept.toLowerCase().includes(dept.toLowerCase()) || dept.toLowerCase().includes(m.dept.toLowerCase())));
     const matchLoc =
       !location ||
-      m.location.toLowerCase().includes(location.toLowerCase()) ||
-      location.toLowerCase().includes(m.location.toLowerCase());
+      (m.location && (m.location.toLowerCase().includes(location.toLowerCase()) || location.toLowerCase().includes(m.location.toLowerCase())));
 
     return matchSearch && matchYear && matchDept && matchLoc;
   });
@@ -87,8 +84,8 @@ export default function MembersPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  // Dynamic calculated total count
-  const dynamicTotal = BASE_TOTAL + Math.max(0, members.length - 16);
+  // Real Database Members Count
+  const totalDbMembers = members.length;
 
   const handleSearch = () => setPage(1);
 
@@ -101,26 +98,32 @@ export default function MembersPage() {
       <div style={{ background: "linear-gradient(135deg, #fef0f2 0%, #fff5f5 60%, #fdf8f0 100%)" }} className="py-10 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold tracking-widest uppercase mb-1" style={{ color: "#9B2335" }}>
-              OUR ALUMNI NETWORK
-            </p>
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xs font-bold tracking-widest uppercase" style={{ color: "#9B2335" }}>
+                OUR ALUMNI NETWORK
+              </p>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                PostgreSQL Live Database
+              </span>
+            </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
               Members <span style={{ color: "#9B2335" }}>Directory</span>
             </h1>
             <p className="text-sm text-gray-500 mt-2 max-w-md">
-              Search and connect with friends, batchmates and other alumni from around the world.
+              Search and connect with friends, batchmates and other verified alumni stored in our database.
             </p>
           </div>
 
           {/* Right Action & Total Count Badge */}
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              type="button"
+            <Link
+              href="/invite"
               className="btn-maroon flex items-center gap-2 px-4 py-3 rounded-2xl text-xs sm:text-sm shadow-md hover:shadow-lg font-bold cursor-pointer"
             >
               <UserPlus size={16} />
-              Invite Alumni
-            </button>
+              Register Alumni
+            </Link>
 
             <div
               className="bg-white rounded-2xl shadow-md px-5 py-3.5 flex items-center gap-3.5 shrink-0"
@@ -131,9 +134,11 @@ export default function MembersPage() {
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-                  {dynamicTotal.toLocaleString()}
+                  {loadingDb && totalDbMembers === 0 ? "..." : totalDbMembers.toLocaleString()}
                 </div>
-                <div className="text-[11px] font-semibold text-gray-500">Total Members</div>
+                <div className="text-[11px] font-semibold text-gray-500">
+                  {totalDbMembers === 1 ? "Database Member" : "Total DB Members"}
+                </div>
               </div>
             </div>
           </div>
@@ -258,24 +263,49 @@ export default function MembersPage() {
 
       {/* ── Members Grid (8 per page) ── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pb-8">
-        {paginated.length === 0 ? (
-          <div className="text-center py-20 text-gray-400 bg-white rounded-3xl p-10 border border-gray-200/80">
-            <Users size={48} className="mx-auto mb-4 opacity-30 text-[#9B2335]" />
-            <p className="text-lg font-bold text-gray-800 mb-1">No alumni found</p>
-            <p className="text-xs text-gray-500 mb-4">Try adjusting your filters or search keywords.</p>
-            <button
-              onClick={() => {
-                setSearch("");
-                setYear("");
-                setDept("");
-                setIndustry("");
-                setLocation("");
-                setPage(1);
-              }}
-              className="px-4 py-2 text-xs font-bold text-[#9B2335] bg-rose-50 rounded-xl hover:bg-rose-100 transition-colors"
-            >
-              Clear All Filters
-            </button>
+        {loadingDb && members.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl p-10 border border-gray-200/80 shadow-sm flex flex-col items-center gap-3">
+            <div className="w-10 h-10 border-3 border-[#9B2335] border-t-transparent rounded-full animate-spin" />
+            <p className="text-sm font-bold text-gray-800">Fetching Alumni from PostgreSQL Database...</p>
+            <p className="text-xs text-gray-400">Loading live verified members directory.</p>
+          </div>
+        ) : paginated.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-3xl p-8 sm:p-12 border border-gray-200/80 shadow-sm max-w-lg mx-auto">
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-50 text-[#9B2335]">
+              <Users size={32} />
+            </div>
+            {members.length === 0 ? (
+              <>
+                <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-1.5">No Alumni in Database Yet</h3>
+                <p className="text-xs sm:text-sm text-gray-500 mb-5 leading-relaxed">
+                  There are currently 0 members stored in the PostgreSQL database. Whenever an alumni registers from any department, they will immediately appear here.
+                </p>
+                <Link
+                  href="/invite"
+                  className="btn-maroon inline-flex items-center gap-2 px-6 py-3 text-xs sm:text-sm rounded-xl font-bold shadow-md"
+                >
+                  <UserPlus size={16} /> Register First Alumnus
+                </Link>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-1">No Matching Alumni Found</h3>
+                <p className="text-xs text-gray-500 mb-4">Try adjusting your filters or search keywords.</p>
+                <button
+                  onClick={() => {
+                    setSearch("");
+                    setYear("");
+                    setDept("");
+                    setIndustry("");
+                    setLocation("");
+                    setPage(1);
+                  }}
+                  className="px-5 py-2.5 text-xs font-bold text-[#9B2335] bg-rose-50 rounded-xl hover:bg-rose-100 transition-colors"
+                >
+                  Clear All Filters
+                </button>
+              </>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">

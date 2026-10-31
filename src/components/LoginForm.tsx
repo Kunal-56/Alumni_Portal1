@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { User, Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export const LoginForm: React.FC = () => {
@@ -196,12 +197,12 @@ export const LoginForm: React.FC = () => {
       <div className="mt-3 sm:mt-4 text-center">
         <p className="text-xs sm:text-sm text-gray-500 font-medium">
           Don&apos;t have an account?{" "}
-          <a
-            href="#"
+          <Link
+            href="/register"
             className="font-bold text-alumni-maroon hover:underline transition-all"
           >
             Register Now
-          </a>
+          </Link>
         </p>
       </div>
     </div>
