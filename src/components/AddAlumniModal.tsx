@@ -110,9 +110,8 @@ export function AddAlumniModal({
             </div>
             <div>
               <h3 className="font-extrabold text-base leading-tight">Add {departmentName} Alumnus</h3>
-              <p className="text-xs text-red-100 flex items-center gap-1.5 font-medium">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
-                Direct PostgreSQL Database Storage
+              <p className="text-xs text-red-100 font-medium">
+                Tolani Alumni Network Directory
               </p>
             </div>
           </div>

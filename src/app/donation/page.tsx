@@ -207,7 +207,7 @@ export default function DonationPage() {
               <GraduationCap size={22} />
             </div>
             <div>
-              <div className="text-lg font-extrabold text-gray-900 leading-tight">120+</div>
+              <div className="text-lg font-extrabold text-gray-900 leading-tight">5+</div>
               <div className="text-[11px] text-gray-500 font-medium">Departments</div>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function DonationPage() {
               <Heart size={22} />
             </div>
             <div>
-              <div className="text-lg font-extrabold text-gray-900 leading-tight">1000+</div>
+              <div className="text-lg font-extrabold text-gray-900 leading-tight">100+</div>
               <div className="text-[11px] text-gray-500 font-medium">Donors</div>
             </div>
           </div>
@@ -315,9 +315,9 @@ export default function DonationPage() {
               Support Our <span className="underline decoration-[#9B2335] underline-offset-4">Key</span> Initiatives
             </h2>
           </div>
-          <a href="#" className="text-xs font-bold flex items-center gap-1 text-[#9B2335] hover:underline">
+          <Link href="/donation/campaigns" className="text-xs font-bold flex items-center gap-1 text-[#9B2335] hover:underline">
             View All Campaigns <ArrowRight size={14} />
-          </a>
+          </Link>
         </div>
 
         {/* 4 Cards */}
@@ -893,15 +893,15 @@ export default function DonationPage() {
                   </div>
                 </div>
 
-                {/* ── 4. Payment Method (UI only, as requested) ── */}
+                {/* ── 4. Payment Method ── */}
                 <div>
                   <div className="flex items-center gap-1.5 mb-2.5">
                     <CreditCard size={15} className="text-[#8B263E]" />
                     <h3 className="text-xs sm:text-sm font-bold text-gray-900">Payment Method</h3>
                   </div>
 
-                  {/* 4 Cards (UPI, Credit Card, Debit Card, Net Banking) */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  {/* 4 Method Selector Cards */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-4">
                     {/* UPI */}
                     <button
                       type="button"
@@ -982,6 +982,264 @@ export default function DonationPage() {
                       <span className="text-[11px] font-bold text-gray-700">Net Banking</span>
                     </button>
                   </div>
+
+                  {/* ── UPI Panel ── */}
+                  {paymentMethod === "upi" && (
+                    <div className="bg-[#fbf9f8] border border-gray-200 rounded-2xl p-5">
+                      <div className="flex flex-col sm:flex-row gap-6 items-center">
+                        {/* QR Code Block */}
+                        <div className="flex flex-col items-center shrink-0">
+                          <div className="bg-white border-2 border-[#8B263E]/20 rounded-2xl p-3 shadow-sm">
+                            <svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+                              <rect width="128" height="128" fill="white"/>
+                              <rect x="8" y="8" width="34" height="34" rx="4" fill="#8B263E"/>
+                              <rect x="14" y="14" width="22" height="22" rx="2" fill="white"/>
+                              <rect x="19" y="19" width="12" height="12" rx="1" fill="#8B263E"/>
+                              <rect x="86" y="8" width="34" height="34" rx="4" fill="#8B263E"/>
+                              <rect x="92" y="14" width="22" height="22" rx="2" fill="white"/>
+                              <rect x="97" y="19" width="12" height="12" rx="1" fill="#8B263E"/>
+                              <rect x="8" y="86" width="34" height="34" rx="4" fill="#8B263E"/>
+                              <rect x="14" y="92" width="22" height="22" rx="2" fill="white"/>
+                              <rect x="19" y="97" width="12" height="12" rx="1" fill="#8B263E"/>
+                              <rect x="50" y="8" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="60" y="8" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="70" y="8" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="50" y="18" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="70" y="18" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="60" y="28" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="8" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="18" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="28" y="60" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="8" y="70" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="18" y="70" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="50" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="62" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="74" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="86" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="98" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="110" y="50" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="50" y="62" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="74" y="62" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="98" y="62" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="50" y="74" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="62" y="74" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="86" y="74" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="110" y="74" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="50" y="86" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="74" y="86" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="62" y="98" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="86" y="98" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="98" y="98" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="110" y="98" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="50" y="110" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="74" y="110" width="6" height="6" rx="1" fill="#8B263E"/>
+                              <rect x="110" y="110" width="6" height="6" rx="1" fill="#8B263E"/>
+                            </svg>
+                          </div>
+                          <p className="text-[10px] text-gray-500 mt-2 font-medium text-center">Scan with any UPI app</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-sm" title="Google Pay">
+                              <span className="text-[#4285F4] font-black text-sm">G</span>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-[#5f259f] flex items-center justify-center shadow-sm" title="PhonePe">
+                              <span className="text-white text-[10px] font-black">Pe</span>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-[#002970] flex items-center justify-center shadow-sm" title="Paytm">
+                              <span className="text-white text-[9px] font-black">PTM</span>
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-[#00529c] flex items-center justify-center shadow-sm" title="BHIM">
+                              <span className="text-white text-[8px] font-bold">BHIM</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* OR Divider */}
+                        <div className="flex sm:flex-col items-center gap-2 text-gray-300 select-none self-stretch">
+                          <div className="flex-1 h-[1px] sm:h-auto sm:w-[1px] w-full bg-gray-200" />
+                          <span className="text-[11px] font-bold text-gray-400 shrink-0">OR</span>
+                          <div className="flex-1 h-[1px] sm:h-auto sm:w-[1px] w-full bg-gray-200" />
+                        </div>
+
+                        {/* UPI ID Input */}
+                        <div className="flex-1 w-full space-y-3">
+                          <div>
+                            <p className="text-xs font-bold text-gray-700 mb-1.5">Enter UPI ID</p>
+                            <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus-within:border-[#8B263E] focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                <span className="text-[#097939] font-black text-sm italic">/</span>
+                                <span className="text-[#ED752E] font-black text-sm italic -ml-1">/</span>
+                              </div>
+                              <input
+                                type="text"
+                                placeholder="yourname@upi"
+                                className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                              />
+                            </div>
+                            <p className="text-[10px] text-gray-400 mt-1 pl-1">e.g. 9876543210@gpay or name@paytm</p>
+                          </div>
+                          <div className="bg-[#f0fdf4] border border-green-100 rounded-xl px-3 py-2.5 flex items-start gap-2">
+                            <ShieldCheck size={14} className="text-green-600 shrink-0 mt-0.5" />
+                            <p className="text-[10px] text-green-700 font-medium leading-relaxed">
+                              100% secure. Your UPI PIN is never shared with us. Payment is processed directly via your UPI app.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Credit / Debit Card Panel ── */}
+                  {(paymentMethod === "credit" || paymentMethod === "debit") && (
+                    <div className="bg-[#fbf9f8] border border-gray-200 rounded-2xl p-5 space-y-4">
+                      {/* Card Visual Preview */}
+                      <div
+                        className="relative h-36 rounded-2xl overflow-hidden p-5 flex flex-col justify-between shadow-md select-none"
+                        style={{ background: "linear-gradient(135deg, #8B263E 0%, #4a0d1f 100%)" }}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex gap-1">
+                            <div className="w-7 h-7 rounded-full bg-white/30" />
+                            <div className="w-7 h-7 rounded-full bg-white/15 -ml-3" />
+                          </div>
+                          <span className="text-white/80 text-xs font-bold uppercase tracking-widest">
+                            {paymentMethod === "credit" ? "Credit" : "Debit"}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-white/50 text-[9px] font-medium mb-0.5 tracking-widest">CARD NUMBER</p>
+                          <p className="text-white font-mono text-sm tracking-[0.2em]">&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull;</p>
+                        </div>
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <p className="text-white/50 text-[9px] font-medium tracking-widest">CARD HOLDER</p>
+                            <p className="text-white text-xs font-bold tracking-wide">{donorForm.fullName || "YOUR NAME"}</p>
+                          </div>
+                          <div>
+                            <p className="text-white/50 text-[9px] font-medium tracking-widest">EXPIRES</p>
+                            <p className="text-white text-xs font-bold">MM / YY</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Fields */}
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus-within:border-[#8B263E] focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                          <CreditCard size={15} className="text-gray-400 shrink-0" />
+                          <input
+                            type="text"
+                            placeholder="Card Number (16 digits)"
+                            maxLength={19}
+                            className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-mono font-medium text-gray-900 tracking-widest"
+                          />
+                          <div className="flex gap-1 shrink-0">
+                            <div className="w-8 h-5 rounded bg-[#1a1f71] flex items-center justify-center"><span className="text-white text-[8px] font-black italic">VISA</span></div>
+                            <div className="w-8 h-5 rounded overflow-hidden flex shrink-0">
+                              <div className="w-1/2 bg-[#eb001b]" />
+                              <div className="w-1/2 bg-[#f79e1b]" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus-within:border-[#8B263E] focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                            <input
+                              type="text"
+                              placeholder="MM / YY"
+                              maxLength={5}
+                              className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus-within:border-[#8B263E] focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                            <input
+                              type="password"
+                              placeholder="CVV"
+                              maxLength={4}
+                              className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus-within:border-[#8B263E] focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                          <User size={15} className="text-gray-400 shrink-0" />
+                          <input
+                            type="text"
+                            placeholder="Name on Card"
+                            className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900 uppercase"
+                          />
+                        </div>
+
+                        <div className="bg-[#f0fdf4] border border-green-100 rounded-xl px-3 py-2.5 flex items-start gap-2">
+                          <ShieldCheck size={14} className="text-green-600 shrink-0 mt-0.5" />
+                          <p className="text-[10px] text-green-700 font-medium leading-relaxed">
+                            256-bit SSL encrypted. Your card details are 100% safe and secure.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Net Banking Panel ── */}
+                  {paymentMethod === "netbanking" && (
+                    <div className="bg-[#fbf9f8] border border-gray-200 rounded-2xl p-5 space-y-4">
+                      <p className="text-xs font-bold text-gray-700">Select Your Bank</p>
+
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
+                        {[
+                          { name: "SBI", color: "#2155a5", short: "SBI" },
+                          { name: "HDFC Bank", color: "#004c8f", short: "HDFC" },
+                          { name: "ICICI Bank", color: "#b02a30", short: "ICICI" },
+                          { name: "Axis Bank", color: "#800000", short: "AXIS" },
+                          { name: "Kotak", color: "#ef4a23", short: "KMB" },
+                          { name: "Punjab National", color: "#e31e24", short: "PNB" },
+                          { name: "Bank of Baroda", color: "#f47920", short: "BOB" },
+                          { name: "Canara Bank", color: "#0047ab", short: "CNRB" },
+                        ].map((bank) => (
+                          <button
+                            key={bank.name}
+                            type="button"
+                            className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border border-gray-200 bg-white hover:border-[#8B263E]/50 hover:shadow-sm transition-all cursor-pointer group"
+                          >
+                            <div
+                              className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[10px] font-black shadow-sm"
+                              style={{ background: bank.color }}
+                            >
+                              {bank.short}
+                            </div>
+                            <span className="text-[10px] font-bold text-gray-600 group-hover:text-[#8B263E] text-center leading-tight">
+                              {bank.name}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] font-bold text-gray-500 mb-1.5">Other Banks</p>
+                        <div className="relative flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-200 bg-white focus-within:border-[#8B263E] focus-within:ring-2 focus-within:ring-[#8B263E]/10 transition-all">
+                          <Landmark size={15} className="text-gray-400 shrink-0" />
+                          <select className="w-full text-xs sm:text-sm bg-transparent outline-none font-medium text-gray-700 appearance-none cursor-pointer pr-6">
+                            <option value="">-- Select Bank --</option>
+                            <option>Union Bank of India</option>
+                            <option>Indian Bank</option>
+                            <option>Bank of India</option>
+                            <option>Yes Bank</option>
+                            <option>IndusInd Bank</option>
+                            <option>Federal Bank</option>
+                            <option>IDFC First Bank</option>
+                            <option>Karnataka Bank</option>
+                            <option>South Indian Bank</option>
+                          </select>
+                          <ChevronDown size={14} className="text-gray-400 pointer-events-none absolute right-3" />
+                        </div>
+                      </div>
+
+                      <div className="bg-[#f0fdf4] border border-green-100 rounded-xl px-3 py-2.5 flex items-start gap-2">
+                        <ShieldCheck size={14} className="text-green-600 shrink-0 mt-0.5" />
+                        <p className="text-[10px] text-green-700 font-medium leading-relaxed">
+                          You will be redirected to your bank's secure login page to complete the payment.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Terms & Conditions Checkbox ── */}

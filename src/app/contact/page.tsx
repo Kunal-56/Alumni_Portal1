@@ -191,10 +191,7 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto relative z-10">
 
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold tracking-wider uppercase text-amber-200 mb-4">
-              <Sparkles size={14} className="text-amber-300" />
-              Alumni Relations & Helpdesk
-            </div>
+            <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-bold tracking-wider uppercase text-amber-200 mb-4">Alumni Relations & Helpdesk</div>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
               Get in Touch with Your Alma Mater
             </h1>
@@ -206,11 +203,11 @@ export default function ContactPage() {
             {/* Quick Metrics Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 pt-6 border-t border-white/15">
               <div>
-                <div className="text-xl sm:text-2xl font-black text-white">25,000+</div>
+                <div className="text-xl sm:text-2xl font-black text-white">5,000+</div>
                 <div className="text-xs text-red-200">Global Alumni</div>
               </div>
               <div>
-                <div className="text-xl sm:text-2xl font-black text-amber-300">&lt; 24 Hrs</div>
+                <div className="text-xl sm:text-2xl font-black text-amber-300">&lt; 12 Hrs</div>
                 <div className="text-xs text-red-200">Avg. Response Time</div>
               </div>
               <div>
@@ -682,7 +679,7 @@ export default function ContactPage() {
             <div className="bg-white rounded-3xl p-5 border border-red-100/80 shadow-md">
               <h4 className="text-xs font-bold text-gray-900 mb-1">Connect on Social Channels</h4>
               <p className="text-[11px] text-gray-500 mb-3">
-                Join 15,000+ Tolani alumni sharing updates, achievements & reunions online.
+                Join 5,000+ Tolani alumni sharing updates, achievements & reunions online.
               </p>
               <div className="flex items-center gap-2">
                 {[

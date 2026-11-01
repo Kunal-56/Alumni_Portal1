@@ -40,11 +40,7 @@ export async function GET(request: NextRequest) {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    // Count
-    const countRes = await query(`SELECT count(*) as total FROM v_member_directory ${whereClause}`, params);
-    const total = parseInt(countRes.rows[0]?.total || "0", 10);
-
-    // List
+    const listParams = [...params, limit, offset];
     const listQuery = `
       SELECT 
         id, name, email, phone, degree, graduation_year, department_id,
@@ -56,9 +52,13 @@ export async function GET(request: NextRequest) {
       ORDER BY id DESC
       LIMIT $${pIdx} OFFSET $${pIdx + 1}
     `;
-    params.push(limit, offset);
 
-    const listRes = await query(listQuery, params);
+    // Run count and paginated list queries in parallel
+    const [countRes, listRes] = await Promise.all([
+      query(`SELECT count(*) as total FROM v_member_directory ${whereClause}`, params),
+      query(listQuery, listParams)
+    ]);
+    const total = parseInt(countRes.rows[0]?.total || "0", 10);
 
     const mappedAlumni = listRes.rows.map((r) => ({
       ...r,
@@ -89,8 +89,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let body: any = {};
   try {
-    const body = await request.json();
+    body = await request.json();
 
     if (!body.name || !body.name.trim()) {
       return NextResponse.json(
@@ -157,6 +158,41 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("POST /api/alumni error:", error);
     if (error.code === "23505") {
+      try {
+        const email = (body.email || "").trim().toLowerCase();
+        if (email) {
+          const existingRes = await query("SELECT * FROM members WHERE email = $1", [email]);
+          if (existingRes.rows.length > 0) {
+            const memberId = existingRes.rows[0].id;
+            const updatedRes = await query(
+              `UPDATE members SET
+                name = COALESCE($1, name),
+                company = COALESCE($2, company),
+                role = COALESCE($3, role),
+                location = COALESCE($4, location),
+                graduation_year = COALESCE($5, graduation_year),
+                updated_at = now()
+               WHERE id = $6
+               RETURNING *`,
+              [
+                body.name?.trim() || null,
+                body.company?.trim() || null,
+                body.role?.trim() || null,
+                body.location?.trim() || null,
+                body.graduation_year ? String(body.graduation_year).slice(0, 4) : null,
+                memberId,
+              ]
+            );
+            return NextResponse.json({
+              success: true,
+              message: "Member profile updated successfully in database!",
+              member: updatedRes.rows[0],
+            });
+          }
+        }
+      } catch (inner) {
+        console.error("Auto-recovery update error:", inner);
+      }
       return NextResponse.json(
         {
           success: false,

@@ -24,6 +24,28 @@ export async function POST(request: NextRequest) {
 
     const cleanEmail = email.trim().toLowerCase();
 
+    // ── Direct Admin Authentication for Tolani Portal ──
+    if (
+      (cleanEmail === "admin@tolani.edu" ||
+        cleanEmail === "admin@alumni.tolani.edu" ||
+        cleanEmail === "admin") &&
+      (password === "admin@123" || password === "TolaniAdmin@2026")
+    ) {
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Welcome back, Administrator!",
+          user: {
+            id: 999999,
+            email: "admin@tolani.edu",
+            role: "admin",
+            name: "Tolani Super Admin",
+          },
+        },
+        { status: 200 }
+      );
+    }
+
     // 2. Fetch user from PostgreSQL "users" table
     const findUserQuery = `
       SELECT 
@@ -109,7 +131,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: error?.message || "An unexpected error occurred during login. Please try again.",
+        message:
+          error?.message ||
+          "An unexpected error occurred during login. Please try again.",
       },
       { status: 500 }
     );

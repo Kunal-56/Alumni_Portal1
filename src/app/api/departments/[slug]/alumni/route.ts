@@ -85,6 +85,7 @@ export async function GET(
   }
 }
 
+let body: any = {};
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }
@@ -100,7 +101,7 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    body = await request.json();
 
     // Validation
     if (!body.name || !body.name.trim()) {
@@ -161,6 +162,41 @@ export async function POST(
     console.error("POST /api/departments/[slug]/alumni error:", error);
     // Handle unique constraint violation on email
     if (error.code === "23505") {
+      try {
+        const email = (body.email || "").trim().toLowerCase();
+        if (email) {
+          const existingRes = await query("SELECT * FROM members WHERE email = $1", [email]);
+          if (existingRes.rows.length > 0) {
+            const memberId = existingRes.rows[0].id;
+            const updatedRes = await query(
+              `UPDATE members SET
+                name = COALESCE($1, name),
+                company = COALESCE($2, company),
+                role = COALESCE($3, role),
+                location = COALESCE($4, location),
+                graduation_year = COALESCE($5, graduation_year),
+                updated_at = now()
+               WHERE id = $6
+               RETURNING *`,
+              [
+                body.name?.trim() || null,
+                body.company?.trim() || null,
+                body.role?.trim() || null,
+                body.location?.trim() || null,
+                body.graduation_year ? String(body.graduation_year).slice(0, 4) : null,
+                memberId,
+              ]
+            );
+            return NextResponse.json({
+              success: true,
+              message: "Member profile updated successfully in database!",
+              member: updatedRes.rows[0],
+            });
+          }
+        }
+      } catch (inner) {
+        console.error("Auto-recovery update error:", inner);
+      }
       return NextResponse.json(
         {
           success: false,

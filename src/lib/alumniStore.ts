@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 
@@ -76,21 +76,41 @@ export function getMemberById(id: number): Member | undefined {
   return getStoredMembers().find((m) => m.id === id);
 }
 
-/* ─── React Hook for Live Sync & Database Fetch ─── */
+// Fast In-Memory Cache (SWR Pattern for Instant 0ms Page Navigation)
+let _memoryCache: { members: Member[]; totalCount: number; fetchedAt: number } | null = null;
+
+/* ─── React Hook for Live Sync & Database Fetch (Instant Render) ─── */
 export function useAlumniMembers() {
+  // Always initialize with empty state on SSR & initial client hydration to prevent hydration mismatch
   const [members, setMembers] = useState<Member[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [loadingDb, setLoadingDb] = useState(true);
 
-  const fetchLiveMembers = async () => {
+  const fetchLiveMembers = async (force = false) => {
+    // If fetched recently in memory, reuse cache instantly without making the browser wait
+    if (!force && _memoryCache && Date.now() - _memoryCache.fetchedAt < 15000) {
+      setMembers(_memoryCache.members);
+      setTotalCount(_memoryCache.totalCount);
+      setLoadingDb(false);
+      return;
+    }
+
     try {
-      setLoadingDb(true);
-      const res = await fetch("/api/alumni?limit=500");
+      const res = await fetch("/api/alumni?limit=500", {
+        headers: { "Accept": "application/json" }
+      });
       if (res.ok) {
         const json = await res.json();
         if (json.success && Array.isArray(json.alumni)) {
-          // Exactly the members in PostgreSQL database
+          const count = typeof json.pagination?.total === "number" ? json.pagination.total : json.alumni.length;
+          _memoryCache = {
+            members: json.alumni,
+            totalCount: count,
+            fetchedAt: Date.now()
+          };
           setMembers(json.alumni);
+          setTotalCount(count);
           saveMembers(json.alumni);
           setIsLoaded(true);
           return;
@@ -103,23 +123,28 @@ export function useAlumniMembers() {
       setIsLoaded(true);
     }
 
-    // Only fallback to verified cache, never to hardcoded dummy records
     const cached = getStoredMembers();
     setMembers(cached);
+    setTotalCount(cached.length);
   };
 
   useEffect(() => {
-    // 1. Initial cached state (if any)
-    const cached = getStoredMembers();
+    // Synchronously hydrate from cache immediately on mount
+    const cached = _memoryCache?.members || getStoredMembers();
     if (cached.length > 0) {
       setMembers(cached);
+      setTotalCount(_memoryCache?.totalCount || cached.length);
+      setLoadingDb(false);
     }
+    setIsLoaded(true);
 
-    // 2. Fetch live data from PostgreSQL Database API
+    // Background revalidation (never blocks the initial render)
     fetchLiveMembers();
 
-    // 3. Listen for internal event triggers
-    const handleUpdate = () => fetchLiveMembers();
+    const handleUpdate = () => {
+      _memoryCache = null; // Invalidate cache on live updates
+      fetchLiveMembers(true);
+    };
     window.addEventListener("alumni_members_updated", handleUpdate);
     window.addEventListener("storage", handleUpdate);
     return () => {
@@ -130,16 +155,17 @@ export function useAlumniMembers() {
 
   const handleAddMember = (data: Omit<Member, "id"> & { id?: number }) => {
     const created = addMember(data);
-    fetchLiveMembers();
+    _memoryCache = null;
+    fetchLiveMembers(true);
     return created;
   };
 
   return {
     members,
-    totalCount: members.length,
+    totalCount: totalCount || members.length,
     isLoaded,
     loadingDb,
-    refresh: fetchLiveMembers,
+    refresh: () => fetchLiveMembers(true),
     addMember: handleAddMember,
     getMemberById: (id: number) => members.find((m) => m.id === id),
   };

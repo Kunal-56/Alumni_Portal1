@@ -51,19 +51,18 @@ interface Department {
 
 /* ─── Data ─── */
 const STATS: Stat[] = [
-  { icon: <Users size={22} />, value: "25,000+", label: "Total Alumni" },
-  { icon: <Building2 size={22} />, value: "120+", label: "Countries" },
-  { icon: <Briefcase size={22} />, value: "1,250+", label: "Jobs Posted" },
-  { icon: <CalendarDays size={22} />, value: "200+", label: "Events Organized" },
-  { icon: <Trophy size={22} />, value: "100+", label: "Awards Won" },
+  { icon: <Users size={22} />, value: "5,000+", label: "Total Alumni" },
+  { icon: <Briefcase size={22} />, value: "250+", label: "Jobs Posted" },
+  { icon: <CalendarDays size={22} />, value: "30+", label: "Events Organized" },
+  { icon: <Trophy size={22} />, value: "25+", label: "Awards Won" },
 ];
 
 const DEPARTMENTS: Department[] = [
-  { icon: <Code2 size={28} />, name: "Computer Department", alumni: "5,248+ Alumni", href: "/departments/computer" },
-  { icon: <Layers size={28} />, name: "Civil Department", alumni: "3,126+ Alumni", href: "/departments/civil" },
-  { icon: <Zap size={28} />, name: "Electrical Department", alumni: "2,860+ Alumni", href: "/departments/electrical" },
-  { icon: <Settings size={28} />, name: "Mechanical Department", alumni: "4,112+ Alumni", href: "/departments/mechanical" },
-  { icon: <BookOpen size={28} />, name: "CDDM Department", alumni: "2,340+ Alumni", href: "/departments/cddm" },
+  { icon: <Code2 size={28} />, name: "Computer Department", alumni: "1200+ Alumni", href: "/departments/computer" },
+  { icon: <Layers size={28} />, name: "Civil Department", alumni: "1200+ Alumni", href: "/departments/civil" },
+  { icon: <Zap size={28} />, name: "Electrical Department", alumni: "1000+ Alumni", href: "/departments/electrical" },
+  { icon: <Settings size={28} />, name: "Mechanical Department", alumni: "800+ Alumni", href: "/departments/mechanical" },
+  { icon: <BookOpen size={28} />, name: "CDDM Department", alumni: "800+ Alumni", href: "/departments/cddm" },
 ];
 
 const EVENTS: Event[] = [
@@ -176,15 +175,27 @@ export default function DashboardPage() {
 
       {/* ── Stats Bar ── */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="stats-bar px-6 py-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+        <div className="stats-bar px-6 sm:px-8 py-5 grid grid-cols-2 md:grid-cols-4 gap-6 items-center">
           {STATS.map((s, i) => (
-            <div key={i} className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef0f2", color: "#9B2335" }}>
+            <div
+              key={i}
+              className={`flex items-center gap-3.5 justify-start sm:justify-center ${
+                i !== 0 ? "md:border-l md:border-gray-100 md:pl-6" : ""
+              }`}
+            >
+              <div
+                className="w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-xs"
+                style={{ background: "#fef0f2", color: "#9B2335" }}
+              >
                 {s.icon}
               </div>
               <div>
-                <div className="text-lg font-extrabold text-gray-900 leading-tight">{s.value}</div>
-                <div className="text-[11px] text-gray-500 font-medium">{s.label}</div>
+                <div className="text-xl font-extrabold text-gray-900 leading-tight tracking-tight">
+                  {s.value}
+                </div>
+                <div className="text-xs text-gray-500 font-medium whitespace-nowrap">
+                  {s.label}
+                </div>
               </div>
             </div>
           ))}
@@ -197,9 +208,9 @@ export default function DashboardPage() {
           {/* Section Header */}
           <div className="relative mb-8 text-center">
             <div className="absolute right-0 top-1 hidden sm:block">
-              <a href="#" className="text-sm font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
+              <Link href="/departments" className="text-sm font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
                 View All Departments <ChevronRight size={15} />
-              </a>
+              </Link>
             </div>
             <h2 className="text-3xl sm:text-4xl font-serif text-gray-900 tracking-tight mb-2">
               Our <span style={{ color: "#9B2335" }}>Departments</span>
@@ -208,9 +219,9 @@ export default function DashboardPage() {
               Explore departments and connect with alumni from your field.
             </p>
             <div className="sm:hidden mt-3 flex justify-center">
-              <a href="#" className="text-sm font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
+              <Link href="/departments" className="text-sm font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
                 View All Departments <ChevronRight size={15} />
-              </a>
+              </Link>
             </div>
           </div>
         </div>

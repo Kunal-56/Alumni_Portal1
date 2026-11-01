@@ -15,9 +15,15 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  // If already logged in, go straight to dashboard
+  // If already logged in, redirect accordingly
   useEffect(() => {
     if (typeof window !== "undefined") {
+      const storedAdmin = sessionStorage.getItem("tolani_admin_authenticated");
+      if (storedAdmin === "true") {
+        router.push("/admin");
+        return;
+      }
+
       const stored = sessionStorage.getItem("tolani_logged_in");
       if (stored === "true") {
         router.push("/");
@@ -72,30 +78,53 @@ export default function LoginPage() {
         return;
       }
 
+      const isAdmin =
+        data.user?.role === "admin" ||
+        data.user?.email === "admin@tolani.edu" ||
+        email.trim().toLowerCase() === "admin@tolani.edu";
+
       // Save user session
       if (typeof window !== "undefined") {
         sessionStorage.setItem("tolani_logged_in", "true");
-        sessionStorage.setItem("tolani_user_id", data.user?.id || "");
+        sessionStorage.setItem("tolani_user_id", String(data.user?.id || ""));
         sessionStorage.setItem("tolani_user_email", data.user?.email || email.trim().toLowerCase());
         sessionStorage.setItem("tolani_user_name", data.user?.name || "");
-        sessionStorage.setItem("tolani_user_role", data.user?.role || "alumni");
+        sessionStorage.setItem("tolani_user_role", data.user?.role || (isAdmin ? "admin" : "alumni"));
 
         localStorage.setItem("tolani_logged_in", "true");
-        localStorage.setItem("tolani_user_id", data.user?.id || "");
+        localStorage.setItem("tolani_user_id", String(data.user?.id || ""));
         localStorage.setItem("tolani_user_email", data.user?.email || email.trim().toLowerCase());
         localStorage.setItem("tolani_user_name", data.user?.name || "");
-        localStorage.setItem("tolani_user_role", data.user?.role || "alumni");
+        localStorage.setItem("tolani_user_role", data.user?.role || (isAdmin ? "admin" : "alumni"));
+
+        if (isAdmin) {
+          sessionStorage.setItem("tolani_admin_authenticated", "true");
+          localStorage.setItem("tolani_admin_authenticated", "true");
+        } else {
+          sessionStorage.removeItem("tolani_admin_authenticated");
+          localStorage.removeItem("tolani_admin_authenticated");
+        }
       }
 
       setIsLoading(false);
-      setMessage({
-        type: "success",
-        text: `Welcome back, ${data.user?.name}! Redirecting to dashboard...`,
-      });
 
-      setTimeout(() => {
-        router.push("/");
-      }, 1000);
+      if (isAdmin) {
+        setMessage({
+          type: "success",
+          text: `Welcome Administrator! Opening Admin Portal...`,
+        });
+        setTimeout(() => {
+          router.push("/admin");
+        }, 800);
+      } else {
+        setMessage({
+          type: "success",
+          text: `Welcome back, ${data.user?.name}! Redirecting to dashboard...`,
+        });
+        setTimeout(() => {
+          router.push("/");
+        }, 1000);
+      }
     } catch (err: any) {
       setIsLoading(false);
       setMessage({
@@ -270,8 +299,6 @@ export default function LoginPage() {
                   : <>Login</>}
               </button>
             </form>
-
-
 
             {/* Register */}
             <div className="mt-3 sm:mt-4 text-center">

@@ -1,26 +1,92 @@
-import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
+﻿import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
+import fs from "fs";
+import path from "path";
+
+// Helper to read latest env file values in development mode so credential changes take effect immediately
+function getLatestEnv(): Record<string, string> {
+  const result: Record<string, string> = {};
+  try {
+    for (const filename of [".env", ".env.local"]) {
+      const filePath = path.resolve(process.cwd(), filename);
+      if (fs.existsSync(filePath)) {
+        const content = fs.readFileSync(filePath, "utf-8");
+        for (const line of content.split(/\r?\n/)) {
+          const trimmed = line.trim();
+          if (!trimmed || trimmed.startsWith("#")) continue;
+          const eqIdx = trimmed.indexOf("=");
+          if (eqIdx !== -1) {
+            const key = trimmed.slice(0, eqIdx).trim();
+            let val = trimmed.slice(eqIdx + 1).trim();
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+              val = val.slice(1, -1);
+            }
+            result[key] = val;
+          }
+        }
+      }
+    }
+  } catch {
+    // fallback gracefully to process.env
+  }
+  return result;
+}
+
+const fileEnv = getLatestEnv();
 
 // Prevent multiple pools in Next.js hot-reloading dev environment
 declare global {
   // eslint-disable-next-line no-var
   var _pgPool: Pool | undefined;
+  // eslint-disable-next-line no-var
+  var _pgConfigKey: string | undefined;
 }
 
-const poolConfig = {
-  host: process.env.PGHOST || "127.0.0.1",
-  port: parseInt(process.env.PGPORT || "5432", 10),
-  user: process.env.PGUSER || "postgres",
-  password: process.env.PGPASSWORD || "postgres",
-  database: process.env.PGDATABASE || "Alumni_Portal",
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
-};
+// Use DATABASE_URL if available (handles special chars in password via URL-encoding).
+// Falls back to individual PG* environment variables.
+const connectionString =
+  fileEnv.DATABASE_URL || process.env.DATABASE_URL || "";
+
+const dbHost = fileEnv.PGHOST || process.env.PGHOST || "127.0.0.1";
+const dbPort = parseInt(fileEnv.PGPORT || process.env.PGPORT || "5432", 10);
+const dbUser = fileEnv.PGUSER || process.env.PGUSER || "postgres";
+const dbPassword = fileEnv.PGPASSWORD || process.env.PGPASSWORD || "";
+const dbDatabase = fileEnv.PGDATABASE || process.env.PGDATABASE || "Alumni_Portal";
+
+const configKey = connectionString
+  ? connectionString
+  : `${dbHost}:${dbPort}:${dbUser}:${dbPassword}:${dbDatabase}`;
+
+if (global._pgPool && global._pgConfigKey !== configKey) {
+  try {
+    global._pgPool.end();
+  } catch {}
+  global._pgPool = undefined;
+}
+
+// Build pool — prefer connectionString to avoid special-char password encoding issues
+const poolConfig: any = connectionString
+  ? {
+      connectionString,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    }
+  : {
+      host: dbHost,
+      port: dbPort,
+      user: dbUser,
+      password: dbPassword,
+      database: dbDatabase,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+    };
 
 export const pool: Pool = global._pgPool || new Pool(poolConfig);
 
 if (process.env.NODE_ENV !== "production") {
   global._pgPool = pool;
+  global._pgConfigKey = configKey;
 }
 
 // Database helper functions
@@ -140,6 +206,26 @@ export async function createMember(input: CreateAlumniInput) {
         $8, $9, $10, $11, $12, $13,
         $14, $15, $16, $17, $18, $19
       )
+      ON CONFLICT (email) DO UPDATE SET
+        name = EXCLUDED.name,
+        phone = COALESCE(EXCLUDED.phone, members.phone),
+        dob = COALESCE(EXCLUDED.dob, members.dob),
+        gender = COALESCE(EXCLUDED.gender, members.gender),
+        degree = EXCLUDED.degree,
+        graduation_year = EXCLUDED.graduation_year,
+        department_id = EXCLUDED.department_id,
+        institute = EXCLUDED.institute,
+        company = EXCLUDED.company,
+        role = EXCLUDED.role,
+        industry = EXCLUDED.industry,
+        location = EXCLUDED.location,
+        experience_years = COALESCE(EXCLUDED.experience_years, members.experience_years),
+        linkedin_url = COALESCE(EXCLUDED.linkedin_url, members.linkedin_url),
+        bio = COALESCE(EXCLUDED.bio, members.bio),
+        avatar_url = COALESCE(EXCLUDED.avatar_url, members.avatar_url),
+        verified = EXCLUDED.verified,
+        verification_method = EXCLUDED.verification_method,
+        updated_at = now()
       RETURNING *;
     `;
 

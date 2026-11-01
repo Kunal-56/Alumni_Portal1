@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -12,14 +12,15 @@ import {
   Instagram, Youtube, CheckCircle2, Database, RefreshCw
 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { useAlumniMembers } from "@/lib/alumniStore";
 import { AddAlumniModal } from "@/components/AddAlumniModal";
 import "@/app/dashboard.css";
 
 /* ─── Data ─── */
 const DEPT_STATS = [
-  { icon: <Users size={20} />, value: "3,126+", label: "Alumni" },
-  { icon: <Briefcase size={20} />, value: "850+", label: "Jobs Posted" },
-  { icon: <CalendarDays size={20} />, value: "60+", label: "Events Organized" },
+  { icon: <Users size={20} />, value: "1,200+", label: "Alumni" },
+  { icon: <Briefcase size={20} />, value: "250+", label: "Jobs Posted" },
+  { icon: <CalendarDays size={20} />, value: "30+", label: "Events Organized" },
 ];
 
 const FEATURES = [
@@ -97,53 +98,10 @@ const EVENTS = [
 const BY_THE_NUMBERS = [
   { label: "Established", value: "1984", icon: <Building size={16} /> },
   { label: "Programs Offered", value: "Diploma, B.Tech", icon: <BookOpen size={16} /> },
-  { label: "Faculty Strength", value: "20+", icon: <Users size={16} /> },
+  { label: "Faculty Strength", value: "10+", icon: <Users size={16} /> },
   { label: "Labs", value: "8+ Structural Labs", icon: <Award size={16} /> },
   { label: "Research Projects", value: "8+", icon: <Lightbulb size={16} /> },
   { label: "Student Strength", value: "400+", icon: <GraduationCap size={16} /> },
-];
-
-const SPOTLIGHT = [
-  {
-    name: "Rohan Mehta",
-    role: "Site Engineer",
-    company: "L&T Construction",
-    batch: "Batch 2022",
-    bg: "#1e293b",
-    initials: "RM"
-  },
-  {
-    name: "Priya Shah",
-    role: "Structural Engineer",
-    company: "AECOM",
-    batch: "Batch 2023",
-    bg: "#9B2335",
-    initials: "PS"
-  },
-  {
-    name: "Karan Desai",
-    role: "Project Manager",
-    company: "Shapoorji Pallonji",
-    batch: "Batch 2021",
-    bg: "#0f766e",
-    initials: "KD"
-  },
-  {
-    name: "Anjali Joshi",
-    role: "Design Engineer",
-    company: "Gammon India",
-    batch: "Batch 2020",
-    bg: "#6b21a8",
-    initials: "AJ"
-  },
-  {
-    name: "Vivek Rana",
-    role: "Site Supervisor",
-    company: "Hindustan Construction",
-    batch: "Batch 2024",
-    bg: "#b45309",
-    initials: "VR"
-  },
 ];
 
 const INITIATIVES = [
@@ -210,11 +168,17 @@ export default function CivilDepartmentPage() {
     fetchDepartmentData();
   }, []);
 
-  const [spotlightIdx, setSpotlightIdx] = useState(0);
+  const { members, isLoaded } = useAlumniMembers();
 
-  const spotlightMembers = SPOTLIGHT;
+  // Dynamic live spotlight members from database (max 6)
+  const deptMembers = members.filter(m => {
+    const d = (m.dept || "").toLowerCase();
+    return d.includes("civil") || d.includes("infra") || d.includes("const");
+  });
+  const otherMembers = members.filter(m => !deptMembers.some(dm => dm.id === m.id));
+  const spotlightMembers = [...deptMembers, ...otherMembers].slice(0, 6);
 
-  const liveAlumniCount = dbData?.alumni_count ? `${dbData.alumni_count.toLocaleString()}+` : "3,126+";
+  const liveAlumniCount = dbData?.alumni_count ? `${dbData.alumni_count.toLocaleString()}+` : "1,200+";
 
   return (
     <div className="dashboard-body min-h-screen" style={{ overflowY: "auto", overflowX: "hidden", background: "#fcfafb" }}>
@@ -232,10 +196,6 @@ export default function CivilDepartmentPage() {
             <div className="flex flex-wrap items-center gap-2">
               <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold tracking-wider uppercase" style={{ background: "#fef0f2", color: "#9B2335", border: "1px solid #f8d7db" }}>
                 CIVIL DEPARTMENT
-              </div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                PostgreSQL API Live ({loadingDb ? "Loading..." : `${dbData?.total_registered_alumni ?? 0} in DB`})
               </div>
             </div>
 
@@ -280,7 +240,7 @@ export default function CivilDepartmentPage() {
                   <Briefcase size={20} />
                 </div>
                 <div>
-                  <div className="text-base font-extrabold text-gray-900 leading-tight">850+</div>
+                  <div className="text-base font-extrabold text-gray-900 leading-tight">250+</div>
                   <div className="text-[10px] text-gray-500 font-semibold">Jobs Posted</div>
                 </div>
               </div>
@@ -289,7 +249,7 @@ export default function CivilDepartmentPage() {
                   <CalendarDays size={20} />
                 </div>
                 <div>
-                  <div className="text-base font-extrabold text-gray-900 leading-tight">60+</div>
+                  <div className="text-base font-extrabold text-gray-900 leading-tight">30+</div>
                   <div className="text-[10px] text-gray-500 font-semibold">Events Organized</div>
                 </div>
               </div>
@@ -431,7 +391,7 @@ export default function CivilDepartmentPage() {
 
               <div className="md:col-span-3 flex md:flex-col justify-around gap-4 border-y md:border-y-0 md:border-x border-white/20 py-4 md:py-0 md:px-6">
                 <div>
-                  <div className="text-3xl font-extrabold text-white">20+</div>
+                  <div className="text-3xl font-extrabold text-white">10+</div>
                   <div className="text-xs text-white/80 font-medium">Expert Faculty</div>
                 </div>
                 <div>
@@ -467,9 +427,9 @@ export default function CivilDepartmentPage() {
           <div className="lg:col-span-8">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-2xl font-extrabold text-gray-900">Upcoming Events</h2>
-              <a href="#" className="text-xs font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
+              <Link href="/events" className="text-xs font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
                 View All Events <ChevronRight size={14} />
-              </a>
+              </Link>
             </div>
 
             <div className="space-y-4">
@@ -552,7 +512,7 @@ export default function CivilDepartmentPage() {
       </section>
 
       {/* ── Section: Alumni Members Spotlight ── */}
-      <section id="spotlight" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section id="spotlight" suppressHydrationWarning className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h2 className="text-2xl font-extrabold text-gray-900">Alumni Members Spotlight</h2>
@@ -568,26 +528,88 @@ export default function CivilDepartmentPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5">
-          {spotlightMembers.map((alumni: any, i: number) => (
-            <div
-              key={i}
-              className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center group cursor-pointer"
-            >
-              <div className="w-20 h-20 rounded-full flex items-center justify-center text-white text-xl font-extrabold mb-3 shadow-md group-hover:scale-105 transition-transform" style={{ background: alumni.bg }}>
-                {alumni.initials}
+        {!isLoaded ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs text-center flex flex-col items-center animate-pulse"
+              >
+                <div className="w-20 h-20 rounded-full bg-gray-100 mb-3" />
+                <div className="h-4 w-28 bg-gray-200 rounded mb-2" />
+                <div className="h-3 w-20 bg-gray-100 rounded mb-1" />
+                <div className="h-3 w-16 bg-gray-100 rounded mb-3" />
+                <div className="h-5 w-20 bg-gray-100 rounded-full" />
               </div>
+            ))}
+          </div>
+        ) : spotlightMembers.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center max-w-md mx-auto">
+            <Users className="mx-auto mb-2 text-gray-400" size={32} />
+            <p className="text-sm font-bold text-gray-700">No Alumni Registered Yet</p>
+            <p className="text-xs text-gray-400 mt-1 mb-4">Be the first to join the alumni directory for this department.</p>
+            <Link
+              href="/invite?dept=Civil%20Engineering"
+              className="btn-maroon text-xs px-4 py-2 rounded-xl inline-flex items-center gap-1.5 font-bold"
+            >
+              Register as Alumnus
+            </Link>
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${
+            spotlightMembers.length <= 3 ? "lg:grid-cols-3" :
+            spotlightMembers.length === 4 ? "lg:grid-cols-4" :
+            spotlightMembers.length === 5 ? "lg:grid-cols-5" :
+            "lg:grid-cols-6"
+          } gap-5`}>
+            {spotlightMembers.map((alumni: any, i: number) => {
+              const initials = alumni.name
+                ? alumni.name
+                    .split(" ")
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map((w: string) => w[0].toUpperCase())
+                    .join("")
+                : "AL";
+              const palette = ["#1e293b", "#9B2335", "#0f766e", "#6b21a8", "#b45309", "#0369a1"];
+              const bg = palette[i % palette.length];
+              const batch = alumni.batch || (alumni.year ? `Batch ${alumni.year}` : (alumni.graduation_year ? `Batch ${alumni.graduation_year}` : "Batch 2025"));
+              const company = alumni.company || "Tolani Alumni";
+              const role = alumni.role || "Alumnus";
 
-              <h3 className="text-sm font-extrabold text-gray-900 mb-0.5 group-hover:text-[#9B2335] transition-colors">{alumni.name}</h3>
-              <p className="text-[11px] text-gray-500 font-medium mb-1">{alumni.role}</p>
-              <div className="text-[11px] font-extrabold mb-3" style={{ color: "#9B2335" }}>{alumni.company}</div>
+              return (
+                <div
+                  key={alumni.id || i}
+                  className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs hover:shadow-md transition-all text-center flex flex-col items-center group cursor-pointer"
+                >
+                  <div
+                    className="w-20 h-20 rounded-full flex items-center justify-center text-white text-xl font-extrabold mb-3 shadow-md group-hover:scale-105 transition-transform"
+                    style={{ background: bg }}
+                  >
+                    {initials}
+                  </div>
 
-              <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-[#9B2335] border border-red-100">
-                {alumni.batch}
-              </span>
-            </div>
-          ))}
-        </div>
+                  <h3 className="text-sm font-extrabold text-gray-900 mb-0.5 group-hover:text-[#9B2335] transition-colors line-clamp-1">
+                    {alumni.name}
+                  </h3>
+                  <p className="text-[11px] text-gray-500 font-medium mb-1 line-clamp-1">
+                    {role}
+                  </p>
+                  <div
+                    className="text-[11px] font-extrabold mb-3 line-clamp-1"
+                    style={{ color: "#9B2335" }}
+                  >
+                    {company}
+                  </div>
+
+                  <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-red-50 text-[#9B2335] border border-red-100 mt-auto">
+                    {batch}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* ── Section: Our Initiatives ── */}
@@ -619,9 +641,9 @@ export default function CivilDepartmentPage() {
             <h2 className="text-2xl font-extrabold text-gray-900">Gallery Highlights</h2>
             <p className="text-xs text-gray-500 font-medium">Moments and memories from Civil Department activities.</p>
           </div>
-          <a href="#" className="text-xs font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
+          <Link href="/gallery" className="text-xs font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
             View Full Gallery <ChevronRight size={14} />
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">

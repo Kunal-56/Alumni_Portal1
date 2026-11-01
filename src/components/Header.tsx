@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Users, Menu, X, LogIn, LogOut, ChevronDown, Heart } from "lucide-react";
+import { Users, Menu, X, LogIn, LogOut, ChevronDown, Heart, ShieldCheck } from "lucide-react";
 
 interface HeaderProps {
   activePage?: "home" | "members" | "donation" | "departments" | "events" | "gallery" | "news" | "contact";
@@ -11,6 +11,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,9 +20,20 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
     if (typeof window !== "undefined") {
       const stored = sessionStorage.getItem("tolani_logged_in") || localStorage.getItem("tolani_logged_in");
       const email = sessionStorage.getItem("tolani_user_email") || localStorage.getItem("tolani_user_email") || "";
+      const role = sessionStorage.getItem("tolani_user_role") || localStorage.getItem("tolani_user_role") || "";
+      const adminAuth =
+        sessionStorage.getItem("tolani_admin_authenticated") === "true" ||
+        localStorage.getItem("tolani_admin_authenticated") === "true";
+
       if (stored === "true") {
         setLoggedIn(true);
         setUserEmail(email || "dakshahir14@gmail.com");
+        // ONLY true if specifically logged in with admin credentials / role
+        const checkIsAdmin = role === "admin" || adminAuth || email.toLowerCase() === "admin@tolani.edu";
+        setIsAdmin(checkIsAdmin);
+      } else {
+        setLoggedIn(false);
+        setIsAdmin(false);
       }
     }
   }, []);
@@ -42,10 +54,15 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("tolani_logged_in");
       sessionStorage.removeItem("tolani_user_email");
+      sessionStorage.removeItem("tolani_user_role");
+      sessionStorage.removeItem("tolani_admin_authenticated");
       localStorage.removeItem("tolani_logged_in");
       localStorage.removeItem("tolani_user_email");
+      localStorage.removeItem("tolani_user_role");
+      localStorage.removeItem("tolani_admin_authenticated");
     }
     setLoggedIn(false);
+    setIsAdmin(false);
     setUserEmail("");
     setDropdownOpen(false);
     setMobileMenuOpen(false);
@@ -83,40 +100,46 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
         <div className="hidden md:flex items-center gap-6 text-base sm:text-[17px] font-bold text-gray-700">
           <Link
             href="/"
+            prefetch={true}
             className={activePage === "home" ? "nav-link-active relative pb-1" : "hover:text-[#9B2335] transition-colors"}
           >
             Home
           </Link>
           <Link
             href="/members"
+            prefetch={true}
             className={activePage === "members" ? "nav-link-active relative pb-1" : "hover:text-[#9B2335] transition-colors"}
           >
             Members
           </Link>
-          <a
+          <Link
             href="/#departments"
+            prefetch={true}
             className={activePage === "departments" ? "nav-link-active relative pb-1" : "hover:text-[#9B2335] transition-colors"}
           >
             Departments
-          </a>
-          <a
-            href="/#events"
+          </Link>
+          <Link
+            href="/events"
+            prefetch={true}
             className={activePage === "events" ? "nav-link-active relative pb-1" : "hover:text-[#9B2335] transition-colors"}
           >
             Events
-          </a>
-          <a
-            href="/#gallery"
+          </Link>
+          <Link
+            href="/gallery"
+            prefetch={true}
             className={activePage === "gallery" ? "nav-link-active relative pb-1" : "hover:text-[#9B2335] transition-colors"}
           >
             Gallery
-          </a>
-          <a
-            href="/#news"
+          </Link>
+          <Link
+            href="/news"
+            prefetch={true}
             className={activePage === "news" ? "nav-link-active relative pb-1" : "hover:text-[#9B2335] transition-colors"}
           >
             News
-          </a>
+          </Link>
           <Link
             href="/contact"
             className={activePage === "contact" ? "nav-link-active relative pb-1" : "hover:text-[#9B2335] transition-colors"}
@@ -175,7 +198,7 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
                         {userEmail}
                       </div>
                       <span className="inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-[#9B2335]">
-                        Active Alumni
+                        {isAdmin ? "Administrator" : "Active Alumni"}
                       </span>
                     </div>
                   </div>
@@ -198,6 +221,18 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
                       <Heart size={14} className="text-[#9B2335]" />
                       Support Portal
                     </Link>
+
+                    {/* ONLY SHOW ADMIN PORTAL IF LOGGED IN AS ADMIN */}
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-amber-900 bg-amber-50/70 hover:bg-amber-100 rounded-xl transition-colors border border-amber-200/60 mt-1"
+                      >
+                        <ShieldCheck size={14} className="text-amber-700" />
+                        Admin Portal
+                      </Link>
+                    )}
                   </div>
 
                   <div className="border-t border-gray-100 my-2" />
@@ -253,34 +288,38 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
             >
               Members
             </Link>
-            <a
+            <Link
               href="/#departments"
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className={`py-1.5 px-3 rounded-lg ${activePage === "departments" ? "bg-red-50 text-[#9B2335] font-bold" : "hover:bg-gray-50"}`}
             >
               Departments
-            </a>
-            <a
-              href="/#events"
+            </Link>
+            <Link
+              href="/events"
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className={`py-1.5 px-3 rounded-lg ${activePage === "events" ? "bg-red-50 text-[#9B2335] font-bold" : "hover:bg-gray-50"}`}
             >
               Events
-            </a>
-            <a
-              href="/#gallery"
+            </Link>
+            <Link
+              href="/gallery"
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className={`py-1.5 px-3 rounded-lg ${activePage === "gallery" ? "bg-red-50 text-[#9B2335] font-bold" : "hover:bg-gray-50"}`}
             >
               Gallery
-            </a>
-            <a
-              href="/#news"
+            </Link>
+            <Link
+              href="/news"
+              prefetch={true}
               onClick={() => setMobileMenuOpen(false)}
               className={`py-1.5 px-3 rounded-lg ${activePage === "news" ? "bg-red-50 text-[#9B2335] font-bold" : "hover:bg-gray-50"}`}
             >
               News
-            </a>
+            </Link>
             <Link
               href="/contact"
               onClick={() => setMobileMenuOpen(false)}
@@ -306,7 +345,7 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="text-xs font-extrabold text-gray-900 truncate">{userEmail}</div>
-                      <div className="text-[10px] text-gray-500">Logged In</div>
+                      <div className="text-[10px] text-gray-500">{isAdmin ? "Administrator" : "Active Alumni"}</div>
                     </div>
                   </div>
                   <button
@@ -324,6 +363,18 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
                 >
                   <LogIn size={15} />
                   Login
+                </Link>
+              )}
+
+              {/* ONLY SHOW ADMIN PORTAL IN MOBILE DRAWER IF LOGGED IN AS ADMIN */}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="mt-2 flex items-center justify-center gap-2 py-2 px-4 text-xs font-bold text-amber-900 bg-amber-50 hover:bg-amber-100 rounded-xl border border-amber-200 transition-colors"
+                >
+                  <ShieldCheck size={14} className="text-amber-700" />
+                  Admin Portal Console
                 </Link>
               )}
             </div>

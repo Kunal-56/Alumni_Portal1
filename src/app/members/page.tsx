@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import Image from "next/image";
@@ -50,7 +50,7 @@ function AvatarPlaceholder({ name, index }: { name: string; index: number }) {
 }
 
 export default function MembersPage() {
-  const { members, loadingDb, isLoaded, refresh } = useAlumniMembers();
+  const { members, totalCount, loadingDb, isLoaded, refresh } = useAlumniMembers();
 
   const [search, setSearch] = useState("");
   const [year, setYear] = useState("");
@@ -84,8 +84,8 @@ export default function MembersPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
-  // Real Database Members Count
-  const totalDbMembers = members.length;
+  // Total Members Count from Database
+  const totalMembers = totalCount || members.length;
 
   const handleSearch = () => setPage(1);
 
@@ -102,16 +102,12 @@ export default function MembersPage() {
               <p className="text-xs font-bold tracking-widest uppercase" style={{ color: "#9B2335" }}>
                 OUR ALUMNI NETWORK
               </p>
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                PostgreSQL Live Database
-              </span>
             </div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
               Members <span style={{ color: "#9B2335" }}>Directory</span>
             </h1>
             <p className="text-sm text-gray-500 mt-2 max-w-md">
-              Search and connect with friends, batchmates and other verified alumni stored in our database.
+              Search and connect with friends, batchmates and other verified alumni in our alumni community.
             </p>
           </div>
 
@@ -134,10 +130,10 @@ export default function MembersPage() {
               </div>
               <div>
                 <div className="text-2xl sm:text-3xl font-extrabold text-gray-900">
-                  {loadingDb && totalDbMembers === 0 ? "..." : totalDbMembers.toLocaleString()}
+                  {loadingDb && totalMembers === 0 ? "..." : totalMembers.toLocaleString()}
                 </div>
                 <div className="text-[11px] font-semibold text-gray-500">
-                  {totalDbMembers === 1 ? "Database Member" : "Total DB Members"}
+                  Total Members
                 </div>
               </div>
             </div>
@@ -266,7 +262,7 @@ export default function MembersPage() {
         {loadingDb && members.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl p-10 border border-gray-200/80 shadow-sm flex flex-col items-center gap-3">
             <div className="w-10 h-10 border-3 border-[#9B2335] border-t-transparent rounded-full animate-spin" />
-            <p className="text-sm font-bold text-gray-800">Fetching Alumni from PostgreSQL Database...</p>
+            <p className="text-sm font-bold text-gray-800">Fetching Alumni Members...</p>
             <p className="text-xs text-gray-400">Loading live verified members directory.</p>
           </div>
         ) : paginated.length === 0 ? (
@@ -276,9 +272,9 @@ export default function MembersPage() {
             </div>
             {members.length === 0 ? (
               <>
-                <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-1.5">No Alumni in Database Yet</h3>
+                <h3 className="text-lg sm:text-xl font-extrabold text-gray-900 mb-1.5">No Alumni Registered Yet</h3>
                 <p className="text-xs sm:text-sm text-gray-500 mb-5 leading-relaxed">
-                  There are currently 0 members stored in the PostgreSQL database. Whenever an alumni registers from any department, they will immediately appear here.
+                  There are currently 0 registered members. Whenever an alumni registers from any department, they will immediately appear here.
                 </p>
                 <Link
                   href="/invite"
