@@ -36,6 +36,16 @@ import {
   Mail,
   Heart,
   TrendingUp,
+  Download,
+  RotateCw,
+  Search,
+  Filter,
+  Phone,
+  Table as TableIcon,
+  LayoutGrid,
+  ShieldCheck,
+  CheckCircle,
+  Loader2,
 } from "lucide-react";
 import "@/app/dashboard.css";
 
@@ -49,7 +59,7 @@ const PRESET_IMAGES = [
 
 // ─── Data Interfaces ───
 interface EventItem {
-  id: string;
+  id: string | number;
   day: string;
   month: string;
   year: string;
@@ -64,7 +74,9 @@ interface EventItem {
 }
 
 interface GalleryItem {
-  id: string;
+  id: string | number;
+  image_url?: string;
+  bg_color?: string;
   label: string;
   category: string;
   year: string;
@@ -74,29 +86,56 @@ interface GalleryItem {
 }
 
 interface NewsItem {
-  id: string;
+  id: string | number;
   title: string;
+  slug?: string;
   date: string;
   category: string;
+  raw_category?: string;
   author: string;
   readTime: string;
+  read_time?: string;
   excerpt: string;
   content?: string;
   img: string;
+  image_url?: string;
   featured: boolean;
+  is_featured?: boolean;
+  published_at?: string;
 }
 
 interface MemberItem {
-  id: string;
+  id: string | number;
+  user_id?: string | null;
   name: string;
   email: string;
-  dept: string;
-  year: string;
-  company: string;
-  role: string;
+  phone?: string | null;
+  dob?: string | null;
+  gender?: string | null;
+  degree?: string | null;
+  year?: string | null;
+  graduation_year?: string | null;
+  department_id?: number | null;
+  department_name?: string | null;
+  department_short?: string | null;
+  dept?: string | null;
+  institute?: string | null;
+  company?: string | null;
+  role?: string | null;
+  industry?: string | null;
+  location?: string | null;
+  experience?: string | number | null;
+  experience_years?: number | null;
+  linkedin?: string | null;
+  linkedin_url?: string | null;
+  bio?: string | null;
+  avatar?: string | null;
+  avatar_url?: string | null;
   verified: boolean;
-  location?: string;
-  degree?: string;
+  verification_method?: string | null;
+  created_at?: string | null;
+  skills?: string[] | null;
+  achievements?: string[] | null;
 }
 
 // ─── Initial Data (Matching public website content) ───
@@ -373,10 +412,22 @@ export default function AdminPortalPage() {
   const [events, setEvents] = useState<EventItem[]>(INITIAL_EVENTS);
   const [gallery, setGallery] = useState<GalleryItem[]>(INITIAL_GALLERY);
   const [news, setNews] = useState<NewsItem[]>(INITIAL_NEWS);
-  const [members, setMembers] = useState<MemberItem[]>(INITIAL_MEMBERS);
+  const [members, setMembers] = useState<MemberItem[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState<boolean>(true);
+  const [refreshingMembers, setRefreshingMembers] = useState<boolean>(false);
+  const [memberSearch, setMemberSearch] = useState<string>("");
+  const [memberDeptFilter, setMemberDeptFilter] = useState<string>("ALL");
+  const [memberStatusFilter, setMemberStatusFilter] = useState<string>("ALL");
+  const [memberViewMode, setMemberViewMode] = useState<"table" | "cards">("table");
+  const [selectedMember, setSelectedMember] = useState<MemberItem | null>(null);
+  const [memberDetailModalOpen, setMemberDetailModalOpen] = useState<boolean>(false);
   const [campaigns, setCampaigns] = useState<CampaignItem[]>(INITIAL_CAMPAIGNS);
 
   // ── Event Modal State ──
+  const [loadingEvents, setLoadingEvents] = useState<boolean>(true);
+  const [refreshingEvents, setRefreshingEvents] = useState<boolean>(false);
+  const [uploadingEventPhoto, setUploadingEventPhoto] = useState<boolean>(false);
+  const [savingEvent, setSavingEvent] = useState<boolean>(false);
   const [eventModalOpen, setEventModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventItem | null>(null);
   const [eventForm, setEventForm] = useState<{
@@ -406,6 +457,10 @@ export default function AdminPortalPage() {
   });
 
   // ── Gallery Modal State ──
+  const [loadingGallery, setLoadingGallery] = useState<boolean>(true);
+  const [refreshingGallery, setRefreshingGallery] = useState<boolean>(false);
+  const [uploadingGalleryPhoto, setUploadingGalleryPhoto] = useState<boolean>(false);
+  const [savingGallery, setSavingGallery] = useState<boolean>(false);
   const [galleryModalOpen, setGalleryModalOpen] = useState(false);
   const [editingGallery, setEditingGallery] = useState<GalleryItem | null>(null);
   const [galleryForm, setGalleryForm] = useState<{
@@ -423,6 +478,10 @@ export default function AdminPortalPage() {
   });
 
   // ── News Modal State ──
+  const [loadingNews, setLoadingNews] = useState<boolean>(true);
+  const [refreshingNews, setRefreshingNews] = useState<boolean>(false);
+  const [uploadingNewsBanner, setUploadingNewsBanner] = useState<boolean>(false);
+  const [savingNews, setSavingNews] = useState<boolean>(false);
   const [newsModalOpen, setNewsModalOpen] = useState(false);
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
   const [newsForm, setNewsForm] = useState<{
@@ -452,7 +511,7 @@ export default function AdminPortalPage() {
 
   // ── Delete Confirmation ──
   const [deleteConfirm, setDeleteConfirm] = useState<{
-    type: "event" | "gallery" | "news";
+    type: "event" | "gallery" | "news" | "campaign" | "member";
     id: string;
     title: string;
   } | null>(null);
@@ -486,6 +545,10 @@ export default function AdminPortalPage() {
       if (isAdmin) {
         setIsAuthenticated(true);
         setIsCheckingAuth(false);
+        fetchLiveMembers();
+        fetchLiveEvents();
+        fetchLiveGallery();
+        fetchLiveNews();
       } else {
         setIsAuthenticated(false);
         setIsCheckingAuth(false);
@@ -537,6 +600,71 @@ export default function AdminPortalPage() {
     }
   };
 
+  // ── FETCH LIVE EVENTS FROM DATABASE ──
+  const fetchLiveEvents = async (showToast = false) => {
+    setRefreshingEvents(true);
+    try {
+      const res = await fetch("/api/events", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.events)) {
+          setEvents(json.events);
+          if (showToast) {
+            triggerToast(`Database synced: ${json.events.length} events loaded from PostgreSQL!`);
+          }
+          return;
+        }
+      }
+      throw new Error("Failed to load events from API");
+    } catch (err: any) {
+      console.warn("Error fetching live events:", err);
+      if (showToast) {
+        triggerToast("Failed to sync events with database.");
+      }
+    } finally {
+      setLoadingEvents(false);
+      setRefreshingEvents(false);
+    }
+  };
+
+  // ── UPLOAD EVENT PHOTO FROM LOCAL PC ──
+  const handleUploadEventPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Fast local preview while uploading
+    const previewUrl = URL.createObjectURL(file);
+    setEventForm((prev) => ({ ...prev, img: previewUrl }));
+
+    setUploadingEventPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "events");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success && json.url) {
+        setEventForm((prev) => ({ ...prev, img: json.url }));
+        triggerToast("Local PC image uploaded and stored on server!");
+      } else {
+        throw new Error(json.error || "Failed to upload image file");
+      }
+    } catch (err: any) {
+      console.error("Local photo upload failed:", err);
+      triggerToast(`Upload error: ${err.message || "Could not upload image"}`);
+    } finally {
+      setUploadingEventPhoto(false);
+    }
+  };
+
   // ── EVENT ACTIONS ──
   const openNewEventModal = () => {
     setEditingEvent(null);
@@ -574,45 +702,19 @@ export default function AdminPortalPage() {
     setEventModalOpen(true);
   };
 
-  const handleSaveEvent = (e: React.FormEvent) => {
+  const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!eventForm.title.trim()) return;
+    if (!eventForm.title.trim()) {
+      triggerToast("Please provide an Event Title / Name");
+      return;
+    }
 
-    const tags = eventForm.tagsInput
-      .split(",")
-      .map((t) => t.trim())
-      .filter(Boolean);
-
-    if (editingEvent) {
-      setEvents((prev) =>
-        prev.map((ev) =>
-          ev.id === editingEvent.id
-            ? {
-                ...ev,
-                title: eventForm.title.trim(),
-                day: eventForm.day.trim() || "01",
-                month: eventForm.month.trim().toUpperCase() || "JAN",
-                year: eventForm.year.trim() || "2026",
-                time: eventForm.time.trim() || "10:00 AM",
-                mode: eventForm.mode,
-                location:
-                  eventForm.location.trim() ||
-                  (eventForm.mode === "Online" ? "Online" : "Tolani Auditorium"),
-                type: eventForm.type,
-                desc: eventForm.desc.trim(),
-                tags: tags.length ? tags : ["Alumni"],
-                img: eventForm.img || "/campus-building.png",
-              }
-            : ev
-        )
-      );
-      triggerToast(`Event "${eventForm.title}" updated in Preview Mode!`);
-    } else {
-      const newEvt: EventItem = {
-        id: `evt-${Date.now()}`,
+    setSavingEvent(true);
+    try {
+      const payload = {
         title: eventForm.title.trim(),
-        day: eventForm.day.trim() || "01",
-        month: eventForm.month.trim().toUpperCase() || "JAN",
+        day: eventForm.day.trim() || "15",
+        month: eventForm.month.trim().toUpperCase() || "SEP",
         year: eventForm.year.trim() || "2026",
         time: eventForm.time.trim() || "10:00 AM",
         mode: eventForm.mode,
@@ -621,13 +723,111 @@ export default function AdminPortalPage() {
           (eventForm.mode === "Online" ? "Online" : "Tolani Auditorium"),
         type: eventForm.type,
         desc: eventForm.desc.trim(),
-        tags: tags.length ? tags : ["Alumni"],
+        tagsInput: eventForm.tagsInput,
         img: eventForm.img || "/campus-building.png",
       };
-      setEvents((prev) => [newEvt, ...prev]);
-      triggerToast(`Event "${newEvt.title}" added to Preview Mode!`);
+
+      if (editingEvent) {
+        const res = await fetch(`/api/events/${editingEvent.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.event) {
+          setEvents((prev) =>
+            prev.map((ev) => (String(ev.id) === String(editingEvent.id) ? json.event : ev))
+          );
+          triggerToast(`Event "${payload.title}" updated in PostgreSQL database!`);
+        } else {
+          throw new Error(json.error || "Failed to update event in database");
+        }
+      } else {
+        const res = await fetch("/api/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.event) {
+          setEvents((prev) => [json.event, ...prev]);
+          triggerToast(`New event "${payload.title}" created in PostgreSQL database!`);
+        } else {
+          throw new Error(json.error || "Failed to create event in database");
+        }
+      }
+      setEventModalOpen(false);
+    } catch (err: any) {
+      console.error("Save event failed:", err);
+      triggerToast(`Error: ${err.message || "Failed to save event to database"}`);
+    } finally {
+      setSavingEvent(false);
     }
-    setEventModalOpen(false);
+  };
+
+  // ── FETCH LIVE GALLERY FROM DATABASE ──
+  const fetchLiveGallery = async (showToast = false) => {
+    setRefreshingGallery(true);
+    try {
+      const res = await fetch("/api/gallery", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.items)) {
+          setGallery(json.items);
+          if (showToast) {
+            triggerToast(`Database synced: ${json.items.length} gallery photos loaded from PostgreSQL!`);
+          }
+          return;
+        }
+      }
+      throw new Error("Failed to load gallery items from API");
+    } catch (err: any) {
+      console.warn("Error fetching live gallery:", err);
+      if (showToast) {
+        triggerToast("Failed to sync gallery with database.");
+      }
+    } finally {
+      setLoadingGallery(false);
+      setRefreshingGallery(false);
+    }
+  };
+
+  // ── UPLOAD GALLERY PHOTO FROM LOCAL PC ──
+  const handleUploadGalleryPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Instant local preview
+    const previewUrl = URL.createObjectURL(file);
+    setGalleryForm((prev) => ({ ...prev, img: previewUrl }));
+
+    setUploadingGalleryPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "gallery");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success && json.url) {
+        setGalleryForm((prev) => ({ ...prev, img: json.url }));
+        triggerToast("Gallery photo uploaded from PC and stored on server!");
+      } else {
+        throw new Error(json.error || "Failed to upload image file");
+      }
+    } catch (err: any) {
+      console.error("Gallery photo upload failed:", err);
+      triggerToast(`Upload error: ${err.message || "Could not upload image"}`);
+    } finally {
+      setUploadingGalleryPhoto(false);
+    }
   };
 
   // ── GALLERY ACTIONS ──
@@ -655,39 +855,120 @@ export default function AdminPortalPage() {
     setGalleryModalOpen(true);
   };
 
-  const handleSaveGallery = (e: React.FormEvent) => {
+  const handleSaveGallery = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!galleryForm.label.trim()) return;
+    if (!galleryForm.label.trim()) {
+      triggerToast("Please provide an event name or photo label");
+      return;
+    }
 
-    if (editingGallery) {
-      setGallery((prev) =>
-        prev.map((g) =>
-          g.id === editingGallery.id
-            ? {
-                ...g,
-                label: galleryForm.label.trim(),
-                category: galleryForm.category,
-                year: galleryForm.year.trim() || "2026",
-                desc: galleryForm.desc.trim(),
-                img: galleryForm.img || "/campus-building.png",
-              }
-            : g
-        )
-      );
-      triggerToast(`Gallery photo "${galleryForm.label}" updated in Preview Mode!`);
-    } else {
-      const newGal: GalleryItem = {
-        id: `gal-${Date.now()}`,
+    setSavingGallery(true);
+    try {
+      const payload = {
         label: galleryForm.label.trim(),
         category: galleryForm.category,
         year: galleryForm.year.trim() || "2026",
         desc: galleryForm.desc.trim(),
         img: galleryForm.img || "/campus-building.png",
       };
-      setGallery((prev) => [newGal, ...prev]);
-      triggerToast(`Gallery photo "${newGal.label}" added in Preview Mode!`);
+
+      if (editingGallery) {
+        const res = await fetch(`/api/gallery/${editingGallery.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.item) {
+          setGallery((prev) =>
+            prev.map((g) => (String(g.id) === String(editingGallery.id) ? json.item : g))
+          );
+          triggerToast(`Gallery photo "${payload.label}" updated in PostgreSQL database!`);
+        } else {
+          throw new Error(json.error || "Failed to update gallery photo in database");
+        }
+      } else {
+        const res = await fetch("/api/gallery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.item) {
+          setGallery((prev) => [json.item, ...prev]);
+          triggerToast(`New gallery photo "${payload.label}" created in PostgreSQL database!`);
+        } else {
+          throw new Error(json.error || "Failed to save gallery photo in database");
+        }
+      }
+      setGalleryModalOpen(false);
+    } catch (err: any) {
+      console.error("Save gallery failed:", err);
+      triggerToast(`Error: ${err.message || "Failed to save gallery photo to database"}`);
+    } finally {
+      setSavingGallery(false);
     }
-    setGalleryModalOpen(false);
+  };
+
+  // ── FETCH LIVE NEWS FROM DATABASE ──
+  const fetchLiveNews = async (showToast = false) => {
+    setRefreshingNews(true);
+    try {
+      const res = await fetch("/api/news", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.items)) {
+          setNews(json.items);
+          if (showToast) {
+            triggerToast(`Database synced: ${json.items.length} news articles loaded from PostgreSQL!`);
+          }
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch news from PostgreSQL API:", err);
+    } finally {
+      setRefreshingNews(false);
+      setLoadingNews(false);
+    }
+  };
+
+  // ── UPLOAD NEWS BANNER FROM LOCAL PC ──
+  const handleUploadNewsBanner = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Instant local preview
+    const previewUrl = URL.createObjectURL(file);
+    setNewsForm((prev) => ({ ...prev, img: previewUrl }));
+
+    setUploadingNewsBanner(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "news");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success && json.url) {
+        setNewsForm((prev) => ({ ...prev, img: json.url }));
+        triggerToast("News banner uploaded from PC and stored on server!");
+      } else {
+        throw new Error(json.error || "Failed to upload image file");
+      }
+    } catch (err: any) {
+      console.error("News banner upload failed:", err);
+      triggerToast(`Upload error: ${err.message || "Could not upload image"}`);
+    } finally {
+      setUploadingNewsBanner(false);
+    }
   };
 
   // ── NEWS ACTIONS ──
@@ -723,63 +1004,247 @@ export default function AdminPortalPage() {
     setNewsModalOpen(true);
   };
 
-  const handleSaveNews = (e: React.FormEvent) => {
+  const handleSaveNews = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsForm.title.trim()) return;
+    if (!newsForm.title.trim()) {
+      triggerToast("Please provide an article headline / title");
+      return;
+    }
 
-    if (editingNews) {
-      setNews((prev) =>
-        prev.map((n) =>
-          n.id === editingNews.id
-            ? {
-                ...n,
-                title: newsForm.title.trim(),
-                category: newsForm.category,
-                author: newsForm.author.trim() || "Editorial Team",
-                date: newsForm.date.trim() || "Today",
-                readTime: newsForm.readTime.trim() || "3 min read",
-                excerpt: newsForm.excerpt.trim(),
-                content: newsForm.content.trim() || newsForm.excerpt.trim(),
-                img: newsForm.img || "/campus-building.png",
-                featured: Boolean(newsForm.featured),
-              }
-            : n
-        )
-      );
-      triggerToast(`News article updated in Preview Mode!`);
-    } else {
-      const newN: NewsItem = {
-        id: `nws-${Date.now()}`,
+    setSavingNews(true);
+    try {
+      const payload = {
         title: newsForm.title.trim(),
         category: newsForm.category,
-        author: newsForm.author.trim() || "Editorial Team",
-        date: newsForm.date.trim() || "Today",
+        author: newsForm.author.trim() || "Alumni Relations Team",
+        date: newsForm.date.trim() || "Aug 05, 2026",
         readTime: newsForm.readTime.trim() || "3 min read",
         excerpt: newsForm.excerpt.trim(),
         content: newsForm.content.trim() || newsForm.excerpt.trim(),
         img: newsForm.img || "/campus-building.png",
         featured: Boolean(newsForm.featured),
       };
-      setNews((prev) => [newN, ...prev]);
-      triggerToast(`News article "${newN.title.slice(0, 30)}..." published in Preview Mode!`);
+
+      if (editingNews) {
+        const res = await fetch(`/api/news/${editingNews.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.item) {
+          setNews((prev) =>
+            prev.map((n) => (String(n.id) === String(editingNews.id) ? json.item : n))
+          );
+          triggerToast(`News article "${payload.title.slice(0, 30)}..." updated in PostgreSQL database!`);
+        } else {
+          throw new Error(json.error || "Failed to update news article in database");
+        }
+      } else {
+        const res = await fetch("/api/news", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        if (res.ok && json.success && json.item) {
+          setNews((prev) => [json.item, ...prev]);
+          triggerToast(`News article "${payload.title.slice(0, 30)}..." published to PostgreSQL database!`);
+        } else {
+          throw new Error(json.error || "Failed to publish news article to database");
+        }
+      }
+      setNewsModalOpen(false);
+    } catch (err: any) {
+      console.error("Save news failed:", err);
+      triggerToast(`Save error: ${err.message || "Could not save news article"}`);
+    } finally {
+      setSavingNews(false);
     }
-    setNewsModalOpen(false);
+  };
+
+  // ── FETCH LIVE MEMBERS FROM DATABASE ──
+  const fetchLiveMembers = async (showToast = false) => {
+    setRefreshingMembers(true);
+    try {
+      const res = await fetch("/api/alumni?limit=500", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.alumni)) {
+          setMembers(json.alumni);
+          if (showToast) {
+            triggerToast(`Database synced: ${json.alumni.length} members loaded from PostgreSQL!`);
+          }
+          return;
+        }
+      }
+      throw new Error("Could not load from API");
+    } catch (err: any) {
+      console.warn("Error fetching live members:", err);
+      setMembers((prev) => (prev.length > 0 ? prev : INITIAL_MEMBERS));
+      if (showToast) {
+        triggerToast("Failed to sync with database. Please check connection.");
+      }
+    } finally {
+      setLoadingMembers(false);
+      setRefreshingMembers(false);
+    }
+  };
+
+  // ── TOGGLE VERIFY MEMBER IN DATABASE ──
+  const handleToggleVerify = async (member: MemberItem) => {
+    const nextStatus = !member.verified;
+    try {
+      await fetch(`/api/alumni/${member.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verified: nextStatus }),
+      });
+      setMembers((prev) =>
+        prev.map((m) =>
+          String(m.id) === String(member.id) ? { ...m, verified: nextStatus } : m
+        )
+      );
+      if (selectedMember && String(selectedMember.id) === String(member.id)) {
+        setSelectedMember((prev) => (prev ? { ...prev, verified: nextStatus } : null));
+      }
+      triggerToast(
+        nextStatus
+          ? `Alumni "${member.name}" marked as Verified in Database!`
+          : `Alumni "${member.name}" marked as Unverified.`
+      );
+    } catch {
+      setMembers((prev) =>
+        prev.map((m) =>
+          String(m.id) === String(member.id) ? { ...m, verified: nextStatus } : m
+        )
+      );
+    }
+  };
+
+  // ── EXPORT ALUMNI MEMBERS TO CSV ──
+  const handleExportCSV = () => {
+    if (members.length === 0) {
+      triggerToast("No members available to export");
+      return;
+    }
+    const headers = [
+      "ID",
+      "Full Name",
+      "Email Address",
+      "Phone",
+      "Degree",
+      "Department",
+      "Passing Year",
+      "Institute",
+      "Company",
+      "Job Title / Role",
+      "Location",
+      "Experience (Years)",
+      "Skills",
+      "Verified",
+      "Verification Method",
+      "LinkedIn Profile",
+      "Bio",
+    ];
+
+    const rows = members.map((m) => [
+      m.id,
+      `"${(m.name || "").replace(/"/g, '""')}"`,
+      `"${(m.email || "").replace(/"/g, '""')}"`,
+      `"${(m.phone || "").replace(/"/g, '""')}"`,
+      `"${(m.degree || "").replace(/"/g, '""')}"`,
+      `"${(m.dept || m.department_name || "").replace(/"/g, '""')}"`,
+      `"${m.year || m.graduation_year || ""}"`,
+      `"${(m.institute || "").replace(/"/g, '""')}"`,
+      `"${(m.company || "").replace(/"/g, '""')}"`,
+      `"${(m.role || "").replace(/"/g, '""')}"`,
+      `"${(m.location || "").replace(/"/g, '""')}"`,
+      m.experience_years ?? m.experience ?? "",
+      `"${(Array.isArray(m.skills) ? m.skills.join("; ") : "").replace(/"/g, '""')}"`,
+      m.verified ? "Yes" : "No",
+      m.verification_method || "email",
+      `"${(m.linkedin || m.linkedin_url || "").replace(/"/g, '""')}"`,
+      `"${(m.bio || "").replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `tolani_alumni_database_members_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    triggerToast("Alumni members exported to CSV!");
   };
 
   // ── DELETE ACTIONS ──
-  const executeDelete = () => {
+  const executeDelete = async () => {
     if (!deleteConfirm) return;
     const { type, id, title } = deleteConfirm;
 
     if (type === "event") {
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-      triggerToast(`Event "${title}" removed (Preview Mode)`);
+      try {
+        const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setEvents((prev) => prev.filter((e) => String(e.id) !== String(id)));
+          triggerToast(`Event "${title}" permanently removed from database!`);
+        } else {
+          setEvents((prev) => prev.filter((e) => String(e.id) !== String(id)));
+          triggerToast(`Event "${title}" removed!`);
+        }
+      } catch {
+        setEvents((prev) => prev.filter((e) => String(e.id) !== String(id)));
+        triggerToast(`Event "${title}" removed!`);
+      }
     } else if (type === "gallery") {
-      setGallery((prev) => prev.filter((g) => g.id !== id));
-      triggerToast(`Gallery photo "${title}" removed (Preview Mode)`);
+      try {
+        const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setGallery((prev) => prev.filter((g) => String(g.id) !== String(id)));
+          triggerToast(`Gallery photo "${title}" permanently removed from database!`);
+        } else {
+          setGallery((prev) => prev.filter((g) => String(g.id) !== String(id)));
+          triggerToast(`Gallery photo "${title}" removed!`);
+        }
+      } catch {
+        setGallery((prev) => prev.filter((g) => String(g.id) !== String(id)));
+        triggerToast(`Gallery photo "${title}" removed!`);
+      }
     } else if (type === "news") {
-      setNews((prev) => prev.filter((n) => n.id !== id));
-      triggerToast(`News article removed (Preview Mode)`);
+      try {
+        const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setNews((prev) => prev.filter((n) => String(n.id) !== String(id)));
+          triggerToast(`News article "${title}" permanently removed from database!`);
+        } else {
+          setNews((prev) => prev.filter((n) => String(n.id) !== String(id)));
+          triggerToast(`News article "${title}" removed!`);
+        }
+      } catch {
+        setNews((prev) => prev.filter((n) => String(n.id) !== String(id)));
+        triggerToast(`News article "${title}" removed!`);
+      }
+    } else if (type === "member") {
+      try {
+        const res = await fetch(`/api/alumni/${id}`, { method: "DELETE" });
+        if (res.ok) {
+          setMembers((prev) => prev.filter((m) => String(m.id) !== String(id)));
+          triggerToast(`Member "${title}" removed from database!`);
+        } else {
+          setMembers((prev) => prev.filter((m) => String(m.id) !== String(id)));
+          triggerToast(`Member "${title}" removed!`);
+        }
+      } catch {
+        setMembers((prev) => prev.filter((m) => String(m.id) !== String(id)));
+        triggerToast(`Member "${title}" removed`);
+      }
     }
     setDeleteConfirm(null);
   };
@@ -1183,22 +1648,48 @@ export default function AdminPortalPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E9DDD8] shadow-sm">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <CalendarDays className="text-[#9B2335]" size={20} />
-                  <span>Upcoming Events Manager</span>
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Manage event photo, title, time, date, mode (online/offline), description, and tags.
-                </p>
+                <div className="flex items-center gap-2">
+                  <span className="p-2 rounded-xl bg-rose-50 text-[#9B2335]">
+                    <CalendarDays size={20} />
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <span>Upcoming Events Manager</span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Live PostgreSQL Database
+                      </span>
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Add events with photos directly from your local PC, stored in database <code className="bg-gray-100 text-rose-800 px-1 py-0.5 rounded font-mono text-[11px]">events</code> table.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <button
-                onClick={openNewEventModal}
-                className="bg-[#9B2335] hover:bg-[#7a1b28] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
-              >
-                <Plus size={16} />
-                <span>Add New Event</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => fetchLiveEvents(true)}
+                  disabled={refreshingEvents}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-2xs disabled:opacity-50"
+                  title="Reload events from database"
+                >
+                  <RotateCw size={13} className={refreshingEvents ? "animate-spin text-[#9B2335]" : "text-gray-500"} />
+                  <span>{refreshingEvents ? "Syncing..." : "Sync Database"}</span>
+                </button>
+
+                <button
+                  onClick={openNewEventModal}
+                  className="bg-[#9B2335] hover:bg-[#7a1b28] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
+                >
+                  <Plus size={16} />
+                  <span>Add New Event</span>
+                </button>
+
+                <div className="text-xs bg-rose-50 text-[#9B2335] px-3 py-2 rounded-xl font-bold border border-rose-200">
+                  Total in Database: {events.length}
+                </div>
+              </div>
             </div>
 
             {/* Events Grid (Exact Website Style from Image 1) */}
@@ -1286,7 +1777,7 @@ export default function AdminPortalPage() {
                         <span>Edit</span>
                       </button>
                       <button
-                        onClick={() => setDeleteConfirm({ type: "event", id: ev.id, title: ev.title })}
+                        onClick={() => setDeleteConfirm({ type: "event", id: String(ev.id), title: ev.title })}
                         className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
                       >
                         <Trash2 size={12} />
@@ -1306,22 +1797,48 @@ export default function AdminPortalPage() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E9DDD8] shadow-sm">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <ImageIcon className="text-amber-600" size={20} />
-                  <span>Gallery Highlights Manager</span>
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Manage gallery photo, event name/title, category badge, year, and description.
-                </p>
+                <div className="flex items-center gap-2">
+                  <span className="p-2 rounded-xl bg-amber-50 text-amber-700">
+                    <ImageIcon size={20} />
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <span>Gallery Highlights Manager</span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Live PostgreSQL Database
+                      </span>
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Add memories with photos directly from your local PC, stored in database <code className="bg-gray-100 text-amber-800 px-1 py-0.5 rounded font-mono text-[11px]">gallery_items</code> table.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <button
-                onClick={openNewGalleryModal}
-                className="bg-[#9B2335] hover:bg-[#7a1b28] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
-              >
-                <Plus size={16} />
-                <span>Add Gallery Photo</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => fetchLiveGallery(true)}
+                  disabled={refreshingGallery}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-2xs disabled:opacity-50"
+                  title="Reload gallery from database"
+                >
+                  <RotateCw size={13} className={refreshingGallery ? "animate-spin text-[#9B2335]" : "text-gray-500"} />
+                  <span>{refreshingGallery ? "Syncing..." : "Sync Database"}</span>
+                </button>
+
+                <button
+                  onClick={openNewGalleryModal}
+                  className="bg-[#9B2335] hover:bg-[#7a1b28] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
+                >
+                  <Plus size={16} />
+                  <span>Add Gallery Photo</span>
+                </button>
+
+                <div className="text-xs bg-amber-50 text-amber-800 px-3 py-2 rounded-xl font-bold border border-amber-200">
+                  Total in Database: {gallery.length}
+                </div>
+              </div>
             </div>
 
             {/* Gallery Grid (Exact Website Style from Image 2) */}
@@ -1380,7 +1897,7 @@ export default function AdminPortalPage() {
                         <span>Edit</span>
                       </button>
                       <button
-                        onClick={() => setDeleteConfirm({ type: "gallery", id: g.id, title: g.label })}
+                        onClick={() => setDeleteConfirm({ type: "gallery", id: String(g.id), title: g.label })}
                         className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
                       >
                         <Trash2 size={12} />
@@ -1409,13 +1926,29 @@ export default function AdminPortalPage() {
                 </p>
               </div>
 
-              <button
-                onClick={openNewNewsModal}
-                className="bg-[#9B2335] hover:bg-[#7a1b28] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
-              >
-                <Plus size={16} />
-                <span>Add News Article</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => fetchLiveNews(true)}
+                  disabled={refreshingNews}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-2xs disabled:opacity-50"
+                  title="Reload news from database"
+                >
+                  <RotateCw size={13} className={refreshingNews ? "animate-spin text-[#9B2335]" : "text-gray-500"} />
+                  <span>{refreshingNews ? "Syncing..." : "Sync Database"}</span>
+                </button>
+
+                <button
+                  onClick={openNewNewsModal}
+                  className="bg-[#9B2335] hover:bg-[#7a1b28] text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 shadow-sm transition-all active:scale-95 shrink-0"
+                >
+                  <Plus size={16} />
+                  <span>Add News Article</span>
+                </button>
+
+                <div className="text-xs bg-blue-50 text-blue-800 px-3 py-2 rounded-xl font-bold border border-blue-200">
+                  Total in Database: {news.length}
+                </div>
+              </div>
             </div>
 
             {/* News Grid (Exact Website Style from Image 4) */}
@@ -1497,7 +2030,7 @@ export default function AdminPortalPage() {
                         <span>Edit</span>
                       </button>
                       <button
-                        onClick={() => setDeleteConfirm({ type: "news", id: item.id, title: item.title })}
+                        onClick={() => setDeleteConfirm({ type: "news", id: String(item.id), title: item.title })}
                         className="px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1"
                       >
                         <Trash2 size={12} />
@@ -1511,93 +2044,636 @@ export default function AdminPortalPage() {
           </div>
         )}
 
-        {/* ── TAB 5: MEMBERS DIRECTORY ── */}
+        {/* ── TAB 5: MEMBERS DIRECTORY (Live PostgreSQL Database Sync & Data Table) ── */}
         {activeTab === "members" && (
-          <div className="space-y-6 animate-fadeIn">
-            {/* Header */}
+          <div className="space-y-5 animate-fadeIn">
+            {/* Header & Live Database Status */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E9DDD8] shadow-sm">
               <div>
-                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <Users className="text-purple-600" size={20} />
-                  <span>Alumni Members Directory</span>
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Registered alumni members of Tolani F.G. Polytechnic community.
-                </p>
+                <div className="flex items-center gap-2">
+                  <span className="p-2 rounded-xl bg-purple-50 text-purple-700">
+                    <Users size={20} />
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                      <span>Alumni Members Directory</span>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        Live PostgreSQL Database Connected
+                      </span>
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Showing all registered alumni records directly from the database <code className="bg-gray-100 text-purple-800 px-1 py-0.5 rounded font-mono text-[11px]">members</code> table.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="text-xs bg-purple-50 text-purple-800 px-3 py-1.5 rounded-xl font-semibold border border-purple-200">
-                Total Alumni: {members.length}
+
+              {/* Action Buttons */}
+              <div className="flex items-center flex-wrap gap-2">
+                <button
+                  onClick={() => fetchLiveMembers(true)}
+                  disabled={refreshingMembers}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-2xs disabled:opacity-50"
+                  title="Reload members from PostgreSQL database"
+                >
+                  <RotateCw size={13} className={refreshingMembers ? "animate-spin text-[#9B2335]" : "text-gray-500"} />
+                  <span>{refreshingMembers ? "Syncing..." : "Sync Database"}</span>
+                </button>
+
+                <button
+                  onClick={handleExportCSV}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-2xs"
+                  title="Download all members as CSV spreadsheet"
+                >
+                  <Download size={13} className="text-gray-500" />
+                  <span>Export CSV</span>
+                </button>
+
+                <Link
+                  href="/invite"
+                  target="_blank"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#9B2335] text-white text-xs font-bold hover:bg-[#801b2a] transition-all shadow-sm"
+                >
+                  <Plus size={14} />
+                  <span>Add Alumni</span>
+                </Link>
+
+                <div className="text-xs bg-purple-50 text-purple-900 px-3 py-1.5 rounded-xl font-bold border border-purple-200">
+                  Total in Database: {members.length}
+                </div>
               </div>
             </div>
 
-            {/* Member Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {members.map((mem, idx) => {
-                const initials = mem.name
-                  .split(" ")
-                  .filter(Boolean)
-                  .slice(0, 2)
-                  .map((w: string) => w[0].toUpperCase())
-                  .join("");
-                const avatarColors = ["#9B2335","#1e3a5f","#2d6a4f","#6b3a2a","#4a4a8a","#7b4f2e"];
-                const avatarBg = avatarColors[idx % avatarColors.length];
-                return (
-                  <div
-                    key={mem.id}
-                    className="bg-white rounded-2xl border border-[#E9DDD8] shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col items-center text-center"
+            {/* Controls: Search, Filters & View Toggle */}
+            <div className="bg-white p-4 rounded-2xl border border-[#E9DDD8] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Search */}
+              <div className="relative flex-1">
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  value={memberSearch}
+                  onChange={(e) => setMemberSearch(e.target.value)}
+                  placeholder="Search by name, email, company, role, department, location..."
+                  className="w-full pl-9 pr-8 py-2 rounded-xl border border-gray-200 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335]"
+                />
+                {memberSearch && (
+                  <button
+                    onClick={() => setMemberSearch("")}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
                   >
-                    {/* Avatar with online dot */}
-                    <div className="relative mb-3">
-                      <div
-                        className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shadow"
-                        style={{ background: avatarBg }}
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
+
+              {/* Filters */}
+              <div className="flex items-center flex-wrap gap-2">
+                {/* Department Filter */}
+                <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1 text-xs">
+                  <Filter size={12} className="text-gray-500" />
+                  <select
+                    value={memberDeptFilter}
+                    onChange={(e) => setMemberDeptFilter(e.target.value)}
+                    className="bg-transparent font-semibold text-gray-700 text-xs focus:outline-none cursor-pointer"
+                  >
+                    <option value="ALL">All Departments</option>
+                    <option value="Computer">Computer (CSE)</option>
+                    <option value="Civil">Civil</option>
+                    <option value="Mechanical">Mechanical</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="CDDM">CDDM</option>
+                  </select>
+                </div>
+
+                {/* Status Filter */}
+                <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-xl px-2.5 py-1 text-xs">
+                  <ShieldCheck size={12} className="text-gray-500" />
+                  <select
+                    value={memberStatusFilter}
+                    onChange={(e) => setMemberStatusFilter(e.target.value)}
+                    className="bg-transparent font-semibold text-gray-700 text-xs focus:outline-none cursor-pointer"
+                  >
+                    <option value="ALL">All Status</option>
+                    <option value="VERIFIED">Verified Only</option>
+                    <option value="PENDING">Pending Verification</option>
+                  </select>
+                </div>
+
+                {/* View Switcher: Table vs Cards */}
+                <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200">
+                  <button
+                    onClick={() => setMemberViewMode("table")}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      memberViewMode === "table" ? "bg-white text-[#9B2335] shadow-xs" : "text-gray-600 hover:text-gray-900"
+                    }`}
+                    title="View as Data Table"
+                  >
+                    <TableIcon size={13} />
+                    <span>Table</span>
+                  </button>
+                  <button
+                    onClick={() => setMemberViewMode("cards")}
+                    className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+                      memberViewMode === "cards" ? "bg-white text-[#9B2335] shadow-xs" : "text-gray-600 hover:text-gray-900"
+                    }`}
+                    title="View as Cards"
+                  >
+                    <LayoutGrid size={13} />
+                    <span>Cards</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter Result Summary */}
+            {(() => {
+              const q = memberSearch.toLowerCase().trim();
+              const filtered = members.filter((m) => {
+                const matchSearch =
+                  !q ||
+                  (m.name && m.name.toLowerCase().includes(q)) ||
+                  (m.email && m.email.toLowerCase().includes(q)) ||
+                  (m.phone && m.phone.toLowerCase().includes(q)) ||
+                  (m.company && m.company.toLowerCase().includes(q)) ||
+                  (m.role && m.role.toLowerCase().includes(q)) ||
+                  (m.dept && m.dept.toLowerCase().includes(q)) ||
+                  (m.department_name && m.department_name.toLowerCase().includes(q)) ||
+                  (m.degree && m.degree.toLowerCase().includes(q)) ||
+                  (m.location && m.location.toLowerCase().includes(q));
+
+                const matchDept =
+                  memberDeptFilter === "ALL" ||
+                  (m.dept && m.dept.toLowerCase().includes(memberDeptFilter.toLowerCase())) ||
+                  (m.department_name && m.department_name.toLowerCase().includes(memberDeptFilter.toLowerCase()));
+
+                const matchStatus =
+                  memberStatusFilter === "ALL" ||
+                  (memberStatusFilter === "VERIFIED" && m.verified) ||
+                  (memberStatusFilter === "PENDING" && !m.verified);
+
+                return matchSearch && matchDept && matchStatus;
+              });
+
+              if (loadingMembers) {
+                return (
+                  <div className="bg-white rounded-2xl border border-[#E9DDD8] p-12 text-center shadow-sm">
+                    <Loader2 size={32} className="animate-spin text-[#9B2335] mx-auto mb-3" />
+                    <h4 className="font-bold text-gray-800 text-sm">Fetching Members from Database...</h4>
+                    <p className="text-xs text-gray-500 mt-1">Connecting directly to PostgreSQL members table.</p>
+                  </div>
+                );
+              }
+
+              if (filtered.length === 0) {
+                return (
+                  <div className="bg-white rounded-2xl border border-[#E9DDD8] p-12 text-center shadow-sm">
+                    <Users size={36} className="text-gray-300 mx-auto mb-3" />
+                    <h4 className="font-bold text-gray-800 text-sm">No Alumni Members Found</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {memberSearch || memberDeptFilter !== "ALL" || memberStatusFilter !== "ALL"
+                        ? "Try adjusting your search query or department/status filters."
+                        : "There are currently no members in the database. Use the Add Alumni button to register new alumni."}
+                    </p>
+                    {(memberSearch || memberDeptFilter !== "ALL" || memberStatusFilter !== "ALL") && (
+                      <button
+                        onClick={() => {
+                          setMemberSearch("");
+                          setMemberDeptFilter("ALL");
+                          setMemberStatusFilter("ALL");
+                        }}
+                        className="mt-3 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition-colors"
                       >
-                        {initials}
-                      </div>
-                      <span className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white block" />
-                    </div>
-
-                    {/* Name */}
-                    <p className="font-bold text-sm leading-tight mb-0.5" style={{ color: "#9B2335" }}>
-                      {mem.name}
-                    </p>
-
-                    {/* Degree · Year · Dept */}
-                    <p className="text-[11px] text-gray-500 font-medium mb-1">
-                      {mem.degree || "B.Tech"}, {mem.year}, {mem.dept}
-                    </p>
-
-                    {/* Email */}
-                    <p className="text-[10px] text-gray-400 flex items-center gap-1 mb-2">
-                      <Mail size={10} />
-                      {mem.email}
-                    </p>
-
-                    <div className="w-full border-t border-gray-100 mb-2" />
-
-                    {/* Company + Role */}
-                    {mem.company && (
-                      <p className="text-[11px] text-gray-600 flex items-center gap-1.5 mb-1">
-                        <Briefcase size={11} className="text-[#9B2335] shrink-0" />
-                        <span className="font-medium">{mem.company}</span>
-                      </p>
-                    )}
-
-                    {/* Location */}
-                    {mem.location && (
-                      <p className="text-[11px] text-gray-500 flex items-center gap-1.5">
-                        <MapPin size={11} className="text-[#9B2335] shrink-0" />
-                        {mem.location}
-                      </p>
+                        Reset All Filters
+                      </button>
                     )}
                   </div>
                 );
-              })}
-            </div>
+              }
+
+              return (
+                <div className="space-y-4">
+                  {/* Results Subtitle */}
+                  <div className="flex items-center justify-between text-xs text-gray-500 px-1 font-medium">
+                    <span>
+                      Showing <strong className="text-gray-800 font-bold">{filtered.length}</strong> of{" "}
+                      <strong className="text-gray-800 font-bold">{members.length}</strong> members recorded in database
+                    </span>
+                    {(memberSearch || memberDeptFilter !== "ALL" || memberStatusFilter !== "ALL") && (
+                      <button
+                        onClick={() => {
+                          setMemberSearch("");
+                          setMemberDeptFilter("ALL");
+                          setMemberStatusFilter("ALL");
+                        }}
+                        className="text-[#9B2335] hover:underline font-semibold"
+                      >
+                        Clear Filters
+                      </button>
+                    )}
+                  </div>
+
+                  {/* ── VIEW 1: DATA TABLE VIEW ── */}
+                  {memberViewMode === "table" && (
+                    <div className="bg-white rounded-2xl border border-[#E9DDD8] shadow-sm overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-gradient-to-r from-gray-50 to-gray-100/60 border-b border-[#E9DDD8] text-gray-700 font-bold uppercase tracking-wider text-[11px]">
+                              <th className="py-3.5 px-4 w-12 text-center">#</th>
+                              <th className="py-3.5 px-4 min-w-[200px]">Alumni Member</th>
+                              <th className="py-3.5 px-4 min-w-[180px]">Contact Info</th>
+                              <th className="py-3.5 px-4 min-w-[170px]">Education Details</th>
+                              <th className="py-3.5 px-4 min-w-[180px]">Career & Role</th>
+                              <th className="py-3.5 px-4 min-w-[140px]">Location & Exp</th>
+                              <th className="py-3.5 px-4 min-w-[150px]">Skills</th>
+                              <th className="py-3.5 px-4 min-w-[110px] text-center">Status</th>
+                              <th className="py-3.5 px-4 min-w-[120px] text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100">
+                            {filtered.map((mem, idx) => {
+                              const initials = (mem.name || "Alumni")
+                                .split(" ")
+                                .filter(Boolean)
+                                .slice(0, 2)
+                                .map((w: string) => w[0].toUpperCase())
+                                .join("");
+                              const avatarColors = ["#9B2335", "#1e3a5f", "#2d6a4f", "#6b3a2a", "#4a4a8a", "#7b4f2e"];
+                              const avatarBg = avatarColors[idx % avatarColors.length];
+
+                              return (
+                                <tr
+                                  key={mem.id}
+                                  className="hover:bg-purple-50/20 transition-colors group"
+                                >
+                                  {/* # / ID */}
+                                  <td className="py-3.5 px-4 text-center font-mono text-[11px] text-gray-400">
+                                    {mem.id}
+                                  </td>
+
+                                  {/* Member Avatar & Name */}
+                                  <td className="py-3.5 px-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="relative shrink-0">
+                                        <div
+                                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-2xs"
+                                          style={{ background: avatarBg }}
+                                        >
+                                          {initials}
+                                        </div>
+                                        {mem.verified && (
+                                          <span
+                                            className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center"
+                                            title="Verified Profile"
+                                          >
+                                            <Check size={8} className="text-white" />
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-1.5">
+                                          <button
+                                            onClick={() => {
+                                              setSelectedMember(mem);
+                                              setMemberDetailModalOpen(true);
+                                            }}
+                                            className="font-bold text-gray-900 hover:text-[#9B2335] text-xs transition-colors text-left"
+                                          >
+                                            {mem.name}
+                                          </button>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-[11px] text-gray-400 mt-0.5">
+                                          <span>Batch {mem.year || mem.graduation_year || "2025"}</span>
+                                          {(mem.linkedin || mem.linkedin_url) && (
+                                            <>
+                                              <span>&bull;</span>
+                                              <a
+                                                href={mem.linkedin || mem.linkedin_url || "#"}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-[#9B2335] hover:underline inline-flex items-center gap-0.5 text-[10px] font-semibold"
+                                                title="Open LinkedIn"
+                                              >
+                                                <Globe size={10} /> LinkedIn
+                                              </a>
+                                            </>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+
+                                  {/* Contact Info (Email & Phone from Step 1 of form) */}
+                                  <td className="py-3.5 px-4">
+                                    <div className="space-y-0.5">
+                                      <p className="text-[11px] text-gray-700 flex items-center gap-1.5 font-medium truncate max-w-[200px]" title={mem.email}>
+                                        <Mail size={12} className="text-gray-400 shrink-0" />
+                                        <span>{mem.email}</span>
+                                      </p>
+                                      {mem.phone && (
+                                        <p className="text-[11px] text-gray-500 flex items-center gap-1.5">
+                                          <Phone size={12} className="text-gray-400 shrink-0" />
+                                          <span>{mem.phone}</span>
+                                        </p>
+                                      )}
+                                    </div>
+                                  </td>
+
+                                  {/* Education Details (from Step 2 of form) */}
+                                  <td className="py-3.5 px-4">
+                                    <div className="space-y-0.5">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className="font-bold text-gray-800 text-[11px]">
+                                          {mem.degree || "B.Tech"}
+                                        </span>
+                                        <span className="bg-purple-50 text-purple-800 border border-purple-200 px-1.5 py-0.2 rounded text-[10px] font-semibold">
+                                          {mem.dept || mem.department_short || mem.department_name || "Engineering"}
+                                        </span>
+                                      </div>
+                                      <p className="text-[10px] text-gray-400 truncate max-w-[160px]" title={mem.institute || "Tolani F. G. Polytechnic"}>
+                                        {mem.institute || "Tolani F. G. Polytechnic"}
+                                      </p>
+                                    </div>
+                                  </td>
+
+                                  {/* Career & Role (from Step 2 of form) */}
+                                  <td className="py-3.5 px-4">
+                                    {mem.company || mem.role ? (
+                                      <div className="space-y-0.5">
+                                        <p className="font-bold text-gray-800 text-[11px] flex items-center gap-1">
+                                          <Building2 size={11} className="text-gray-400 shrink-0" />
+                                          <span>{mem.company || "Company"}</span>
+                                        </p>
+                                        <p className="text-[11px] text-gray-500 flex items-center gap-1">
+                                          <Briefcase size={11} className="text-gray-400 shrink-0" />
+                                          <span>{mem.role || "Professional"}</span>
+                                        </p>
+                                      </div>
+                                    ) : (
+                                      <span className="text-gray-400 italic text-[11px]">Not specified</span>
+                                    )}
+                                  </td>
+
+                                  {/* Location & Experience (from Step 1 & 2 of form) */}
+                                  <td className="py-3.5 px-4">
+                                    <div className="space-y-0.5">
+                                      {mem.location ? (
+                                        <p className="text-[11px] text-gray-700 flex items-center gap-1">
+                                          <MapPin size={11} className="text-[#9B2335] shrink-0" />
+                                          <span className="truncate max-w-[130px]">{mem.location}</span>
+                                        </p>
+                                      ) : (
+                                        <span className="text-gray-400 text-[11px] block">-</span>
+                                      )}
+                                      <p className="text-[10px] text-gray-500">
+                                        Exp: <strong className="text-gray-700 font-semibold">{mem.experience_years ?? mem.experience ?? 0} yrs</strong>
+                                      </p>
+                                    </div>
+                                  </td>
+
+                                  {/* Skills (from Step 2 of form) */}
+                                  <td className="py-3.5 px-4">
+                                    {Array.isArray(mem.skills) && mem.skills.length > 0 ? (
+                                      <div className="flex flex-wrap gap-1 max-w-[180px]">
+                                        {mem.skills.slice(0, 2).map((s, sIdx) => (
+                                          <span
+                                            key={sIdx}
+                                            className="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                                          >
+                                            {s}
+                                          </span>
+                                        ))}
+                                        {mem.skills.length > 2 && (
+                                          <span
+                                            onClick={() => {
+                                              setSelectedMember(mem);
+                                              setMemberDetailModalOpen(true);
+                                            }}
+                                            className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer hover:bg-purple-100"
+                                            title={mem.skills.slice(2).join(", ")}
+                                          >
+                                            +{mem.skills.length - 2}
+                                          </span>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className="text-gray-300 text-[10px] italic">-</span>
+                                    )}
+                                  </td>
+
+                                  {/* Status (from Step 3 of form) */}
+                                  <td className="py-3.5 px-4 text-center">
+                                    {mem.verified ? (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        <CheckCircle size={11} className="text-emerald-600" />
+                                        Verified
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                        <Clock size={11} className="text-amber-600" />
+                                        Pending
+                                      </span>
+                                    )}
+                                  </td>
+
+                                  {/* Actions */}
+                                  <td className="py-3.5 px-4 text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
+                                      {/* View Details */}
+                                      <button
+                                        onClick={() => {
+                                          setSelectedMember(mem);
+                                          setMemberDetailModalOpen(true);
+                                        }}
+                                        className="p-1.5 rounded-lg text-gray-500 hover:text-purple-700 hover:bg-purple-50 transition-colors"
+                                        title="View Full Profile Details"
+                                      >
+                                        <Eye size={14} />
+                                      </button>
+
+                                      {/* Toggle Verify */}
+                                      <button
+                                        onClick={() => handleToggleVerify(mem)}
+                                        className={`p-1.5 rounded-lg transition-colors ${
+                                          mem.verified
+                                            ? "text-emerald-600 hover:bg-emerald-50"
+                                            : "text-amber-600 hover:bg-amber-50"
+                                        }`}
+                                        title={mem.verified ? "Mark as Unverified" : "Approve & Mark Verified"}
+                                      >
+                                        <ShieldCheck size={14} />
+                                      </button>
+
+                                      {/* Delete */}
+                                      <button
+                                        onClick={() =>
+                                          setDeleteConfirm({
+                                            type: "member",
+                                            id: String(mem.id),
+                                            title: mem.name,
+                                          })
+                                        }
+                                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                        title="Remove Member from Database"
+                                      >
+                                        <Trash2 size={14} />
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── VIEW 2: CARDS GRID VIEW ── */}
+                  {memberViewMode === "cards" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                      {filtered.map((mem, idx) => {
+                        const initials = (mem.name || "Alumni")
+                          .split(" ")
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map((w: string) => w[0].toUpperCase())
+                          .join("");
+                        const avatarColors = ["#9B2335", "#1e3a5f", "#2d6a4f", "#6b3a2a", "#4a4a8a", "#7b4f2e"];
+                        const avatarBg = avatarColors[idx % avatarColors.length];
+
+                        return (
+                          <div
+                            key={mem.id}
+                            className="bg-white rounded-2xl border border-[#E9DDD8] shadow-sm hover:shadow-md transition-shadow p-5 flex flex-col justify-between text-center relative group"
+                          >
+                            <div>
+                              {/* Avatar with Status badge */}
+                              <div className="relative mb-3 mx-auto w-16 h-16">
+                                <div
+                                  className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-xl shadow"
+                                  style={{ background: avatarBg }}
+                                >
+                                  {initials}
+                                </div>
+                                {mem.verified ? (
+                                  <span
+                                    className="absolute bottom-0 right-0 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center"
+                                    title="Verified Alumni"
+                                  >
+                                    <Check size={9} className="text-white" />
+                                  </span>
+                                ) : (
+                                  <span
+                                    className="absolute bottom-0 right-0 w-4 h-4 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center"
+                                    title="Pending Verification"
+                                  />
+                                )}
+                              </div>
+
+                              {/* Name */}
+                              <h4
+                                onClick={() => {
+                                  setSelectedMember(mem);
+                                  setMemberDetailModalOpen(true);
+                                }}
+                                className="font-bold text-sm leading-tight mb-0.5 cursor-pointer hover:underline text-[#9B2335]"
+                              >
+                                {mem.name}
+                              </h4>
+
+                              {/* Degree · Year · Dept */}
+                              <p className="text-[11px] text-gray-500 font-medium mb-1">
+                                {mem.degree || "B.Tech"}, {mem.year || mem.graduation_year || "2025"}, {mem.dept || mem.department_short || mem.department_name || "Engineering"}
+                              </p>
+
+                              {/* Email */}
+                              <p className="text-[10px] text-gray-400 flex items-center justify-center gap-1 mb-2 truncate max-w-[220px] mx-auto">
+                                <Mail size={10} className="shrink-0" />
+                                <span>{mem.email}</span>
+                              </p>
+
+                              <div className="w-full border-t border-gray-100 my-2" />
+
+                              {/* Company + Role */}
+                              {mem.company && (
+                                <p className="text-[11px] text-gray-700 flex items-center justify-center gap-1.5 mb-1">
+                                  <Briefcase size={11} className="text-[#9B2335] shrink-0" />
+                                  <span className="font-semibold">{mem.company}</span>
+                                  {mem.role && <span className="text-gray-400 font-normal">({mem.role})</span>}
+                                </p>
+                              )}
+
+                              {/* Location */}
+                              {mem.location && (
+                                <p className="text-[11px] text-gray-500 flex items-center justify-center gap-1.5 mb-2">
+                                  <MapPin size={11} className="text-[#9B2335] shrink-0" />
+                                  <span>{mem.location}</span>
+                                </p>
+                              )}
+
+                              {/* Skills Pills */}
+                              {Array.isArray(mem.skills) && mem.skills.length > 0 && (
+                                <div className="flex flex-wrap justify-center gap-1 my-2">
+                                  {mem.skills.slice(0, 3).map((s, sIdx) => (
+                                    <span key={sIdx} className="bg-gray-50 border border-gray-200 text-gray-600 px-1.5 py-0.5 rounded text-[10px]">
+                                      {s}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Card Footer Actions */}
+                            <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                              <button
+                                onClick={() => {
+                                  setSelectedMember(mem);
+                                  setMemberDetailModalOpen(true);
+                                }}
+                                className="text-xs font-semibold text-[#9B2335] hover:underline flex items-center gap-1"
+                              >
+                                <Eye size={12} /> View Details
+                              </button>
+
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => handleToggleVerify(mem)}
+                                  className={`p-1.5 rounded-lg text-xs ${
+                                    mem.verified ? "text-emerald-700 hover:bg-emerald-50" : "text-amber-700 hover:bg-amber-50"
+                                  }`}
+                                  title={mem.verified ? "Verified profile" : "Click to verify"}
+                                >
+                                  <ShieldCheck size={14} />
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setDeleteConfirm({
+                                      type: "member",
+                                      id: String(mem.id),
+                                      title: mem.name,
+                                    })
+                                  }
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                  title="Remove member"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         )}
 
-{/* CAMPAIGNS TAB */}
+        {/* CAMPAIGNS TAB */}
         {activeTab === "campaigns" && (
           <div className="space-y-6 animate-fadeIn">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-[#E9DDD8] shadow-sm">
@@ -1677,7 +2753,7 @@ export default function AdminPortalPage() {
               <div className="flex items-center gap-2">
                 <CalendarDays size={20} />
                 <h3 className="font-bold text-base">
-                  {editingEvent ? "Edit Event (Preview Mode)" : "Add New Event (Preview Mode)"}
+                  {editingEvent ? "Edit Event (PostgreSQL Database)" : "Add New Event (PostgreSQL Database)"}
                 </h3>
               </div>
               <button
@@ -1704,21 +2780,32 @@ export default function AdminPortalPage() {
                       ref={eventFileRef}
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleImageFile(e, (url) => setEventForm({ ...eventForm, img: url }))}
+                      onChange={handleUploadEventPhoto}
                     />
                     <button
                       type="button"
                       onClick={() => eventFileRef.current?.click()}
-                      className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-[#9B2335] rounded-xl font-bold flex items-center gap-1.5 transition-colors border border-rose-200"
+                      disabled={uploadingEventPhoto}
+                      className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-[#9B2335] rounded-xl font-bold flex items-center gap-1.5 transition-colors border border-rose-200 disabled:opacity-50"
+                      title="Choose photo from local PC"
                     >
-                      <Upload size={14} />
-                      <span>Upload Photo</span>
+                      {uploadingEventPhoto ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin text-[#9B2335]" />
+                          <span>Uploading PC Photo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={14} />
+                          <span>Upload Photo</span>
+                        </>
+                      )}
                     </button>
                     <input
                       type="text"
                       value={eventForm.img}
                       onChange={(e) => setEventForm({ ...eventForm, img: e.target.value })}
-                      placeholder="Or enter Image URL (/campus-building.png)"
+                      placeholder="Image URL or local PC upload path"
                       className="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#9B2335]"
                     />
                   </div>
@@ -1912,9 +2999,11 @@ export default function AdminPortalPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl font-bold bg-[#9B2335] hover:bg-[#7a1b28] text-white shadow-md transition-all active:scale-95"
+                    disabled={savingEvent || uploadingEventPhoto}
+                    className="px-6 py-2.5 rounded-xl font-bold bg-[#9B2335] hover:bg-[#7a1b28] text-white shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    {editingEvent ? "Save Changes" : "Create Event"}
+                    {savingEvent && <Loader2 size={14} className="animate-spin" />}
+                    <span>{savingEvent ? "Saving to Database..." : (editingEvent ? "Save Changes" : "Create Event")}</span>
                   </button>
                 </div>
               </form>
@@ -2014,7 +3103,7 @@ export default function AdminPortalPage() {
               <div className="flex items-center gap-2">
                 <ImageIcon size={20} />
                 <h3 className="font-bold text-base">
-                  {editingGallery ? "Edit Gallery Photo (Preview Mode)" : "Add Gallery Photo (Preview Mode)"}
+                  {editingGallery ? "Edit Gallery Photo (PostgreSQL Database)" : "Add Gallery Photo (PostgreSQL Database)"}
                 </h3>
               </div>
               <button
@@ -2041,23 +3130,32 @@ export default function AdminPortalPage() {
                       ref={galleryFileRef}
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) =>
-                        handleImageFile(e, (url) => setGalleryForm({ ...galleryForm, img: url }))
-                      }
+                      onChange={handleUploadGalleryPhoto}
                     />
                     <button
                       type="button"
                       onClick={() => galleryFileRef.current?.click()}
-                      className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-[#9B2335] rounded-xl font-bold flex items-center gap-1.5 transition-colors border border-rose-200"
+                      disabled={uploadingGalleryPhoto}
+                      className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-[#9B2335] rounded-xl font-bold flex items-center gap-1.5 transition-colors border border-rose-200 disabled:opacity-50"
+                      title="Choose photo from local PC"
                     >
-                      <Upload size={14} />
-                      <span>Upload Photo</span>
+                      {uploadingGalleryPhoto ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin text-[#9B2335]" />
+                          <span>Uploading PC Photo...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={14} />
+                          <span>Upload Photo</span>
+                        </>
+                      )}
                     </button>
                     <input
                       type="text"
                       value={galleryForm.img}
                       onChange={(e) => setGalleryForm({ ...galleryForm, img: e.target.value })}
-                      placeholder="Or enter Image URL"
+                      placeholder="Image URL or local PC upload path"
                       className="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#9B2335]"
                     />
                   </div>
@@ -2154,9 +3252,11 @@ export default function AdminPortalPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl font-bold bg-[#9B2335] hover:bg-[#7a1b28] text-white shadow-md transition-all active:scale-95"
+                    disabled={savingGallery || uploadingGalleryPhoto}
+                    className="px-6 py-2.5 rounded-xl font-bold bg-[#9B2335] hover:bg-[#7a1b28] text-white shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    {editingGallery ? "Save Changes" : "Add to Gallery"}
+                    {savingGallery && <Loader2 size={14} className="animate-spin" />}
+                    <span>{savingGallery ? "Saving to Database..." : (editingGallery ? "Save Changes" : "Add to Gallery")}</span>
                   </button>
                 </div>
               </form>
@@ -2221,7 +3321,7 @@ export default function AdminPortalPage() {
               <div className="flex items-center gap-2">
                 <Newspaper size={20} />
                 <h3 className="font-bold text-base">
-                  {editingNews ? "Edit News Article (Preview Mode)" : "Add News Article (Preview Mode)"}
+                  {editingNews ? "Edit News Article (PostgreSQL Database)" : "Add News Article (PostgreSQL Database)"}
                 </h3>
               </div>
               <button
@@ -2248,23 +3348,32 @@ export default function AdminPortalPage() {
                       ref={newsFileRef}
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) =>
-                        handleImageFile(e, (url) => setNewsForm({ ...newsForm, img: url }))
-                      }
+                      onChange={handleUploadNewsBanner}
                     />
                     <button
                       type="button"
                       onClick={() => newsFileRef.current?.click()}
-                      className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-[#9B2335] rounded-xl font-bold flex items-center gap-1.5 transition-colors border border-rose-200"
+                      disabled={uploadingNewsBanner}
+                      className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-[#9B2335] rounded-xl font-bold flex items-center gap-1.5 transition-colors border border-rose-200 disabled:opacity-50"
+                      title="Choose banner from local PC"
                     >
-                      <Upload size={14} />
-                      <span>Upload Banner</span>
+                      {uploadingNewsBanner ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin text-[#9B2335]" />
+                          <span>Uploading PC Banner...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={14} />
+                          <span>Upload Banner</span>
+                        </>
+                      )}
                     </button>
                     <input
                       type="text"
                       value={newsForm.img}
                       onChange={(e) => setNewsForm({ ...newsForm, img: e.target.value })}
-                      placeholder="Or enter Image URL"
+                      placeholder="Image URL or local PC upload path"
                       className="flex-1 px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#9B2335]"
                     />
                   </div>
@@ -2315,9 +3424,10 @@ export default function AdminPortalPage() {
                       <option value="Community">Community</option>
                       <option value="Success Story">Success Story</option>
                       <option value="Programs">Programs</option>
-                      <option value="Campus">Campus</option>
-                      <option value="Innovation">Innovation</option>
-                      <option value="Academic">Academic</option>
+                      <option value="Achievement">Achievement</option>
+                      <option value="Department News">Department News</option>
+                      <option value="Scholarship">Scholarship</option>
+                      <option value="Platform Update">Platform Update</option>
                     </select>
                   </div>
 
@@ -2413,9 +3523,11 @@ export default function AdminPortalPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl font-bold bg-[#9B2335] hover:bg-[#7a1b28] text-white shadow-md transition-all active:scale-95"
+                    disabled={savingNews || uploadingNewsBanner}
+                    className="px-6 py-2.5 rounded-xl font-bold bg-[#9B2335] hover:bg-[#7a1b28] text-white shadow-md transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    {editingNews ? "Save Changes" : "Publish News"}
+                    {savingNews && <Loader2 size={14} className="animate-spin" />}
+                    <span>{savingNews ? "Publishing to Database..." : (editingNews ? "Save Changes" : "Publish News")}</span>
                   </button>
                 </div>
               </form>
@@ -2875,6 +3987,237 @@ export default function AdminPortalPage() {
         </div>
       )}
 
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL: ALUMNI MEMBER FULL PROFILE DETAILS (Matching form.png)
+      ────────────────────────────────────────────────────────────── */}
+      {memberDetailModalOpen && selectedMember && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white max-w-3xl w-full rounded-3xl shadow-2xl border border-gray-200 overflow-hidden my-6 animate-fadeIn">
+            {/* Modal Header */}
+            <div className="bg-[#9B2335] text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-base shadow-xs">
+                  {(selectedMember.name || "AL").slice(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-bold text-base flex items-center gap-2">
+                    <span>{selectedMember.name}</span>
+                    {selectedMember.verified ? (
+                      <span className="bg-emerald-500/20 text-emerald-200 text-[10px] px-2 py-0.5 rounded-full font-semibold border border-emerald-400/30 flex items-center gap-1">
+                        <Check size={10} /> Verified Alumni
+                      </span>
+                    ) : (
+                      <span className="bg-amber-500/20 text-amber-200 text-[10px] px-2 py-0.5 rounded-full font-semibold border border-amber-400/30">
+                        Pending Verification
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-xs text-white/80">
+                    Alumni ID #{selectedMember.id} &bull; {selectedMember.degree || "B.Tech"}, {selectedMember.year || selectedMember.graduation_year || "2025"} &bull; {selectedMember.dept || selectedMember.department_name || "Engineering"}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setMemberDetailModalOpen(false)}
+                className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 max-h-[75vh] overflow-y-auto space-y-5 text-xs text-gray-700">
+              {/* Step 1: Personal Information (Matching Step 1 in form.png) */}
+              <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200/80">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#9B2335] uppercase tracking-wider mb-3">
+                  <User size={14} />
+                  <span>Personal Information (Step 1)</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Full Name</span>
+                    <span className="font-semibold text-gray-800">{selectedMember.name || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Email Address</span>
+                    <span className="font-semibold text-gray-800 break-all">{selectedMember.email || "-"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Phone Number</span>
+                    <span className="font-semibold text-gray-800">{selectedMember.phone || "Not provided"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Date of Birth</span>
+                    <span className="font-semibold text-gray-800">
+                      {selectedMember.dob ? new Date(selectedMember.dob).toLocaleDateString("en-IN") : "Not provided"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Gender</span>
+                    <span className="font-semibold text-gray-800 capitalize">{selectedMember.gender || "Not specified"}</span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Current Location</span>
+                    <span className="font-semibold text-gray-800">{selectedMember.location || "Not provided"}</span>
+                  </div>
+                  <div className="sm:col-span-2 md:col-span-3">
+                    <span className="block text-[10px] text-gray-400 font-medium">LinkedIn Profile</span>
+                    {(selectedMember.linkedin || selectedMember.linkedin_url) ? (
+                      <a
+                        href={selectedMember.linkedin || selectedMember.linkedin_url || "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[#9B2335] hover:underline font-semibold inline-flex items-center gap-1 mt-0.5"
+                      >
+                        <Globe size={11} />
+                        {selectedMember.linkedin || selectedMember.linkedin_url}
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 italic">No LinkedIn profile provided</span>
+                    )}
+                  </div>
+                  <div className="sm:col-span-2 md:col-span-3">
+                    <span className="block text-[10px] text-gray-400 font-medium">Short Bio</span>
+                    <p className="mt-0.5 text-gray-700 bg-white p-2.5 rounded-xl border border-gray-100 italic leading-relaxed">
+                      &ldquo;{selectedMember.bio || "Passionate alumni of Tolani Polytechnic community."}&rdquo;
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 2: Education & Career Details (Matching Step 2 in form.png) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Education */}
+                <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200/80">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#9B2335] uppercase tracking-wider mb-3">
+                    <GraduationCap size={14} />
+                    <span>Education Details</span>
+                  </div>
+                  <div className="space-y-2.5">
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Degree</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.degree || "B.Tech"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Branch / Department</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.department_name || selectedMember.dept || "Engineering"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Batch / Year of Passing</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.year || selectedMember.graduation_year || "2025"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Institute</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.institute || "Tolani F. G. Polytechnic"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Career */}
+                <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200/80">
+                  <div className="flex items-center gap-2 text-xs font-bold text-[#9B2335] uppercase tracking-wider mb-3">
+                    <Briefcase size={14} />
+                    <span>Career Details</span>
+                  </div>
+                  <div className="space-y-2.5">
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Current Company</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.company || "Not provided"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Job Title / Role</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.role || "Not provided"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Work Location</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.location || "Not provided"}</span>
+                    </div>
+                    <div>
+                      <span className="block text-[10px] text-gray-400 font-medium">Experience</span>
+                      <span className="font-semibold text-gray-800">{selectedMember.experience_years ?? selectedMember.experience ?? 0} years</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Skills & Technologies */}
+              <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200/80">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#9B2335] uppercase tracking-wider mb-2">
+                  <Sparkles size={14} />
+                  <span>Skills &amp; Technologies</span>
+                </div>
+                {Array.isArray(selectedMember.skills) && selectedMember.skills.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {selectedMember.skills.map((s, idx) => (
+                      <span key={idx} className="bg-white text-gray-700 px-2.5 py-1 rounded-lg border border-gray-200 font-medium text-[11px] shadow-2xs">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-400 italic text-[11px]">No skills listed</p>
+                )}
+              </div>
+
+              {/* Step 3: Identity Verification (Matching Step 3 in form.png) */}
+              <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200/80">
+                <div className="flex items-center gap-2 text-xs font-bold text-[#9B2335] uppercase tracking-wider mb-3">
+                  <ShieldCheck size={14} />
+                  <span>Identity Verification (Step 3)</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Verification Status</span>
+                    <span className="font-bold flex items-center gap-1 mt-0.5">
+                      {selectedMember.verified ? (
+                        <span className="text-emerald-700 flex items-center gap-1">
+                          <CheckCircle2 size={13} /> Verified
+                        </span>
+                      ) : (
+                        <span className="text-amber-700 flex items-center gap-1">
+                          <Clock size={13} /> Pending Verification
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Verification Method</span>
+                    <span className="font-semibold text-gray-800 capitalize">
+                      {selectedMember.verification_method || "Email Verification"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] text-gray-400 font-medium">Registered Date</span>
+                    <span className="font-semibold text-gray-800">
+                      {selectedMember.created_at ? new Date(selectedMember.created_at).toLocaleDateString("en-IN") : "-"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer Actions */}
+            <div className="bg-gray-50 border-t border-gray-200 p-4 flex items-center justify-between">
+              <button
+                onClick={() => handleToggleVerify(selectedMember)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs ${
+                  selectedMember.verified
+                    ? "bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100"
+                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+                }`}
+              >
+                {selectedMember.verified ? "Mark as Unverified" : "Approve & Verify Member"}
+              </button>
+              <button
+                onClick={() => setMemberDetailModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-700 bg-gray-200 hover:bg-gray-300 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white max-w-sm w-full rounded-2xl shadow-2xl border border-gray-200 p-6 space-y-4 animate-scaleUp">
@@ -2888,9 +4231,27 @@ export default function AdminPortalPage() {
                 Are you sure you want to remove{" "}
                 <strong className="text-gray-800 font-semibold">&ldquo;{deleteConfirm.title}&rdquo;</strong>?
               </p>
-              <p className="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg mt-2 border border-amber-200">
-                ℹ️ Preview Mode Safe: This item will only be hidden in your current preview session and will NOT modify your live PostgreSQL database.
-              </p>
+              {deleteConfirm.type === "member" ? (
+                <p className="text-[11px] text-red-700 bg-red-50 p-2 rounded-lg mt-2 border border-red-200">
+                  ⚠️ This member record will be permanently deleted from your PostgreSQL database.
+                </p>
+              ) : deleteConfirm.type === "event" ? (
+                <p className="text-[11px] text-red-700 bg-red-50 p-2 rounded-lg mt-2 border border-red-200">
+                  ⚠️ This event record will be permanently deleted from your PostgreSQL database.
+                </p>
+              ) : deleteConfirm.type === "gallery" ? (
+                <p className="text-[11px] text-red-700 bg-red-50 p-2 rounded-lg mt-2 border border-red-200">
+                  ⚠️ This gallery photo record will be permanently deleted from your PostgreSQL database.
+                </p>
+              ) : deleteConfirm.type === "news" ? (
+                <p className="text-[11px] text-red-700 bg-red-50 p-2 rounded-lg mt-2 border border-red-200">
+                  ⚠️ This news article record will be permanently deleted from your PostgreSQL database.
+                </p>
+              ) : (
+                <p className="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg mt-2 border border-amber-200">
+                  ℹ️ Preview Mode Safe: This item will only be hidden in your current preview session and will NOT modify your live PostgreSQL database.
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-3 pt-2">

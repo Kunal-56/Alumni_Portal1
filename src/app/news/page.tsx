@@ -12,14 +12,20 @@ import { Header } from "@/components/Header";
 import "@/app/dashboard.css";
 
 interface NewsItem {
+  id?: string | number;
   title: string;
+  slug?: string;
   date: string;
   category: string;
   author: string;
   readTime: string;
+  read_time?: string;
   excerpt: string;
-  img: string;
+  content?: string;
+  img?: string;
+  image_url?: string;
   featured?: boolean;
+  is_featured?: boolean;
 }
 
 const ALL_NEWS: NewsItem[] = [
@@ -201,7 +207,7 @@ function NewsModal({ news, onClose }: { news: NewsItem; onClose: () => void }) {
       >
         {/* Hero Image */}
         <div className="relative h-52 sm:h-64 w-full rounded-t-3xl overflow-hidden bg-gray-100 shrink-0">
-          <Image src={news.img} alt={news.title} fill className="object-cover" unoptimized />
+          <Image src={news.img || news.image_url || "/campus-building.png"} alt={news.title} fill className="object-cover" unoptimized />
           {/* Gradient */}
           <div
             className="absolute inset-0"
@@ -251,19 +257,25 @@ function NewsModal({ news, onClose }: { news: NewsItem; onClose: () => void }) {
           <div className="w-10 h-[3px] rounded-full mb-5" style={{ background: "#9B2335" }} />
 
           {/* Full article body */}
-          <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
-            <p>{news.excerpt}</p>
-            <p>
-              This achievement continues to build upon Tolani Foundation Gandhidham Polytechnic&apos;s long-standing
-              tradition of nurturing professionals who go on to make a significant impact in their respective fields
-              across the globe. The alumni community has continued to grow stronger with each passing year, supporting
-              both current students and fellow graduates in their journeys.
-            </p>
-            <p>
-              The institute&apos;s Alumni Relations Cell continues to facilitate such milestones and remains committed
-              to keeping the Tolani alumni network vibrant, connected and impactful. Further updates will be shared
-              through the official alumni portal and newsletter.
-            </p>
+          <div className="space-y-4 text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+            <p className="font-medium text-gray-800">{news.excerpt}</p>
+            {news.content ? (
+              <p>{news.content}</p>
+            ) : (
+              <>
+                <p>
+                  This achievement continues to build upon Tolani Foundation Gandhidham Polytechnic&apos;s long-standing
+                  tradition of nurturing professionals who go on to make a significant impact in their respective fields
+                  across the globe. The alumni community has continued to grow stronger with each passing year, supporting
+                  both current students and fellow graduates in their journeys.
+                </p>
+                <p>
+                  The institute&apos;s Alumni Relations Cell continues to facilitate such milestones and remains committed
+                  to keeping the Tolani alumni network vibrant, connected and impactful. Further updates will be shared
+                  through the official alumni portal and newsletter.
+                </p>
+              </>
+            )}
           </div>
 
           {/* Footer row */}
@@ -288,14 +300,32 @@ function NewsModal({ news, onClose }: { news: NewsItem; onClose: () => void }) {
    Main News Page
 ────────────────────────────────────── */
 export default function NewsPage() {
+  const [newsList, setNewsList] = useState<NewsItem[]>(ALL_NEWS);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [showTop, setShowTop] = useState(false);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
 
+  useEffect(() => {
+    const fetchLiveNews = async () => {
+      try {
+        const res = await fetch("/api/news");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.items) && json.items.length > 0) {
+            setNewsList(json.items);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch news from API, using fallback data:", err);
+      }
+    };
+    fetchLiveNews();
+  }, []);
+
   const open = (n: NewsItem) => setSelectedNews(n);
 
-  const filtered = ALL_NEWS.filter(n => {
+  const filtered = newsList.filter(n => {
     const matchSearch =
       n.title.toLowerCase().includes(search.toLowerCase()) ||
       n.excerpt.toLowerCase().includes(search.toLowerCase()) ||
@@ -393,7 +423,7 @@ export default function NewsPage() {
                     onClick={() => open(n)}
                   >
                     <div className="relative h-48 bg-gray-100">
-                      <Image src={n.img} alt={n.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" unoptimized />
+                      <Image src={n.img || n.image_url || "/campus-building.png"} alt={n.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" unoptimized />
                       <div className="absolute top-3 left-3">
                         <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full shadow-md" style={{ background: "#9B2335", color: "white" }}>
                           {n.category}
@@ -443,7 +473,7 @@ export default function NewsPage() {
                     onClick={() => open(n)}
                   >
                     <div className="relative w-24 h-20 rounded-xl overflow-hidden shrink-0 bg-gray-100">
-                      <Image src={n.img} alt={n.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" unoptimized />
+                      <Image src={n.img || n.image_url || "/campus-building.png"} alt={n.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" unoptimized />
                     </div>
                     <div className="flex flex-col flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1.5">

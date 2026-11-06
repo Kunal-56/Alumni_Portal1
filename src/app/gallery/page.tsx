@@ -12,11 +12,16 @@ import { Header } from "@/components/Header";
 import "@/app/dashboard.css";
 
 interface GalleryItem {
+  id?: string | number;
   label: string;
-  bg: string;
+  bg?: string;
+  bg_color?: string;
   category: string;
   year: string;
   desc: string;
+  description?: string;
+  img?: string;
+  image_url?: string;
 }
 
 const ALL_GALLERY: GalleryItem[] = [
@@ -43,12 +48,30 @@ const ALL_GALLERY: GalleryItem[] = [
 const CATEGORIES = ["All", "Annual Event", "Virtual", "Networking", "Campus", "Academic", "Cultural", "Tech", "Competition", "Department", "Graduation", "Sports", "Social"];
 
 export default function GalleryPage() {
+  const [gallery, setGallery] = useState<GalleryItem[]>(ALL_GALLERY);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
   const [showTop, setShowTop] = useState(false);
 
-  const filtered = ALL_GALLERY.filter(g => {
+  React.useEffect(() => {
+    const fetchLiveGallery = async () => {
+      try {
+        const res = await fetch("/api/gallery");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.items) && json.items.length > 0) {
+            setGallery(json.items);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch gallery from API, using fallback data:", err);
+      }
+    };
+    fetchLiveGallery();
+  }, []);
+
+  const filtered = gallery.filter(g => {
     const matchSearch = g.label.toLowerCase().includes(search.toLowerCase()) ||
       g.category.toLowerCase().includes(search.toLowerCase()) ||
       g.desc.toLowerCase().includes(search.toLowerCase());
@@ -142,7 +165,7 @@ export default function GalleryPage() {
                 onClick={() => setLightbox(g)}
               >
                 <Image
-                  src="/campus-building.png"
+                  src={g.img || g.image_url || "/campus-building.png"}
                   alt={g.label}
                   fill
                   className="object-cover opacity-75 group-hover:opacity-90 group-hover:scale-105 transition-all duration-400"
@@ -182,7 +205,7 @@ export default function GalleryPage() {
             onClick={e => e.stopPropagation()}
           >
             <div className="relative h-64 sm:h-80 w-full" style={{ background: lightbox.bg }}>
-              <Image src="/campus-building.png" alt={lightbox.label} fill className="object-cover opacity-80" unoptimized />
+              <Image src={lightbox.img || lightbox.image_url || "/campus-building.png"} alt={lightbox.label} fill className="object-cover opacity-80" unoptimized />
               <button
                 className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-all"
                 onClick={() => setLightbox(null)}

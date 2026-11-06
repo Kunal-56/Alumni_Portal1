@@ -137,6 +137,7 @@ const ALL_EVENTS = [
 const TYPES = ["All", "Virtual Event", "Online Session", "Department Meetup", "In-Person Event", "Summit", "Annual Event", "Competition", "Cultural Event", "CSR Event", "Social Event"];
 
 export default function EventsPage() {
+  const [events, setEvents] = useState(ALL_EVENTS);
   const [search, setSearch] = useState("");
   const [activeType, setActiveType] = useState("All");
   const [showTop, setShowTop] = useState(false);
@@ -144,9 +145,24 @@ export default function EventsPage() {
 
   useEffect(() => {
     setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
+
+    const fetchLiveEvents = async () => {
+      try {
+        const res = await fetch("/api/events");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.events) && json.events.length > 0) {
+            setEvents(json.events);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch live events from API, using fallback:", err);
+      }
+    };
+    fetchLiveEvents();
   }, []);
 
-  const filtered = ALL_EVENTS.filter(ev => {
+  const filtered = events.filter(ev => {
     const matchSearch = ev.title.toLowerCase().includes(search.toLowerCase()) ||
       ev.location.toLowerCase().includes(search.toLowerCase()) ||
       ev.desc.toLowerCase().includes(search.toLowerCase());

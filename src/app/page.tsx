@@ -26,14 +26,18 @@ interface Event {
 
 interface GalleryItem {
   label: string;
-  bg: string;
+  bg?: string;
   tall?: boolean;
+  img?: string;
+  image_url?: string;
 }
 
 interface NewsItem {
+  id?: string | number;
   title: string;
   date: string;
-  img: string;
+  img?: string;
+  image_url?: string;
 }
 
 interface Stat {
@@ -100,12 +104,60 @@ export default function DashboardPage() {
   const [showTop, setShowTop] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
   const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
+  const [liveEvents, setLiveEvents] = useState<Event[]>(EVENTS);
+  const [liveGallery, setLiveGallery] = useState<GalleryItem[]>(GALLERY);
+  const [liveNews, setLiveNews] = useState<NewsItem[]>(NEWS);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       const stored = sessionStorage.getItem("tolani_logged_in");
       setLoggedIn(stored === "true");
       setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
+
+      const fetchUpcoming = async () => {
+        try {
+          const res = await fetch("/api/events?upcoming=true");
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.events) && json.events.length > 0) {
+              setLiveEvents(json.events.slice(0, 4));
+            }
+          }
+        } catch (err) {
+          console.warn("Could not fetch live upcoming events:", err);
+        }
+      };
+      fetchUpcoming();
+
+      const fetchHomeGallery = async () => {
+        try {
+          const res = await fetch("/api/gallery?limit=6");
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.items) && json.items.length > 0) {
+              setLiveGallery(json.items.slice(0, 6));
+            }
+          }
+        } catch (err) {
+          console.warn("Could not fetch homepage gallery:", err);
+        }
+      };
+      fetchHomeGallery();
+
+      const fetchHomeNews = async () => {
+        try {
+          const res = await fetch("/api/news?limit=3");
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.items) && json.items.length > 0) {
+              setLiveNews(json.items.slice(0, 3));
+            }
+          }
+        } catch (err) {
+          console.warn("Could not fetch homepage news:", err);
+        }
+      };
+      fetchHomeNews();
     }
   }, []);
 
@@ -345,7 +397,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {EVENTS.map((ev, i) => (
+          {liveEvents.map((ev, i) => (
             <div key={i} className="event-card">
               {/* Date Badge + Image */}
               <div className="relative h-36 bg-gray-100">
@@ -393,9 +445,9 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-3 gap-3" style={{ gridTemplateRows: "auto auto" }}>
-          {GALLERY.map((g, i) => (
-            <div key={i} className="gallery-card" style={{ height: "180px", background: g.bg }}>
-              <Image src="/campus-building.png" alt={g.label} fill className="object-cover opacity-70" unoptimized />
+          {liveGallery.map((g, i) => (
+            <div key={i} className="gallery-card" style={{ height: "180px", background: g.bg || "#2a1a1f" }}>
+              <Image src={g.img || g.image_url || "/campus-building.png"} alt={g.label} fill className="object-cover opacity-70" unoptimized />
               <div className="gallery-overlay">
                 <p className="text-white text-sm font-bold">{g.label}</p>
               </div>
@@ -417,10 +469,10 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {NEWS.map((n, i) => (
+          {liveNews.map((n, i) => (
             <div key={i} className="flex gap-3 pb-4 border-b border-gray-100">
               <div className="relative w-20 h-16 rounded-lg overflow-hidden shrink-0 bg-gray-100">
-                <Image src={n.img} alt={n.title} fill className="object-cover" unoptimized />
+                <Image src={n.img || n.image_url || "/campus-building.png"} alt={n.title} fill className="object-cover" unoptimized />
               </div>
               <div>
                 <p className="text-sm font-bold text-gray-900 leading-snug mb-1 line-clamp-3">{n.title}</p>

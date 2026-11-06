@@ -15,10 +15,10 @@ export async function GET(request: NextRequest) {
     const params: any[] = [];
     let pIdx = 1;
 
-    if (departmentQuery) {
+    if (departmentQuery && departmentQuery.toUpperCase() !== "ALL") {
       const dept = await getDepartment(departmentQuery);
       if (dept) {
-        conditions.push(`department_id = $${pIdx}`);
+        conditions.push(`v.department_id = $${pIdx}`);
         params.push(dept.id);
         pIdx++;
       }
@@ -26,14 +26,14 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       conditions.push(
-        `(name ILIKE $${pIdx} OR company ILIKE $${pIdx} OR role ILIKE $${pIdx} OR location ILIKE $${pIdx} OR department_name ILIKE $${pIdx})`
+        `(v.name ILIKE $${pIdx} OR v.company ILIKE $${pIdx} OR v.role ILIKE $${pIdx} OR v.location ILIKE $${pIdx} OR v.department_name ILIKE $${pIdx} OR v.email ILIKE $${pIdx} OR v.degree ILIKE $${pIdx})`
       );
       params.push(`%${search}%`);
       pIdx++;
     }
 
-    if (year) {
-      conditions.push(`graduation_year = $${pIdx}`);
+    if (year && year.toUpperCase() !== "ALL") {
+      conditions.push(`v.graduation_year = $${pIdx}`);
       params.push(year);
       pIdx++;
     }
@@ -43,19 +43,21 @@ export async function GET(request: NextRequest) {
     const listParams = [...params, limit, offset];
     const listQuery = `
       SELECT 
-        id, name, email, phone, degree, graduation_year, department_id,
-        department_name, department_short, company, role, industry,
-        location, experience_years, linkedin_url, bio, avatar_url,
-        verified, institute, skills, achievements, created_at
-      FROM v_member_directory
+        v.id, v.user_id, v.name, v.email, v.phone, v.degree, v.graduation_year, v.department_id,
+        v.department_name, v.department_short, v.company, v.role, v.industry,
+        v.location, v.experience_years, v.linkedin_url, v.bio, v.avatar_url,
+        v.verified, v.institute, v.skills, v.achievements, v.created_at,
+        m.dob, m.gender, m.verification_method
+      FROM v_member_directory v
+      LEFT JOIN members m ON m.id = v.id
       ${whereClause}
-      ORDER BY id DESC
+      ORDER BY v.id DESC
       LIMIT $${pIdx} OFFSET $${pIdx + 1}
     `;
 
     // Run count and paginated list queries in parallel
     const [countRes, listRes] = await Promise.all([
-      query(`SELECT count(*) as total FROM v_member_directory ${whereClause}`, params),
+      query(`SELECT count(*) as total FROM v_member_directory v ${whereClause}`, params),
       query(listQuery, listParams)
     ]);
     const total = parseInt(countRes.rows[0]?.total || "0", 10);
