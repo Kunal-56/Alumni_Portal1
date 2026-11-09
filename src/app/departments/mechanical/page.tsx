@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -9,10 +9,11 @@ import {
   BookOpen, UserPlus, Heart, GraduationCap, FolderOpen,
   Tv, Sparkles, Building, Award,
   Lightbulb, Send, Facebook, Linkedin, Twitter,
-  Instagram, Youtube, CheckCircle2
+  Instagram, Youtube, CheckCircle2, X
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { useAlumniMembers } from "@/lib/alumniStore";
+import { useDepartmentEventsAndGallery } from "@/lib/useDepartmentEventsAndGallery";
 import "@/app/dashboard.css";
 
 /* ─── Data ─── */
@@ -55,7 +56,7 @@ const FEATURES = [
   },
 ];
 
-const EVENTS = [
+const FALLBACK_EVENTS = [
   {
     day: "18",
     month: "JUL",
@@ -103,8 +104,6 @@ const BY_THE_NUMBERS = [
   { label: "Student Strength", value: "200+", icon: <GraduationCap size={16} /> },
 ];
 
-
-
 const INITIATIVES = [
   {
     icon: <GraduationCap size={22} />,
@@ -133,17 +132,26 @@ const INITIATIVES = [
   },
 ];
 
-const GALLERY = [
-  { label: "CNC & CAD Lab", bg: "#1e293b" },
-  { label: "Annual Mechanical Symposium", bg: "#9B2335" },
-  { label: "Industrial Visit 2026", bg: "#0f766e" },
-  { label: "Alumni Guest Lecture", bg: "#3b0764" },
-  { label: "Department Graduation", bg: "#451a03" },
+const FALLBACK_GALLERY = [
+  { label: "CNC & CAD Lab", bg: "#1e293b", category: "Tech", year: "2026", desc: "Precision manufacturing and computer-aided design workshops." },
+  { label: "Annual Mechanical Symposium", bg: "#9B2335", category: "Tech", year: "2025", desc: "Showcase of robotics, thermodynamics, and automobile innovations." },
+  { label: "Industrial Visit 2026", bg: "#0f766e", category: "Department", year: "2026", desc: "Automobile assembly plant and metallurgy lab inspection." },
+  { label: "Alumni Guest Lecture", bg: "#3b0764", category: "Academic", year: "2026", desc: "Global leaders on industry 4.0 and smart robotics." },
+  { label: "Department Graduation", bg: "#451a03", category: "Graduation", year: "2026", desc: "Honoring mechanical engineering graduates." },
 ];
 
 export default function MechanicalDepartmentPage() {
   const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
-  
+  const [selectedGalleryItem, setSelectedGalleryItem] = useState<any | null>(null);
+
+  const {
+    events,
+    gallery,
+    loadingEvents,
+    loadingGallery,
+    dbDepartment,
+  } = useDepartmentEventsAndGallery("mechanical", FALLBACK_EVENTS, FALLBACK_GALLERY);
+
   useEffect(() => {
     setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
   }, []);
@@ -156,6 +164,8 @@ export default function MechanicalDepartmentPage() {
   });
   const otherMembers = members.filter(m => !deptMembers.some(dm => dm.id === m.id));
   const spotlightMembers = [...deptMembers, ...otherMembers].slice(0, 6);
+
+  const liveAlumniCount = dbDepartment?.alumni_count ? `${dbDepartment.alumni_count.toLocaleString()}+` : "800+";
 
   return (
     <div className="dashboard-body min-h-screen" style={{ overflowY: "auto", overflowX: "hidden", background: "#fcfafb" }}>
@@ -373,61 +383,93 @@ export default function MechanicalDepartmentPage() {
 
       {/* ── Section: Upcoming Events & By the Numbers ── */}
       <section id="events" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
           <div className="lg:col-span-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-extrabold text-gray-900">Upcoming Events</h2>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-2xl font-extrabold text-gray-900">Upcoming Events</h2>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-[#9B2335]">
+                  {events.length} {events.length === 1 ? "Event" : "Events"}
+                </span>
+              </div>
               <Link href="/events" className="text-xs font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
                 View All Events <ChevronRight size={14} />
               </Link>
             </div>
 
-            <div className="space-y-4">
-              {EVENTS.map((ev, i) => (
-                <div
-                  key={i}
-                  className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
-                >
-                  <div className="flex items-start sm:items-center gap-4 flex-1">
-                    <div className="rounded-xl px-3 py-2 text-center shrink-0" style={{ background: "#9B2335", minWidth: "50px" }}>
-                      <div className="text-xl font-extrabold text-white leading-tight">{ev.day}</div>
-                      <div className="text-[10px] font-bold text-white/80 uppercase tracking-wider">{ev.month}</div>
+            {loadingEvents && events.length === 0 ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((n) => (
+                  <div key={n} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs animate-pulse flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-gray-200 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-1/3" />
+                      <div className="h-3 bg-gray-100 rounded w-1/2" />
                     </div>
-
-                    <div>
-                      <h3 className="text-sm font-extrabold text-gray-900 group-hover:text-[#9B2335] transition-colors">{ev.title}</h3>
-                      <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500 font-medium my-1">
-                        <span className="flex items-center gap-1"><Clock size={11} /> {ev.time}</span>
-                        <span className="flex items-center gap-1"><MapPin size={11} /> {ev.location}</span>
+                  </div>
+                ))}
+              </div>
+            ) : events.length === 0 ? (
+              <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+                <CalendarDays className="mx-auto mb-2 text-gray-400" size={32} />
+                <p className="text-sm font-bold text-gray-700">No Events Found</p>
+                <p className="text-xs text-gray-400 mt-1">Check back later for upcoming department events.</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {events.map((ev: any, i: number) => (
+                  <div
+                    key={ev.id || ev.numericId || i}
+                    className="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs hover:shadow-md transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
+                  >
+                    <div className="flex items-start sm:items-center gap-4 flex-1">
+                      <div className="rounded-xl px-3 py-2 text-center shrink-0" style={{ background: "#9B2335", minWidth: "50px" }}>
+                        <div className="text-xl font-extrabold text-white leading-tight">{ev.day || "15"}</div>
+                        <div className="text-[10px] font-bold text-white/80 uppercase tracking-wider">{ev.month || "SEP"}</div>
                       </div>
-                      <p className="text-[11px] text-gray-500 line-clamp-1">{ev.desc}</p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
-                    {registeredEvents.includes(ev.title) ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl text-green-700 bg-green-50 border border-green-200">
-                        <CheckCircle2 size={12} /> Registered
-                      </span>
-                    ) : (
-                      <a
-                        href={`/events/register?event=${encodeURIComponent(ev.title)}`}
-                        className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border border-[#9B2335] text-[#9B2335] transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
-                      >
-                        Register Now <ChevronRight size={12} />
-                      </a>
-                    )}
-                    <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 hidden sm:block">
-                      <Image src={ev.img} alt={ev.title} fill className="object-cover" unoptimized />
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-sm font-extrabold text-gray-900 group-hover:text-[#9B2335] transition-colors">{ev.title}</h3>
+                          {ev.type && (
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                              {ev.type}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500 font-medium my-1">
+                          <span className="flex items-center gap-1"><Clock size={11} /> {ev.time || "10:00 AM"}</span>
+                          <span className="flex items-center gap-1"><MapPin size={11} /> {ev.location || "Online"}</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 line-clamp-1">{ev.desc || ev.description || ""}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-gray-100">
+                      {registeredEvents.includes(ev.title) ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl text-green-700 bg-green-50 border border-green-200">
+                          <CheckCircle2 size={12} /> Registered
+                        </span>
+                      ) : (
+                        <a
+                          href={`/events/register?event=${encodeURIComponent(ev.title)}`}
+                          className="inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-xl border border-[#9B2335] text-[#9B2335] transition-all hover:bg-[#9B2335] hover:text-white hover:border-[#9B2335]"
+                        >
+                          Register Now <ChevronRight size={12} />
+                        </a>
+                      )}
+                      <div className="relative w-16 h-12 rounded-lg overflow-hidden shrink-0 bg-gray-100 hidden sm:block">
+                        <Image src={ev.img || ev.image_url || "/campus-building.png"} alt={ev.title} fill className="object-cover" unoptimized />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
 
             <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-xs">
               <h3 className="text-base font-extrabold text-gray-900 mb-4 pb-3 border-b border-gray-100">
@@ -589,7 +631,12 @@ export default function MechanicalDepartmentPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-extrabold text-gray-900">Gallery Highlights</h2>
+            <div className="flex items-center gap-2.5">
+              <h2 className="text-2xl font-extrabold text-gray-900">Gallery Highlights</h2>
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-[#9B2335]">
+                {gallery.length} {gallery.length === 1 ? "Photo" : "Photos"}
+              </span>
+            </div>
             <p className="text-xs text-gray-500 font-medium">Moments and memories from Mechanical Department activities.</p>
           </div>
           <Link href="/gallery" className="text-xs font-bold flex items-center gap-1 hover:underline" style={{ color: "#9B2335" }}>
@@ -597,17 +644,93 @@ export default function MechanicalDepartmentPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-          {GALLERY.map((g, i) => (
-            <div key={i} className="relative h-44 rounded-2xl overflow-hidden group cursor-pointer" style={{ background: g.bg }}>
-              <Image src="/campus-building.png" alt={g.label} fill className="object-cover opacity-75 group-hover:opacity-90 group-hover:scale-105 transition-all duration-300" unoptimized />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
-                <span className="text-white text-xs font-bold">{g.label}</span>
+        {loadingGallery && gallery.length === 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <div key={n} className="h-44 rounded-2xl bg-gray-200 animate-pulse" />
+            ))}
+          </div>
+        ) : gallery.length === 0 ? (
+          <div className="bg-white rounded-2xl p-8 border border-gray-100 text-center">
+            <p className="text-sm font-bold text-gray-700">No Gallery Images Available</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {gallery.map((g: any, i: number) => (
+              <div
+                key={g.id || g.numericId || i}
+                onClick={() => setSelectedGalleryItem(g)}
+                className="relative h-44 rounded-2xl overflow-hidden group cursor-pointer shadow-xs hover:shadow-lg transition-all duration-300"
+                style={{ background: g.bg || g.bg_color || "#1e293b" }}
+              >
+                <Image
+                  src={g.img || g.image_url || "/campus-building.png"}
+                  alt={g.label}
+                  fill
+                  className="object-cover opacity-80 group-hover:opacity-95 group-hover:scale-105 transition-all duration-300"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex flex-col justify-end p-3">
+                  <span className="text-white text-xs font-bold line-clamp-2 leading-snug drop-shadow-sm">{g.label}</span>
+                  {g.category && (
+                    <span className="text-[10px] text-white/70 font-medium mt-0.5">{g.category}</span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
+
+      {/* ── Lightbox Modal for Gallery Preview ── */}
+      {selectedGalleryItem && (
+        <div
+          className="fixed inset-0 z-[999] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedGalleryItem(null)}
+        >
+          <div
+            className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              className="relative h-64 sm:h-80 w-full"
+              style={{ background: selectedGalleryItem.bg || selectedGalleryItem.bg_color || "#1e293b" }}
+            >
+              <Image
+                src={selectedGalleryItem.img || selectedGalleryItem.image_url || "/campus-building.png"}
+                alt={selectedGalleryItem.label}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              <button
+                className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 transition-all cursor-pointer"
+                onClick={() => setSelectedGalleryItem(null)}
+              >
+                <X size={18} />
+              </button>
+              {selectedGalleryItem.category && (
+                <div className="absolute bottom-4 left-4">
+                  <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/95 text-[#9B2335] shadow-sm">
+                    {selectedGalleryItem.category}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-2">
+                <h3 className="text-lg font-extrabold text-gray-900">{selectedGalleryItem.label}</h3>
+                {selectedGalleryItem.year && (
+                  <span className="text-xs font-bold text-gray-400 ml-3 mt-1">{selectedGalleryItem.year}</span>
+                )}
+              </div>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {selectedGalleryItem.desc || selectedGalleryItem.description || "Captured moment from campus life and departmental activities."}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── CTA Banner ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-14">

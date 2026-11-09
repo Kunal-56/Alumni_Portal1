@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
       SELECT *
       FROM gallery_items
       ${whereClause}
-      ORDER BY sort_order ASC, id DESC
+      ORDER BY sort_order ASC, id ASC
       ${limitClause}
     `;
 
@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
       success: true,
       total: mapped.length,
       items: mapped,
+      gallery: mapped,
     });
   } catch (error: any) {
     console.error("GET /api/gallery error:", error);

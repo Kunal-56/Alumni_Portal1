@@ -51,11 +51,18 @@ const ENUM_TO_TYPE: Record<string, string> = {
 
 function formatEventDate(dateVal: any): { day: string; month: string; year: string } {
   if (!dateVal) return { day: "15", month: "SEP", year: "2026" };
+  if (typeof dateVal === "string" && /^\d{4}-\d{2}-\d{2}/.test(dateVal)) {
+    const parts = dateVal.split("T")[0].split("-");
+    const y = parts[0];
+    const mIdx = parseInt(parts[1], 10) - 1;
+    const d = parts[2].padStart(2, "0");
+    return { day: d, month: MONTH_NAMES[mIdx] || "SEP", year: y };
+  }
   const d = new Date(dateVal);
   if (isNaN(d.getTime())) return { day: "15", month: "SEP", year: "2026" };
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  const month = MONTH_NAMES[d.getUTCMonth()] || "SEP";
-  const year = String(d.getUTCFullYear());
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = MONTH_NAMES[d.getMonth()] || "SEP";
+  const year = String(d.getFullYear());
   return { day, month, year };
 }
 
@@ -104,12 +111,12 @@ export async function GET(request: NextRequest) {
     const upcomingOnly = searchParams.get("upcoming") === "true";
     const search = searchParams.get("search")?.trim() || "";
 
-    const conditions: string[] = [];
+    const conditions: string[] = ["e.is_published = true"];
     const params: any[] = [];
     let pIdx = 1;
 
     if (upcomingOnly) {
-      conditions.push("e.event_date >= CURRENT_DATE AND e.is_published = true");
+      conditions.push("e.event_date >= CURRENT_DATE");
     }
 
     if (type && type !== "All") {
