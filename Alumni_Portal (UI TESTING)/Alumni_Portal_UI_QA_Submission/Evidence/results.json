@@ -1,0 +1,1600 @@
+{
+  "config": {
+    "argv": [
+      "C:\\Program Files\\nodejs\\node.exe",
+      "D:\\Alumni_Portal1\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--project=chromium-desktop"
+    ],
+    "configFile": "D:\\Alumni_Portal1\\playwright.config.ts",
+    "rootDir": "D:/Alumni_Portal1/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "D:/Alumni_Portal1/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium-desktop",
+        "name": "chromium-desktop",
+        "testDir": "D:/Alumni_Portal1/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "D:\\Alumni_Portal1\\test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "chromium-desktop",
+        "testDir": "D:\\Alumni_Portal1\\tests",
+        "snapshotDir": "D:\\Alumni_Portal1\\tests",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://localhost:3000",
+          "trace": "retain-on-failure",
+          "screenshot": "only-on-failure",
+          "video": "retain-on-failure",
+          "actionTimeout": 15000,
+          "navigationTimeout": 30000,
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.8127.18 Safari/537.36",
+          "viewport": {
+            "width": 1366,
+            "height": 768
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium",
+          "browserName": "chromium",
+          "headless": false,
+          "launchOptions": {
+            "slowMo": 500
+          }
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "chromium-desktop"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "outputFolder": "playwright-report",
+          "open": "never"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.0",
+    "workers": 1,
+    "webServer": {
+      "command": "npm run dev",
+      "url": "http://localhost:3000",
+      "reuseExistingServer": true,
+      "timeout": 120000
+    }
+  },
+  "suites": [
+    {
+      "title": "alumni-portal-ui.spec.ts",
+      "file": "alumni-portal-ui.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Alumni Portal — UI functional test register",
+          "file": "alumni-portal-ui.spec.ts",
+          "line": 36,
+          "column": 6,
+          "specs": [
+            {
+              "title": "UI-001 — route renders: /",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5290,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:54:44.336Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-001-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-62e8f-ter-UI-001-—-route-renders--chromium-desktop\\attachments\\UI-001-route-png-bde64ccc2d36b812427d02e64783808a599e6143.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-c76e631005fd8cc69336",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-002 — route renders: /login",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4396,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:54:50.111Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-002-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-0d855-I-002-—-route-renders-login-chromium-desktop\\attachments\\UI-002-route-png-ea27661de5c634e63db63b905e767cca97b636e8.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-5f07eeb6314bcb303d8c",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-003 — route renders: /register",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5520,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:54:54.557Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-003-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-aa12b-03-—-route-renders-register-chromium-desktop\\attachments\\UI-003-route-png-828949cd985181a3660d85b5a9e21ba76ae8f943.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-6b22981964d91ec08d88",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-004 — route renders: /invite",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4661,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:00.107Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-004-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-625a0--004-—-route-renders-invite-chromium-desktop\\attachments\\UI-004-route-png-25c66054df88522dbc9e750fe65bfdeac366e0ad.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-48bc9f2acc6cf18109c3",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-005 — route renders: /members",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4024,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:04.804Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-005-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-54262-005-—-route-renders-members-chromium-desktop\\attachments\\UI-005-route-png-85f27cf99270e06095b863cc7b70071d46e63b70.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-5e7a2aceb1d54ca8c4ab",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-006 — route renders: /events",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5435,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:08.875Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-006-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-a6652--006-—-route-renders-events-chromium-desktop\\attachments\\UI-006-route-png-1a12d3e9f1ae610a4d139f815164331fd486fa32.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-d4bfcc822e87ee6b90aa",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-007 — route renders: /events/register",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4075,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:14.358Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-007-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-df413-ute-renders-events-register-chromium-desktop\\attachments\\UI-007-route-png-1da20472bf727b429a2f1831efb34681cf6906d3.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-5abe2cad950636fec72d",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-008 — route renders: /gallery",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5538,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:18.465Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-008-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-1dfb5-008-—-route-renders-gallery-chromium-desktop\\attachments\\UI-008-route-png-d652c60f871e80f45d8b57ba09384dd8252ed8bb.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-117b2309cbb3eb52bc73",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-009 — route renders: /news",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4621,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:24.034Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-009-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-df59f-UI-009-—-route-renders-news-chromium-desktop\\attachments\\UI-009-route-png-b15947291bcd394ede37ef00851b2e9ef1b2ba4b.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-d31f311c0537546edfaa",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-010 — route renders: /contact",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4513,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:28.696Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-010-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-1f759-010-—-route-renders-contact-chromium-desktop\\attachments\\UI-010-route-png-3eccc947a197029b62d14b249c9882527440f043.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-7a9209d2c9185af71bda",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-011 — route renders: /donation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5385,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:33.249Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-011-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-f3d40-11-—-route-renders-donation-chromium-desktop\\attachments\\UI-011-route-png-7a8d812460bd5130078730e317c79c789c10f557.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-7792559b93428e6b8e07",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-012 — route renders: /donation/campaigns",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6878,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:38.664Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-012-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-22c83--renders-donation-campaigns-chromium-desktop\\attachments\\UI-012-route-png-666a98c4ba545008ff60552aa25f27502f4357ca.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-988fe0a003d8be018c4a",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-013 — route renders: /departments/computer",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6851,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:45.586Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-013-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-2b32f-enders-departments-computer-chromium-desktop\\attachments\\UI-013-route-png-5ce4959a5e6f1290662c61445298554b8d4b974f.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-b640543daaf05b345e37",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-014 — route renders: /departments/civil",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7980,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:55:52.507Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-014-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-34ca4-e-renders-departments-civil-chromium-desktop\\attachments\\UI-014-route-png-2abcd821a7b2036ddd89b41a69e9fd4957c26386.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-f4db93ddbbd8ee7eb092",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-015 — route renders: /departments/electrical",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5457,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:00.527Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-015-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-0d2b6-ders-departments-electrical-chromium-desktop\\attachments\\UI-015-route-png-6e3aaf1798a914a41b49dcabbee0e024e77285f4.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-d50f1a3fb627d4343abc",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-016 — route renders: /departments/mechanical",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5780,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:06.017Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-016-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-e991e-ders-departments-mechanical-chromium-desktop\\attachments\\UI-016-route-png-841aed468770a8959544c3270f099a69bbf461b4.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-3d315d0108969cd5cd33",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-017 — route renders: /departments/cddm",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5661,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:11.835Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-017-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-5ee8b-te-renders-departments-cddm-chromium-desktop\\attachments\\UI-017-route-png-3251d8d57a3c1580b0d6ea877532ac7c052b41b0.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-f8cba1152a75de4b2b86",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-018 — route renders: /admin",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6164,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:17.534Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-018-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-d8d6f-I-018-—-route-renders-admin-chromium-desktop\\attachments\\UI-018-route-png-c6c16981b9b4d7fa1fda716d7642b8c76e00577a.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-be72f42f02737a3810a8",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-019 — route renders: /api-tester",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7795,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:23.750Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-019-route.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-113ae--—-route-renders-api-tester-chromium-desktop\\attachments\\UI-019-route-png-e0398d49678871b7323edfb7725d6433910e4b1e.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-08073fa29eac94cc14a1",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 38,
+              "column": 5
+            },
+            {
+              "title": "UI-020 — homepage primary navigation exposes expected destinations",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5550,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:31.614Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-30330793ccc7c4041fd2",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 48,
+              "column": 3
+            },
+            {
+              "title": "UI-021 — homepage department links navigate to department pages",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4580,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:37.217Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-ae165889d37cbda064df",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 55,
+              "column": 3
+            },
+            {
+              "title": "UI-022 — members directory search accepts text and updates results",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6379,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:41.839Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-285550b69823732f7561",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 64,
+              "column": 3
+            },
+            {
+              "title": "UI-023 — members directory filter controls are interactive",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3230,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:48.252Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-f9288a9096070afb352f",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 73,
+              "column": 3
+            },
+            {
+              "title": "UI-024 — events search filters visible event cards",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5578,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:51.513Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-9516882df3fedae27b9e",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 85,
+              "column": 3
+            },
+            {
+              "title": "UI-025 — events type filter changes the selected filter",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3510,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:56:57.116Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-46d0faa29d527eea2d34",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 93,
+              "column": 3
+            },
+            {
+              "title": "UI-026 — login form required fields are present and empty submission is constrained",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3530,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:00.655Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-813935abbc5c24864c3c",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 101,
+              "column": 3
+            },
+            {
+              "title": "UI-027 — account registration form exposes required inputs",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5239,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:04.225Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-10c6bf893851e5dd7763",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 114,
+              "column": 3
+            },
+            {
+              "title": "UI-028 — contact form exposes fields and required-field validation",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 7829,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts:127:36",
+                        "location": {
+                          "file": "D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts",
+                          "column": 36,
+                          "line": 127
+                        },
+                        "snippet": " \u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m expect(form)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 126 |\u001b[39m     \u001b[36mconst\u001b[39m required \u001b[33m=\u001b[39m form\u001b[33m.\u001b[39mlocator(\u001b[32m\"[required]\"\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 127 |\u001b[39m     expect(\u001b[36mawait\u001b[39m required\u001b[33m.\u001b[39mcount())\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 128 |\u001b[39m     \u001b[36mconst\u001b[39m valid \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m required\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mevaluate((el\u001b[33m:\u001b[39m \u001b[33mHTMLInputElement\u001b[39m) \u001b[33m=>\u001b[39m el\u001b[33m.\u001b[39mcheckValidity())\u001b[33m;\u001b[39m\n \u001b[90m 129 |\u001b[39m     expect(valid)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 130 |\u001b[39m   })\u001b[33m;\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts",
+                            "column": 36,
+                            "line": 127
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n \u001b[90m 125 |\u001b[39m     \u001b[36mawait\u001b[39m expect(form)\u001b[33m.\u001b[39mtoBeVisible()\u001b[33m;\u001b[39m\n \u001b[90m 126 |\u001b[39m     \u001b[36mconst\u001b[39m required \u001b[33m=\u001b[39m form\u001b[33m.\u001b[39mlocator(\u001b[32m\"[required]\"\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 127 |\u001b[39m     expect(\u001b[36mawait\u001b[39m required\u001b[33m.\u001b[39mcount())\u001b[33m.\u001b[39mtoBeGreaterThan(\u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 128 |\u001b[39m     \u001b[36mconst\u001b[39m valid \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m required\u001b[33m.\u001b[39mfirst()\u001b[33m.\u001b[39mevaluate((el\u001b[33m:\u001b[39m \u001b[33mHTMLInputElement\u001b[39m) \u001b[33m=>\u001b[39m el\u001b[33m.\u001b[39mcheckValidity())\u001b[33m;\u001b[39m\n \u001b[90m 129 |\u001b[39m     expect(valid)\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 130 |\u001b[39m   })\u001b[33m;\u001b[39m\n\u001b[2m    at D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts:127:36\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:09.519Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-a0bff-d-required-field-validation-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-a0bff-d-required-field-validation-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-a0bff-d-required-field-validation-chromium-desktop\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-a0bff-d-required-field-validation-chromium-desktop\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts",
+                        "column": 36,
+                        "line": 127
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-168b4383158411c9eb39",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 122,
+              "column": 3
+            },
+            {
+              "title": "UI-029 — event registration form is displayed",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5787,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:18.734Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-7f44dc36a7241f021a7d",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 132,
+              "column": 3
+            },
+            {
+              "title": "UI-030 — gallery category controls are clickable when present",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5970,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:24.858Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-28e317d227a6934d4211",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 138,
+              "column": 3
+            },
+            {
+              "title": "UI-031 — visible images load successfully",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 4545,
+                      "error": {
+                        "message": "Error: Image 11 failed to load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: Image 11 failed to load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts:157:53",
+                        "location": {
+                          "file": "D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts",
+                          "column": 53,
+                          "line": 157
+                        },
+                        "snippet": " \u001b[90m 155 |\u001b[39m       \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m img\u001b[33m.\u001b[39misVisible()) {\n \u001b[90m 156 |\u001b[39m         \u001b[36mconst\u001b[39m loaded \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m img\u001b[33m.\u001b[39mevaluate((el\u001b[33m:\u001b[39m \u001b[33mHTMLImageElement\u001b[39m) \u001b[33m=>\u001b[39m el\u001b[33m.\u001b[39mcomplete \u001b[33m&&\u001b[39m el\u001b[33m.\u001b[39mnaturalWidth \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 157 |\u001b[39m         expect(loaded\u001b[33m,\u001b[39m \u001b[32m`Image ${i} failed to load`\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 158 |\u001b[39m       }\n \u001b[90m 159 |\u001b[39m     }\n \u001b[90m 160 |\u001b[39m   })\u001b[33m;\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts",
+                            "column": 53,
+                            "line": 157
+                          },
+                          "message": "Error: Image 11 failed to load\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n \u001b[90m 155 |\u001b[39m       \u001b[36mif\u001b[39m (\u001b[36mawait\u001b[39m img\u001b[33m.\u001b[39misVisible()) {\n \u001b[90m 156 |\u001b[39m         \u001b[36mconst\u001b[39m loaded \u001b[33m=\u001b[39m \u001b[36mawait\u001b[39m img\u001b[33m.\u001b[39mevaluate((el\u001b[33m:\u001b[39m \u001b[33mHTMLImageElement\u001b[39m) \u001b[33m=>\u001b[39m el\u001b[33m.\u001b[39mcomplete \u001b[33m&&\u001b[39m el\u001b[33m.\u001b[39mnaturalWidth \u001b[33m>\u001b[39m \u001b[35m0\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 157 |\u001b[39m         expect(loaded\u001b[33m,\u001b[39m \u001b[32m`Image ${i} failed to load`\u001b[39m)\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m                                                     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 158 |\u001b[39m       }\n \u001b[90m 159 |\u001b[39m     }\n \u001b[90m 160 |\u001b[39m   })\u001b[33m;\u001b[39m\n\u001b[2m    at D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts:157:53\u001b[22m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:30.876Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-e9221-le-images-load-successfully-chromium-desktop\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-e9221-le-images-load-successfully-chromium-desktop\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-e9221-le-images-load-successfully-chromium-desktop\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-e9221-le-images-load-successfully-chromium-desktop\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "D:\\Alumni_Portal1\\tests\\alumni-portal-ui.spec.ts",
+                        "column": 53,
+                        "line": 157
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-a08a9d9e7b2bb5693328",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 148,
+              "column": 3
+            },
+            {
+              "title": "UI-032 — browser console contains no uncaught page errors on homepage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5462,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:36.564Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-0dc9bc19bae16e4e579d",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 162,
+              "column": 3
+            },
+            {
+              "title": "UI-033 — common internal navigation link destinations are not empty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3025,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:42.381Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-5eb056e111991ef76d09",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 170,
+              "column": 3
+            },
+            {
+              "title": "UI-034 — mobile viewport keeps page content visible without horizontal overflow",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3550,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:45.457Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-034-mobile-home.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-c1e31-without-horizontal-overflow-chromium-desktop\\attachments\\UI-034-mobile-home-png-583dbeee4a06ef9ac88de8e6abe7c6bb65063d29.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-f2fbc50c07a109894a98",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 179,
+              "column": 3
+            },
+            {
+              "title": "UI-035 — tablet viewport renders homepage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3179,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:49.048Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-035-tablet-home.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-82a14-t-viewport-renders-homepage-chromium-desktop\\attachments\\UI-035-tablet-home-png-a74adac58fa85af055db3ff3be0fb0e86f64c677.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-8e170f3a3ca08eb5133b",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 191,
+              "column": 3
+            },
+            {
+              "title": "UI-036 — desktop viewport renders homepage",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium-desktop",
+                  "projectName": "chromium-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4015,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-11-14T08:57:52.260Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "UI-036-desktop-home.png",
+                          "contentType": "image/png",
+                          "path": "D:\\Alumni_Portal1\\test-results\\alumni-portal-ui-Alumni-Po-d09b8-p-viewport-renders-homepage-chromium-desktop\\attachments\\UI-036-desktop-home-png-9820558b260617d9b56250fcc561abc712148315.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "901b8ffab6cc31eb5edb-0ef35acca68c1921f57e",
+              "file": "alumni-portal-ui.spec.ts",
+              "line": 199,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-14T08:54:37.121Z",
+    "duration": 199886.29,
+    "expected": 34,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}
