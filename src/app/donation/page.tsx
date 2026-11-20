@@ -12,6 +12,7 @@ import {
   Check, ChevronDown
 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { normalizeEmail, sanitizeIndianMobileInput, sanitizeNameInput, validateEmail, validateFullName, validateIndianMobile, validateText } from "@/lib/inputValidation";
 import "../dashboard.css";
 
 /* ─── Initiatives Data ─── */
@@ -81,7 +82,7 @@ export default function DonationPage() {
   const [amount, setAmount] = useState("1000");
   const [customAmount, setCustomAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("upi");
-  const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [donorForm, setDonorForm] = useState({
     fullName: "",
     email: "",
@@ -118,6 +119,20 @@ export default function DonationPage() {
 
   const handleDonate = (e: React.FormEvent) => {
     e.preventDefault();
+    const errors = [
+      validateFullName(donorForm.fullName),
+      validateEmail(donorForm.email),
+      validateIndianMobile(donorForm.phone),
+      validateText(donorForm.houseNo, "Address", 200, true),
+      validateText(donorForm.area, "Area", 200, true),
+      validateText(donorForm.city, "City", 100, true),
+      validateText(donorForm.state, "State", 100, true),
+      /^\d{6}$/.test(donorForm.pinCode.trim()) ? null : "Enter a 6-digit PIN code.",
+      donorForm.pan && !/^[A-Z]{5}\d{4}[A-Z]$/.test(donorForm.pan.trim().toUpperCase()) ? "Enter a valid PAN number." : null,
+      (customAmount || amount) && /^(?:\d{1,8})(?:\.\d{1,2})?$/.test(customAmount || amount) && Number(customAmount || amount) > 0 ? null : "Enter a donation amount greater than zero, up to 8 digits and 2 decimal places.",
+    ].find(Boolean);
+    if (errors) { alert(errors); return; }
+    setDonorForm((current) => ({ ...current, email: normalizeEmail(current.email) }));
     if (!agreedToTerms) {
       alert("Please agree to the Terms & Conditions and Privacy Policy");
       return;
@@ -751,7 +766,8 @@ export default function DonationPage() {
                           required
                           placeholder="Full Name *"
                           value={donorForm.fullName}
-                          onChange={(e) => setDonorForm({ ...donorForm, fullName: e.target.value })}
+                          maxLength={200}
+                          onChange={(e) => setDonorForm({ ...donorForm, fullName: sanitizeNameInput(e.target.value) })}
                           className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
                         />
                       </div>
@@ -780,9 +796,10 @@ export default function DonationPage() {
                         <input
                           type="tel"
                           required
+                          inputMode="numeric"
                           placeholder="Phone Number *"
                           value={donorForm.phone}
-                          onChange={(e) => setDonorForm({ ...donorForm, phone: e.target.value })}
+                          onChange={(e) => setDonorForm({ ...donorForm, phone: sanitizeIndianMobileInput(e.target.value) })}
                           className="w-full text-xs sm:text-sm bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
                         />
                       </div>
@@ -1245,8 +1262,9 @@ export default function DonationPage() {
                 {/* ── Terms & Conditions Checkbox ── */}
                 <div className="pt-1">
                   <label className="flex items-center gap-2.5 cursor-pointer text-xs text-gray-700 select-none">
-                    <input
+                      <input
                       type="checkbox"
+                        required
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
                       className="w-4 h-4 rounded text-[#8B263E] accent-[#8B263E] border-gray-300 focus:ring-[#8B263E] cursor-pointer"

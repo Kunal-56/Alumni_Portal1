@@ -11,7 +11,7 @@ export const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
 
@@ -21,10 +21,24 @@ export const LoginForm: React.FC = () => {
     }
 
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setIsLoading(false);
+        setMessage({ type: "error", text: data.message || "Invalid email or password." });
+        return;
+      }
       setIsLoading(false);
-      setMessage({ type: "success", text: "Welcome back! Redirecting to alumni dashboard..." });
-    }, 1200);
+      setMessage({ type: "success", text: `Welcome back, ${data.user?.name || "Member"}! You are signed in.` });
+    } catch {
+      setIsLoading(false);
+      setMessage({ type: "error", text: "Authentication service currently unreachable." });
+    }
   };
 
   return (

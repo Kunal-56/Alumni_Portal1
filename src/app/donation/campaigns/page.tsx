@@ -12,6 +12,7 @@ import {
   Compass, ChevronDown, ArrowUp,
 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { normalizeEmail, sanitizeIndianMobileInput, sanitizeNameInput, validateEmail, validateFullName, validateIndianMobile, validateText } from "@/lib/inputValidation";
 import "../../dashboard.css";
 
 /* ─── All Campaigns Data ─── */
@@ -249,7 +250,7 @@ export default function CampaignsPage() {
   const [paymentMethod, setPaymentMethod] = useState("upi");
   const [amount, setAmount] = useState("1000");
   const [customAmount, setCustomAmount] = useState("");
-  const [agreedToTerms, setAgreedToTerms] = useState(true);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const [donorForm, setDonorForm] = useState({
@@ -279,6 +280,20 @@ export default function CampaignsPage() {
 
   const handleDonate = (e: React.FormEvent) => {
     e.preventDefault();
+    const errors = [
+      validateFullName(donorForm.fullName),
+      validateEmail(donorForm.email),
+      validateIndianMobile(donorForm.phone),
+      validateText(donorForm.houseNo, "Address", 200, true),
+      validateText(donorForm.area, "Area", 200, true),
+      validateText(donorForm.city, "City", 100, true),
+      validateText(donorForm.state, "State", 100, true),
+      /^\d{6}$/.test(donorForm.pinCode.trim()) ? null : "Enter a 6-digit PIN code.",
+      donorForm.pan && !/^[A-Z]{5}\d{4}[A-Z]$/.test(donorForm.pan.trim().toUpperCase()) ? "Enter a valid PAN number." : null,
+      (customAmount || amount) && /^(?:\d{1,8})(?:\.\d{1,2})?$/.test(customAmount || amount) && Number(customAmount || amount) > 0 ? null : "Enter a donation amount greater than zero, up to 8 digits and 2 decimal places.",
+    ].find(Boolean);
+    if (errors) { alert(errors); return; }
+    setDonorForm((current) => ({ ...current, email: normalizeEmail(current.email) }));
     if (!agreedToTerms) { alert("Please agree to Terms & Conditions"); return; }
     setIsSuccess(true);
   };
@@ -289,7 +304,7 @@ export default function CampaignsPage() {
     setAmount("1000");
     setCustomAmount("");
     setPaymentMethod("upi");
-    setAgreedToTerms(true);
+    setAgreedToTerms(false);
   };
 
   return (
@@ -619,9 +634,11 @@ export default function CampaignsPage() {
                         <input
                           type={type}
                           required={required}
+                          maxLength={field === "fullName" ? 200 : field === "email" ? 254 : 20}
+                          inputMode={field === "phone" ? "numeric" : undefined}
                           placeholder={placeholder}
                           value={(donorForm as any)[field]}
-                          onChange={(e) => setDonorForm({ ...donorForm, [field]: e.target.value })}
+                          onChange={(e) => setDonorForm({ ...donorForm, [field]: field === "fullName" ? sanitizeNameInput(e.target.value) : field === "phone" ? sanitizeIndianMobileInput(e.target.value) : e.target.value })}
                           className="w-full text-xs bg-transparent outline-none placeholder:text-gray-400 font-medium text-gray-900"
                         />
                       </div>
@@ -834,6 +851,7 @@ export default function CampaignsPage() {
                   <label className="flex items-center gap-2.5 cursor-pointer text-xs text-gray-700 select-none">
                     <input
                       type="checkbox"
+                      required
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
                       className="w-4 h-4 rounded accent-[#8B263E] border-gray-300 cursor-pointer"

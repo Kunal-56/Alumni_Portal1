@@ -110,8 +110,12 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem("tolani_logged_in");
-      setLoggedIn(stored === "true");
+      fetch("/api/auth/me", { cache: "no-store" })
+        .then(async (response) => {
+          const data = await response.json();
+          setLoggedIn(Boolean(response.ok && data.success));
+        })
+        .catch(() => setLoggedIn(false));
       setRegisteredEvents(JSON.parse(localStorage.getItem('registeredEvents') || '[]'));
 
       const fetchUpcoming = async () => {

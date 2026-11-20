@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { isAuthorizedAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -135,9 +136,9 @@ export async function GET(
 
     return NextResponse.json({ success: true, event });
   } catch (error: any) {
-    console.error("GET /api/events/[id] error:", error);
+    console.error("GET /api/events/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch event" },
+      { success: false, error: "Unable to fetch event." },
       { status: 500 }
     );
   }
@@ -148,6 +149,10 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
+    }
+
     const { id } = await context.params;
     const eventId = parseInt(id, 10);
     if (isNaN(eventId)) {
@@ -240,9 +245,9 @@ export async function PUT(
       event: mapped,
     });
   } catch (error: any) {
-    console.error("PUT /api/events/[id] error:", error);
+    console.error("PUT /api/events/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to update event" },
+      { success: false, error: "Failed to update event." },
       { status: 500 }
     );
   }
@@ -253,6 +258,10 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
+    }
+
     const { id } = await context.params;
     const eventId = parseInt(id, 10);
     if (isNaN(eventId)) {
@@ -269,9 +278,9 @@ export async function DELETE(
       message: `Event "${res.rows[0].title}" removed from database successfully`,
     });
   } catch (error: any) {
-    console.error("DELETE /api/events/[id] error:", error);
+    console.error("DELETE /api/events/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to delete event" },
+      { success: false, error: "Failed to delete event." },
       { status: 500 }
     );
   }

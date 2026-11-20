@@ -1,11 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { query } from "@/lib/db";
+import { createSessionCookie, hasSameOrigin } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { normalizeEmail, validateEmail } from "@/lib/inputValidation";
 
 export async function POST(request: NextRequest) {
   try {
+    if (!hasSameOrigin(request)) {
+      return NextResponse.json({ success: false, message: "Invalid request origin." }, { status: 403 });
+    }
+    const rate = checkRateLimit(request, "login", 10, 15 * 60 * 1000);
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { success: false, message: "Too many login attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(rate.retryAfterSeconds) } }
+      );
+    }
+
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password } = body || {};
 
     // 1. Validation
     if (!email || typeof email !== "string" || !email.trim()) {
@@ -15,6 +29,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const emailError = validateEmail(email);
+    if (emailError) {
+      return NextResponse.json({ success: false, message: "Please enter a valid email address." }, { status: 400 });
+    }
+
     if (!password || typeof password !== "string") {
       return NextResponse.json(
         { success: false, message: "Password is required." },
@@ -22,27 +41,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-
-    // ── Direct Admin Authentication for Tolani Portal ──
-    if (
-      (cleanEmail === "admin@tolani.edu" ||
-        cleanEmail === "admin@alumni.tolani.edu" ||
-        cleanEmail === "admin") &&
-      (password === "admin@123" || password === "TolaniAdmin@2026")
-    ) {
+    const cleanEmail = normalizeEmail(email);
+    const accountRate = checkRateLimit(request, "login-account", 20, 15 * 60 * 1000, cleanEmail);
+    if (!accountRate.allowed) {
       return NextResponse.json(
-        {
-          success: true,
-          message: "Welcome back, Administrator!",
-          user: {
-            id: 999999,
-            email: "admin@tolani.edu",
-            role: "admin",
-            name: "Tolani Super Admin",
-          },
-        },
-        { status: 200 }
+        { success: false, message: "Too many login attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(accountRate.retryAfterSeconds) } }
       );
     }
 
@@ -70,7 +74,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "No account found with this email. Please register first.",
+          message: "Invalid email or password. Please try again.",
         },
         { status: 401 }
       );
@@ -83,7 +87,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: "Your account is disabled. Please contact the administrator.",
+          message: "Invalid email or password. Please try again.",
         },
         { status: 403 }
       );
@@ -101,6 +105,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const sessionCookie = createSessionCookie(user.id);
+    if (!sessionCookie) {
+      return NextResponse.json(
+        { success: false, message: "Authentication is not configured on this server." },
+        { status: 503 }
+      );
+    }
+
     // 4. Update last_login_at in "users" table
     try {
       await query(
@@ -113,7 +125,7 @@ export async function POST(request: NextRequest) {
 
     const displayName = user.member_name || user.email.split("@")[0];
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         message: `Welcome back, ${displayName}!`,
@@ -126,14 +138,14 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
+    response.headers.append("Set-Cookie", sessionCookie);
+    return response;
   } catch (error: any) {
-    console.error("API /api/auth/login error:", error);
+    console.error("API /api/auth/login failed:", { code: error?.code });
     return NextResponse.json(
       {
         success: false,
-        message:
-          error?.message ||
-          "An unexpected error occurred during login. Please try again.",
+        message: "Unable to sign in right now. Please try again later.",
       },
       { status: 500 }
     );

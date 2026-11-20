@@ -253,9 +253,9 @@ export async function GET(
       total_gallery: mappedGallery.length,
     });
   } catch (error: any) {
-    console.error("GET /api/departments/[slug] error:", error);
+    console.error("GET /api/departments/[slug] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: "Unable to fetch department details." },
       { status: 500 }
     );
   }

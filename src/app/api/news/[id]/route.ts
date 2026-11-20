@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { isAuthorizedAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -96,9 +97,9 @@ export async function GET(
 
     return NextResponse.json({ success: true, item, news: item });
   } catch (error: any) {
-    console.error("GET /api/news/[id] error:", error);
+    console.error("GET /api/news/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch news article" },
+      { success: false, error: "Unable to fetch news article." },
       { status: 500 }
     );
   }
@@ -109,6 +110,10 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
+    }
+
     const { id } = await context.params;
     const newsId = parseInt(id, 10);
     if (isNaN(newsId)) {
@@ -192,9 +197,9 @@ export async function PUT(
       news: item,
     });
   } catch (error: any) {
-    console.error("PUT /api/news/[id] error:", error);
+    console.error("PUT /api/news/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to update news article" },
+      { success: false, error: "Failed to update news article." },
       { status: 500 }
     );
   }
@@ -205,6 +210,10 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
+    }
+
     const { id } = await context.params;
     const newsId = parseInt(id, 10);
     if (isNaN(newsId)) {
@@ -225,9 +234,9 @@ export async function DELETE(
       message: `News article "${res.rows[0].title}" permanently removed from database`,
     });
   } catch (error: any) {
-    console.error("DELETE /api/news/[id] error:", error);
+    console.error("DELETE /api/news/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to delete news article" },
+      { success: false, error: "Failed to delete news article." },
       { status: 500 }
     );
   }

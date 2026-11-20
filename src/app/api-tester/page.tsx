@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Header } from "@/components/Header";
+import { sanitizeIndianMobileInput, sanitizeNameInput } from "@/lib/inputValidation";
 import {
   Database, Send, CheckCircle2, AlertCircle, RefreshCw,
   Code, Users, Building2, HardHat, Laptop, ArrowRight, Play, Eye
@@ -20,7 +21,7 @@ export default function ApiTesterPage() {
   // Form state for creating alumni
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
-  const [formPhone, setFormPhone] = useState("+91 98765 00000");
+  const [formPhone, setFormPhone] = useState("9876500000");
   const [formCompany, setFormCompany] = useState("");
   const [formRole, setFormRole] = useState("");
   const [formLocation, setFormLocation] = useState("Gujarat, India");
@@ -274,7 +275,7 @@ export default function ApiTesterPage() {
                     required
                     placeholder="e.g. Aman Varma"
                     value={formName}
-                    onChange={(e) => setFormName(e.target.value)}
+                    onChange={(e) => setFormName(sanitizeNameInput(e.target.value))}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#9B2335] focus:ring-1 focus:ring-[#9B2335]"
                   />
                 </div>
@@ -295,9 +296,10 @@ export default function ApiTesterPage() {
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Phone</label>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="numeric"
                     value={formPhone}
-                    onChange={(e) => setFormPhone(e.target.value)}
+                    onChange={(e) => setFormPhone(sanitizeIndianMobileInput(e.target.value))}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#9B2335] focus:ring-1 focus:ring-[#9B2335]"
                   />
                 </div>

@@ -294,10 +294,12 @@ CREATE TABLE verification_requests (
     target      varchar(255) NOT NULL,          -- email address or phone number
     token_hash  varchar(255) NOT NULL,          -- hash of link token / OTP
     status      verification_status_enum NOT NULL DEFAULT 'pending',
-    attempts    smallint NOT NULL DEFAULT 0,
+    attempts    smallint NOT NULL DEFAULT 0 CHECK (attempts >= 0),
     expires_at  timestamptz NOT NULL,
     verified_at timestamptz,
-    created_at  timestamptz NOT NULL DEFAULT now()
+    created_at  timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT verification_requests_owner_required
+        CHECK (user_id IS NOT NULL OR member_id IS NOT NULL)
 );
 
 -- Audit Log (Fixed entity_id to varchar(100) to support both integers and UUIDs)
@@ -348,6 +350,12 @@ CREATE INDEX idx_newsletter_active     ON newsletter_subscriptions (is_active);
 CREATE INDEX idx_audit_user            ON audit_log (user_id);
 CREATE INDEX idx_audit_entity          ON audit_log (entity_type, entity_id);
 CREATE INDEX idx_audit_date            ON audit_log (created_at);
+-- Index referencing columns whose parent key can be updated/deleted.
+CREATE INDEX idx_member_skills_skill    ON member_skills (skill_id);
+CREATE INDEX idx_events_created_by      ON events (created_by);
+CREATE INDEX idx_gallery_uploaded_by    ON gallery_items (uploaded_by);
+CREATE INDEX idx_news_created_by        ON news_articles (created_by);
+CREATE INDEX idx_contact_resolved_by    ON contact_inquiries (resolved_by);
 
 -- ---------------------------------------------------------------------
 -- Trigger Functions
@@ -493,9 +501,10 @@ INSERT INTO departments (id, name, short_name, slug, description, alumni_count, 
  (10, 'Management Studies',       'MBA',        'management', 'Department of Management Studies',                        820, '/departments/management'),
  (11, 'Chemical Engineering',     'Chemical',   'chemical',   'Department of Chemical Engineering',                      680, '/departments/chemical');
 
--- 2. Initial Admin User (Default Password Hash for Admin@123)
+-- 2. Disabled administrator placeholder. Provision a unique password out of band
+-- before enabling an administrator account; this seed has no usable default password.
 INSERT INTO users (id, email, phone, password_hash, role, is_active, email_verified, phone_verified) VALUES
- ('a0000000-0000-0000-0000-000000000001', 'admin@tolani.ac.in', '+91 2836 260249', '$2b$10$eWjU942R0JvOqVj4p1XgxehT9kPvI7gM0B.qYd3i4A7NfT6HlU.62', 'admin', true, true, true);
+ ('a0000000-0000-0000-0000-000000000001', 'admin@tolani.ac.in', '+91 2836 260249', '!DISABLED_UNTIL_ADMIN_PASSWORD_IS_PROVISIONED!', 'admin', false, false, false);
 
 -- 3. Initial Alumni Directory Members (16 Members from frontend store)
 INSERT INTO members (id, name, degree, graduation_year, department_id, company, role, location, email, phone, linkedin_url, bio, experience_years, institute, verified) VALUES

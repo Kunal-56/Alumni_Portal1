@@ -17,25 +17,28 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem("tolani_logged_in") || localStorage.getItem("tolani_logged_in");
-      const email = sessionStorage.getItem("tolani_user_email") || localStorage.getItem("tolani_user_email") || "";
-      const role = sessionStorage.getItem("tolani_user_role") || localStorage.getItem("tolani_user_role") || "";
-      const adminAuth =
-        sessionStorage.getItem("tolani_admin_authenticated") === "true" ||
-        localStorage.getItem("tolani_admin_authenticated") === "true";
-
-      if (stored === "true") {
-        setLoggedIn(true);
-        setUserEmail(email || "dakshahir14@gmail.com");
-        // ONLY true if specifically logged in with admin credentials / role
-        const checkIsAdmin = role === "admin" || adminAuth || email.toLowerCase() === "admin@tolani.edu";
-        setIsAdmin(checkIsAdmin);
-      } else {
+    let cancelled = false;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (cancelled) return;
+        if (response.ok && data.success && data.user) {
+          setLoggedIn(true);
+          setUserEmail(data.user.email || "");
+          setIsAdmin(data.user.role === "admin");
+        } else {
+          setLoggedIn(false);
+          setIsAdmin(false);
+          setUserEmail("");
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
         setLoggedIn(false);
         setIsAdmin(false);
-      }
-    }
+        setUserEmail("");
+      });
+    return () => { cancelled = true; };
   }, []);
 
   // Close dropdown on outside click
@@ -50,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("tolani_logged_in");
       sessionStorage.removeItem("tolani_user_email");
@@ -61,6 +64,7 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
       localStorage.removeItem("tolani_user_role");
       localStorage.removeItem("tolani_admin_authenticated");
     }
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
     setLoggedIn(false);
     setIsAdmin(false);
     setUserEmail("");

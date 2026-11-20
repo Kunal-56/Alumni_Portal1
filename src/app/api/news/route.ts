@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -131,9 +132,9 @@ export async function GET(request: NextRequest) {
       news: mapped,
     });
   } catch (error: any) {
-    console.error("GET /api/news error:", error);
+    console.error("GET /api/news failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch news articles" },
+      { success: false, error: "Unable to fetch news articles." },
       { status: 500 }
     );
   }
@@ -141,6 +142,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!hasSameOrigin(request)) {
+      return NextResponse.json({ success: false, error: "Invalid request origin." }, { status: 403 });
+    }
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Administrator access required." }, { status: 403 });
+    }
     const body = await request.json();
 
     if (!body.title || !body.title.trim()) {
@@ -217,9 +224,9 @@ export async function POST(request: NextRequest) {
       news: mapped,
     });
   } catch (error: any) {
-    console.error("POST /api/news error:", error);
+    console.error("POST /api/news failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to publish news article" },
+      { success: false, error: "Failed to publish news article." },
       { status: 500 }
     );
   }

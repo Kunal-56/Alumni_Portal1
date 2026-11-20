@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import "@/app/dashboard.css";
+import { sanitizeIndianMobileInput, sanitizeNameInput, validateEmail, validateFullName, validateGraduationYear, validateIndianMobile, validateText } from "@/lib/inputValidation";
 
 interface ContactFormData {
   fullName: string;
@@ -131,16 +132,23 @@ export default function ContactPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    if (!form.fullName.trim()) errs.fullName = "Please enter your full name.";
-    if (!form.email.trim()) {
-      errs.email = "Please enter your email address.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-      errs.email = "Please enter a valid email address.";
+    const nameError = validateFullName(form.fullName);
+    if (nameError) errs.fullName = nameError;
+    const emailError = validateEmail(form.email);
+    if (emailError) errs.email = emailError;
+    if (form.phone.trim()) {
+      const phoneError = validateIndianMobile(form.phone);
+      if (phoneError) errs.phone = phoneError;
     }
-    if (!form.subject.trim()) errs.subject = "Please enter a subject or title.";
-    if (!form.message.trim()) {
-      errs.message = "Please write your message.";
-    } else if (form.message.trim().length < 15) {
+    if (form.batchYear.trim()) {
+      const yearError = validateGraduationYear(form.batchYear);
+      if (yearError) errs.batchYear = yearError;
+    }
+    const subjectError = validateText(form.subject, "Subject", 150, true);
+    if (subjectError) errs.subject = subjectError;
+    const messageError = validateText(form.message, "Message", 3000, true);
+    if (messageError) errs.message = messageError;
+    else if (form.message.trim().length < 15) {
       errs.message = "Message must be at least 15 characters long.";
     }
     setErrors(errs);
@@ -411,10 +419,11 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="text"
+                      maxLength={200}
                       placeholder="e.g. Rahul Sharma"
                       value={form.fullName}
                       onChange={(e) => {
-                        setForm({ ...form, fullName: e.target.value });
+                        setForm({ ...form, fullName: sanitizeNameInput(e.target.value) });
                         if (errors.fullName) setErrors({ ...errors, fullName: "" });
                       }}
                       className={`w-full text-xs px-3.5 py-2.5 rounded-xl border bg-gray-50/50 focus:bg-white focus:outline-none transition-all ${
@@ -436,6 +445,7 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="email"
+                      maxLength={254}
                       placeholder="name@example.com"
                       value={form.email}
                       onChange={(e) => {
@@ -464,11 +474,13 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="tel"
-                      placeholder="+91 98765 43210"
+                      placeholder="9876543210"
                       value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      inputMode="numeric"
+                      onChange={(e) => setForm({ ...form, phone: sanitizeIndianMobileInput(e.target.value) })}
                       className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:border-[#9B2335] focus:ring-2 focus:ring-red-100 transition-all"
                     />
+                    {errors.phone && <p role="alert" className="text-[11px] text-red-600 mt-1">{errors.phone}</p>}
                   </div>
 
                   <div>
@@ -498,11 +510,13 @@ export default function ContactPage() {
                     </label>
                     <input
                       type="text"
+                      maxLength={4}
                       placeholder="e.g. 2018 or 2022"
                       value={form.batchYear}
                       onChange={(e) => setForm({ ...form, batchYear: e.target.value })}
                       className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:border-[#9B2335] focus:ring-2 focus:ring-red-100 transition-all"
                     />
+                    {errors.batchYear && <p role="alert" className="text-[11px] text-red-600 mt-1">{errors.batchYear}</p>}
                   </div>
 
                   <div>
@@ -532,6 +546,7 @@ export default function ContactPage() {
                   </label>
                   <input
                     type="text"
+                    maxLength={150}
                     placeholder="Brief summary of your inquiry..."
                     value={form.subject}
                     onChange={(e) => {
@@ -563,6 +578,7 @@ export default function ContactPage() {
                   </div>
                   <textarea
                     rows={4}
+                    maxLength={3000}
                     placeholder="Write your message, batch details, request, or questions here..."
                     value={form.message}
                     onChange={(e) => {

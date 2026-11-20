@@ -1,0 +1,546 @@
+{
+  "reportType": "project-inventory",
+  "generatedAt": "2026-11-16T16:21:46.034Z",
+  "projectRoot": "D:\\Alumni_Portal1",
+  "mode": "read-only",
+  "fileContentsRead": false,
+  "secretsCollected": false,
+  "fileLimitReached": false,
+  "totalFilesInventoried": 95,
+  "categoryCounts": {
+    "configuration": 4,
+    "other": 32,
+    "testing": 34,
+    "database": 2,
+    "authorization": 1,
+    "api-route": 16,
+    "authentication": 6
+  },
+  "git": {
+    "branch": "main",
+    "changedFileCount": 44,
+    "changedFiles": [
+      " M .github/workflows/codeql.yml",
+      " M next.config.ts",
+      " M src/app/admin/page.tsx",
+      " M src/app/api/alumni/[id]/route.ts",
+      " M src/app/api/alumni/route.ts",
+      " M src/app/api/auth/login/route.ts",
+      " M src/app/api/auth/me/route.ts",
+      " M src/app/api/departments/[slug]/alumni/route.ts",
+      " M src/app/api/events/[id]/route.ts",
+      " M src/app/api/gallery/[id]/route.ts",
+      " M src/app/api/news/[id]/route.ts",
+      " M src/app/api/upload/route.ts",
+      " M src/app/invite/page.tsx",
+      " M src/app/members/[id]/page.tsx",
+      " M src/components/LoginForm.tsx",
+      "?? .security_backup_pre_remediation/LoginForm.tsx",
+      "?? .security_backup_pre_remediation/alumni_route.ts",
+      "?? .security_backup_pre_remediation/auth_me_route.ts",
+      "?? .security_backup_pre_remediation/codeql.yml",
+      "?? .security_backup_pre_remediation/login_route.ts",
+      "?? .security_backup_pre_remediation/next.config.ts",
+      "?? .security_backup_pre_remediation/upload_route.ts",
+      "?? Alumni_Security_Source.zip",
+      "?? Alumni_Security_Source_Current.zip",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Automation/playwright.config.ts\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Automation/playwright.config.ts.backup\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Automation/tests/api/functional-api.spec.ts\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Automation/tests/browser/functional-browser.spec.ts\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Documentation/Execution_Notes.md\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Documentation/Functional_Test_Case_Register.csv\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Documentation/Functional_Test_Case_Register.xlsx\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Documentation/Functional_Test_Scenario_Register.xlsx\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Documentation/Functional_Testing_Strategy.docx\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Documentation/Functional_Testing_Strategy.md\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Documentation/Source_Inspection_Notes.md\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Evidence/HTML_Report/.gitkeep\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Evidence/Screenshots/.gitkeep\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Evidence/Traces/.gitkeep\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/Evidence/Videos/.gitkeep\"",
+      "?? \"Alumni_portal(functional testing/02_Functional_Testing/README_FUNCTIONAL_TESTING.md\"",
+      "?? security-agent/scanners/project-inventory.ts",
+      "?? security_changes.patch",
+      "?? src/lib/auth.ts",
+      "?? \"t \\357\\200\\242`n===== NODE =====\\357\\200\\242\""
+    ]
+  },
+  "files": [
+    {
+      "path": ".github/workflows/codeql.yml",
+      "category": "configuration",
+      "extension": ".yml"
+    },
+    {
+      "path": ".gitignore",
+      "category": "other",
+      "extension": "(no extension)"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/error-context.md",
+      "category": "testing",
+      "extension": ".md"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/data/106d73705de26c575cd720e5baaff282b15e5513.md",
+      "category": "testing",
+      "extension": ".md"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/data/df159873bac878c85cc894055316c02fdd213f0d.md",
+      "category": "testing",
+      "extension": ".md"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/index.html",
+      "category": "testing",
+      "extension": ".html"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/assets/codeMirrorModule-DNqxPF-E.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/assets/defaultSettingsView-BQT9Z6FV.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/assets/rolldown-runtime-QTnfLwEv.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/assets/urlMatch-Cgl6axSs.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/codeMirrorModule.-QdMvsKi.css",
+      "category": "testing",
+      "extension": ".css"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/defaultSettingsView.C8BeHuxd.css",
+      "category": "testing",
+      "extension": ".css"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/index.B5WWZ7O0.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/index.B_TqY17P.css",
+      "category": "testing",
+      "extension": ".css"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/index.html",
+      "category": "testing",
+      "extension": ".html"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/snapshot.-ChLTbql.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/snapshot.html",
+      "category": "testing",
+      "extension": ".html"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/sw.bundle.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/uiMode.CyMfwkXJ.css",
+      "category": "testing",
+      "extension": ".css"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/uiMode.DuLwZHRf.js",
+      "category": "testing",
+      "extension": ".js"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/uiMode.html",
+      "category": "testing",
+      "extension": ".html"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/Playwright_HTML_Report/trace/xtermModule.kHJ-D0s7.css",
+      "category": "testing",
+      "extension": ".css"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/README_EVIDENCE.txt",
+      "category": "testing",
+      "extension": ".txt"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/Evidence/results.json",
+      "category": "testing",
+      "extension": ".json"
+    },
+    {
+      "path": "Alumni_Portal (UI TESTING)/Alumni_Portal_UI_QA_Submission/README_QA_DELIVERABLES.txt",
+      "category": "testing",
+      "extension": ".txt"
+    },
+    {
+      "path": "Alumni_portal(functional testing/02_Functional_Testing/Automation/playwright.config.ts",
+      "category": "testing",
+      "extension": ".ts"
+    },
+    {
+      "path": "Alumni_portal(functional testing/02_Functional_Testing/Automation/tests/api/functional-api.spec.ts",
+      "category": "testing",
+      "extension": ".ts"
+    },
+    {
+      "path": "Alumni_portal(functional testing/02_Functional_Testing/Automation/tests/browser/functional-browser.spec.ts",
+      "category": "testing",
+      "extension": ".ts"
+    },
+    {
+      "path": "Alumni_portal(functional testing/02_Functional_Testing/Documentation/Execution_Notes.md",
+      "category": "testing",
+      "extension": ".md"
+    },
+    {
+      "path": "Alumni_portal(functional testing/02_Functional_Testing/Documentation/Functional_Testing_Strategy.md",
+      "category": "testing",
+      "extension": ".md"
+    },
+    {
+      "path": "Alumni_portal(functional testing/02_Functional_Testing/Documentation/Source_Inspection_Notes.md",
+      "category": "testing",
+      "extension": ".md"
+    },
+    {
+      "path": "Alumni_portal(functional testing/02_Functional_Testing/README_FUNCTIONAL_TESTING.md",
+      "category": "testing",
+      "extension": ".md"
+    },
+    {
+      "path": "Main Database.sql",
+      "category": "database",
+      "extension": ".sql"
+    },
+    {
+      "path": "next-env.d.ts",
+      "category": "other",
+      "extension": ".ts"
+    },
+    {
+      "path": "next.config.ts",
+      "category": "configuration",
+      "extension": ".ts"
+    },
+    {
+      "path": "package-lock.json",
+      "category": "other",
+      "extension": ".json"
+    },
+    {
+      "path": "package.json",
+      "category": "configuration",
+      "extension": ".json"
+    },
+    {
+      "path": "playwright.config.ts",
+      "category": "testing",
+      "extension": ".ts"
+    },
+    {
+      "path": "postcss.config.js",
+      "category": "other",
+      "extension": ".js"
+    },
+    {
+      "path": "security-agent/scanners/project-inventory.ts",
+      "category": "other",
+      "extension": ".ts"
+    },
+    {
+      "path": "SECURITY_REPORT.md",
+      "category": "other",
+      "extension": ".md"
+    },
+    {
+      "path": "src/app/admin/page.tsx",
+      "category": "authorization",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/api/alumni/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/alumni/[id]/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/auth/login/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/auth/me/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/auth/register/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/departments/[slug]/alumni/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/departments/[slug]/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/events/register/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/events/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/events/[id]/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/gallery/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/gallery/[id]/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/health/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/news/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/news/[id]/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api/upload/route.ts",
+      "category": "api-route",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/app/api-tester/page.tsx",
+      "category": "testing",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/contact/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/dashboard.css",
+      "category": "other",
+      "extension": ".css"
+    },
+    {
+      "path": "src/app/departments/cddm/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/departments/civil/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/departments/computer/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/departments/electrical/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/departments/mechanical/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/donation/campaigns/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/donation/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/events/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/events/register/page.tsx",
+      "category": "authentication",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/gallery/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/globals.css",
+      "category": "other",
+      "extension": ".css"
+    },
+    {
+      "path": "src/app/invite/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/login/login.css",
+      "category": "authentication",
+      "extension": ".css"
+    },
+    {
+      "path": "src/app/login/page.tsx",
+      "category": "authentication",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/members/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/members/[id]/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/news/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/app/register/page.tsx",
+      "category": "authentication",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/AddAlumniModal.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/Footer.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/Header.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/HeaderLogo.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/HeroSection.tsx",
+      "category": "other",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/components/LoginForm.tsx",
+      "category": "authentication",
+      "extension": ".tsx"
+    },
+    {
+      "path": "src/lib/alumniStore.ts",
+      "category": "other",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/auth.ts",
+      "category": "authentication",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/db.ts",
+      "category": "database",
+      "extension": ".ts"
+    },
+    {
+      "path": "src/lib/useDepartmentEventsAndGallery.ts",
+      "category": "other",
+      "extension": ".ts"
+    },
+    {
+      "path": "tailwind.config.ts",
+      "category": "other",
+      "extension": ".ts"
+    },
+    {
+      "path": "tests/alumni-portal-ui.spec.ts",
+      "category": "testing",
+      "extension": ".ts"
+    },
+    {
+      "path": "tests/homepage.completed.ts",
+      "category": "testing",
+      "extension": ".ts"
+    },
+    {
+      "path": "tsconfig.json",
+      "category": "configuration",
+      "extension": ".json"
+    }
+  ]
+}

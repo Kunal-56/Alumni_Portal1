@@ -9,7 +9,8 @@ import {
   Briefcase, Shield, Check, ArrowLeft, ArrowRight, Lock, CheckCircle2,
   ChevronDown, X, Sparkles, AlertCircle, Info, Smartphone
 } from "lucide-react";
-import { addMember, Member } from "@/lib/alumniStore";
+import { Member } from "@/lib/alumniStore";
+import { ALUMNI_NAME_MAX_LENGTH, normalizeEmail, sanitizeIndianMobileInput, sanitizeNameInput, validateAlumniName, validateDateOnly, validateEmail, validateIntegerRange, validateIndianMobile, validateSafeUrl, validateText } from "@/lib/inputValidation";
 import "../dashboard.css";
 
 const DEGREES = ["B.Tech", "Diploma", "BA (J&MC)", "BBA", "M.Tech", "MBA", "BCA", "MCA", "B.Sc", "M.Sc", "Other"];
@@ -74,49 +75,105 @@ export default function InviteAlumniPage() {
 
   const handleGoToStep2 = () => {
     const errs: Record<string, string> = {};
-    if (!fullName.trim()) errs.fullName = "Full Name is required";
-    if (!email.trim()) errs.email = "Email is required";
-    else if (!email.includes("@")) errs.email = "Enter a valid email";
-    if (!phoneNumber.trim()) errs.phoneNumber = "Phone Number is required";
+    const nameError = validateAlumniName(fullName);
+    if (nameError) errs.fullName = nameError;
+    const emailError = validateEmail(email);
+    if (emailError) errs.email = emailError;
+    const phoneError = validateIndianMobile(phoneNumber);
+    if (phoneError) errs.phoneNumber = phoneError;
     if (!dob) errs.dob = "Date of Birth is required";
-    if (!gender) errs.gender = "Please select gender";
-    if (!currentLocation.trim()) errs.currentLocation = "Location is required";
-    if (!shortBio.trim()) errs.shortBio = "Short Bio is required";
+    else {
+      const dateError = validateDateOnly(dob, { notFuture: true });
+      if (dateError) errs.dob = dateError;
+    }
+    if (!["Male", "Female", "Other"].includes(gender)) errs.gender = "Please select a valid gender";
+    const locationError = validateText(currentLocation, "Location", 200, true);
+    if (locationError) errs.currentLocation = locationError;
+    const bioError = validateText(shortBio, "Short bio", 300, true);
+    if (bioError) errs.shortBio = bioError;
+    if (linkedin.trim()) {
+      const profileUrl = /^https?:\/\//i.test(linkedin.trim()) ? linkedin.trim() : `https://${linkedin.trim()}`;
+      const urlError = validateSafeUrl(profileUrl, "LinkedIn URL");
+      if (urlError || !/linkedin\.com\//i.test(profileUrl)) errs.linkedin = "Enter a valid LinkedIn profile URL.";
+    }
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     if (!verificationEmail) setVerificationEmail(email);
-    if (!verificationMobile) setVerificationMobile(`+91 ${phoneNumber}`);
+    if (!verificationMobile) setVerificationMobile(phoneNumber);
     setStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleGoToStep3 = () => {
     const errs: Record<string, string> = {};
-    if (!company.trim()) errs.company = "Company name is required";
-    if (!jobTitle.trim()) errs.jobTitle = "Job title is required";
-    if (!workLocation.trim()) errs.workLocation = "Work location is required";
+    const companyError = validateText(company, "Company", 200, true);
+    if (companyError) errs.company = companyError;
+    const titleError = validateText(jobTitle, "Job title", 200, true);
+    if (titleError) errs.jobTitle = titleError;
+    const locationError = validateText(workLocation, "Work location", 200, true);
+    if (locationError) errs.workLocation = locationError;
+    const experienceError = validateIntegerRange(experience, 0, 50, "Experience");
+    if (experienceError) errs.experience = experienceError;
     if (Object.keys(errs).length > 0) { setErrors(errs); return; }
     setErrors({});
     if (!verificationEmail) setVerificationEmail(email);
-    if (!verificationMobile) setVerificationMobile(`+91 ${phoneNumber}`);
+    if (!verificationMobile) setVerificationMobile(phoneNumber);
     setStep(3);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errs: Record<string, string> = {};
+    const nameError = validateAlumniName(fullName);
+    const emailError = validateEmail(email);
+    const phoneError = validateIndianMobile(phoneNumber);
+    if (nameError) errs.fullName = nameError;
+    if (emailError) errs.email = emailError;
+    if (phoneError) errs.phoneNumber = phoneError;
+    if (!dob) errs.dob = "Date of Birth is required";
+    else {
+      const dateError = validateDateOnly(dob, { notFuture: true });
+      if (dateError) errs.dob = dateError;
+    }
+    if (!["Male", "Female", "Other"].includes(gender)) errs.gender = "Please select a valid gender";
+    const locationError = validateText(currentLocation, "Location", 200, true);
+    if (locationError) errs.currentLocation = locationError;
+    const bioError = validateText(shortBio, "Short bio", 300, true);
+    if (bioError) errs.shortBio = bioError;
+    const companyError = validateText(company, "Company", 200, true);
+    if (companyError) errs.company = companyError;
+    const titleError = validateText(jobTitle, "Job title", 200, true);
+    if (titleError) errs.jobTitle = titleError;
+    const workLocationError = validateText(workLocation, "Work location", 200, true);
+    if (workLocationError) errs.workLocation = workLocationError;
+    const experienceError = validateIntegerRange(experience, 0, 50, "Experience");
+    if (experienceError) errs.experience = experienceError;
+    if (verificationMethod === "email") {
+      const verificationEmailError = validateEmail(verificationEmail || email);
+      if (verificationEmailError) errs.verificationEmail = verificationEmailError;
+    } else {
+      const verificationPhoneError = validateIndianMobile(verificationMobile || phoneNumber);
+      if (verificationPhoneError) errs.verificationMobile = verificationPhoneError;
+    }
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      return;
+    }
     setIsSubmitting(true);
     setErrors({});
 
-    const memberEmail = verificationMethod === "email" ? (verificationEmail.trim() || email.trim()) : email.trim();
+    const memberEmail = normalizeEmail(verificationMethod === "email" ? (verificationEmail.trim() || email.trim()) : email.trim());
     const payload = {
       name: fullName.trim(),
       email: memberEmail,
-      phone: `+91 ${phoneNumber}`.trim(),
+      phone: phoneNumber,
       dob: dob || undefined,
-      gender: gender || undefined,
+      gender: gender.toLowerCase() || undefined,
       location: currentLocation.trim(),
-      linkedin_url: linkedin.trim() || `https://linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, "-")}`,
+      linkedin_url: (linkedin.trim() && !/^(javascript|data|vbscript):/i.test(linkedin.trim()))
+        ? (linkedin.trim().startsWith("http") ? linkedin.trim() : `https://${linkedin.trim()}`)
+        : `https://linkedin.com/in/${fullName.toLowerCase().replace(/[^a-z0-9_-]/g, "-")}`,
       bio: shortBio.trim() || bioAchievements.trim(),
       degree,
       department: dept,
@@ -124,10 +181,10 @@ export default function InviteAlumniPage() {
       institute: institute.trim() || "Tolani F. G. Polytechnic",
       company: company.trim(),
       role: jobTitle.trim(),
-      experience_years: parseInt(experience, 10) || 1,
+      experience_years: Number(experience),
       skills: skills.length > 0 ? skills : ["Engineering"],
-      achievements: ["Tolani Verified Alumni", bioAchievements.trim() || `${jobTitle} at ${company}`],
-      verified: true,
+      achievements: [bioAchievements.trim() || `${jobTitle} at ${company}`],
+      verified: false,
       verification_method: verificationMethod,
       avatar_url: "/avatars/m1.jpg",
     };
@@ -165,8 +222,6 @@ export default function InviteAlumniPage() {
         institute: json.member.institute,
       };
 
-      // Sync into verified cache and dispatch event for immediate UI update
-      addMember(dbMember);
       setCreatedMember(dbMember);
       setIsSuccessModalOpen(true);
     } catch (err: any) {
@@ -259,7 +314,8 @@ export default function InviteAlumniPage() {
                 {/* Full Name */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">Full Name <span className="text-[#9B2335]">*</span></label>
-                  <input type="text" value={fullName} onChange={(e) => { setFullName(e.target.value); clearErr("fullName"); }} placeholder="Enter your full name" className={inputCls("fullName")} />
+                  <input type="text" maxLength={ALUMNI_NAME_MAX_LENGTH} value={fullName} onChange={(e) => { setFullName(sanitizeNameInput(e.target.value)); clearErr("fullName"); }} placeholder="Enter your full name" className={inputCls("fullName")} />
+                  <p className="mt-1 text-xs text-slate-500">Enter 10–15 characters.</p>
                   {errMsg("fullName")}
                 </div>
                 {/* Email */}
@@ -276,7 +332,7 @@ export default function InviteAlumniPage() {
                       <span className="text-base">🇮🇳</span><ChevronDown size={14} className="text-gray-400" />
                     </div>
                     <span className="text-xs font-bold text-gray-500 pl-2 select-none">+91</span>
-                    <input type="tel" value={phoneNumber} onChange={(e) => { setPhoneNumber(e.target.value); clearErr("phoneNumber"); }} placeholder="98765 43210" className="w-full bg-transparent px-2 py-1.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none" />
+                    <input type="tel" inputMode="numeric" value={phoneNumber} onChange={(e) => { setPhoneNumber(sanitizeIndianMobileInput(e.target.value)); clearErr("phoneNumber"); }} placeholder="9876543210" className="w-full bg-transparent px-2 py-1.5 text-sm text-gray-800 placeholder-gray-400 focus:outline-none" />
                   </div>
                   {errMsg("phoneNumber")}
                 </div>
@@ -413,6 +469,7 @@ export default function InviteAlumniPage() {
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">Experience (in years) <span className="text-[#9B2335]">*</span></label>
                   <input type="number" min="0" max="50" value={experience} onChange={(e) => setExperience(e.target.value)} placeholder="2" className="w-full bg-white border border-gray-200 rounded-xl px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-[#9B2335] focus:ring-1 focus:ring-[#9B2335]" />
+                  {errMsg("experience")}
                 </div>
                 {/* Skills */}
                 <div className="sm:col-span-2">
@@ -484,8 +541,8 @@ export default function InviteAlumniPage() {
                     {verificationMethod === "email" ? <div className="w-5 h-5 rounded-full bg-[#9B2335] flex items-center justify-center text-white"><Check size={12} strokeWidth={3} /></div> : <div className="w-5 h-5 rounded-full border-2 border-gray-300" />}
                   </div>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 mt-1" style={{ background: "#fef0f2", border: "1px solid #fcdde1", color: "#9B2335" }}><Mail size={22} /></div>
-                  <h4 className="text-sm font-bold text-gray-900 mb-1">Email Verification</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">We will send a verification link to your email address.</p>
+            <h4 className="text-sm font-bold text-gray-900 mb-1">Email for Review</h4>
+            <p className="text-xs text-gray-500 leading-relaxed">The alumni office can use this address to review your submission.</p>
                 </div>
                 {/* Mobile */}
                 <div onClick={() => setVerificationMethod("mobile")} className={`relative p-5 rounded-2xl cursor-pointer transition-all flex flex-col items-center text-center ${verificationMethod === "mobile" ? "ring-2 ring-[#9B2335] bg-[#fffafb] shadow-sm" : "border border-gray-200 hover:border-gray-300 bg-white"}`}>
@@ -493,8 +550,8 @@ export default function InviteAlumniPage() {
                     {verificationMethod === "mobile" ? <div className="w-5 h-5 rounded-full bg-[#9B2335] flex items-center justify-center text-white"><Check size={12} strokeWidth={3} /></div> : <div className="w-5 h-5 rounded-full border-2 border-gray-300" />}
                   </div>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 mt-1" style={{ background: "#fef0f2", border: "1px solid #fcdde1", color: "#9B2335" }}><Smartphone size={22} /></div>
-                  <h4 className="text-sm font-bold text-gray-900 mb-1">Mobile Verification</h4>
-                  <p className="text-xs text-gray-500 leading-relaxed">We will send an OTP to your mobile number.</p>
+            <h4 className="text-sm font-bold text-gray-900 mb-1">Mobile for Review</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">The alumni office can use this number to review your submission.</p>
                 </div>
               </div>
 
@@ -505,7 +562,7 @@ export default function InviteAlumniPage() {
                     <label className="block text-xs font-bold text-gray-700 mb-1.5">Email Address</label>
                     <div className="relative flex items-center border border-gray-200 rounded-xl bg-white focus-within:border-[#9B2335] focus-within:ring-1 focus-within:ring-[#9B2335]">
                       <Mail size={16} className="absolute left-3.5 text-gray-400 pointer-events-none" />
-                      <input type="email" required value={verificationEmail} onChange={(e) => setVerificationEmail(e.target.value)} placeholder="daksh.ahir@alumni.tolani.ac.in" className="w-full bg-transparent pl-10 pr-4 py-2.5 text-sm text-gray-800 focus:outline-none" />
+                      <input type="email" required maxLength={254} value={verificationEmail} onChange={(e) => { setVerificationEmail(e.target.value); clearErr("verificationEmail"); }} placeholder="daksh.ahir@alumni.tolani.ac.in" className="w-full bg-transparent pl-10 pr-4 py-2.5 text-sm text-gray-800 focus:outline-none" />
                     </div>
                   </div>
                 ) : (
@@ -513,7 +570,7 @@ export default function InviteAlumniPage() {
                     <label className="block text-xs font-bold text-gray-700 mb-1.5">Mobile Number</label>
                     <div className="relative flex items-center border border-gray-200 rounded-xl bg-white focus-within:border-[#9B2335] focus-within:ring-1 focus-within:ring-[#9B2335]">
                       <Smartphone size={16} className="absolute left-3.5 text-gray-400 pointer-events-none" />
-                      <input type="text" required value={verificationMobile} onChange={(e) => setVerificationMobile(e.target.value)} placeholder="+91 98765 43210" className="w-full bg-transparent pl-10 pr-4 py-2.5 text-sm text-gray-800 focus:outline-none" />
+                      <input type="tel" required inputMode="numeric" value={verificationMobile} onChange={(e) => { setVerificationMobile(sanitizeIndianMobileInput(e.target.value)); clearErr("verificationMobile"); }} placeholder="9876543210" className="w-full bg-transparent pl-10 pr-4 py-2.5 text-sm text-gray-800 focus:outline-none" />
                     </div>
                   </div>
                 )}
@@ -546,7 +603,7 @@ export default function InviteAlumniPage() {
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button type="button" onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }} className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 text-sm rounded-xl font-bold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 shadow-sm"><ArrowLeft size={16} /> Previous</button>
                 <button type="submit" disabled={isSubmitting} className="btn-maroon flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 text-sm rounded-xl font-bold shadow-md disabled:opacity-75 disabled:cursor-not-allowed">
-                  {isSubmitting ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Verifying...</> : verificationMethod === "email" ? <>Send Verification Link <ArrowRight size={16} /></> : <>Send OTP &amp; Verify <ArrowRight size={16} /></>}
+                  {isSubmitting ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Submitting...</> : <>Submit for Review <ArrowRight size={16} /></>}
                 </button>
               </div>
             </div>
@@ -563,9 +620,9 @@ export default function InviteAlumniPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 text-center shadow-2xl relative border border-gray-100">
             <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 ring-8 ring-green-50" style={{ background: "#22c55e" }}><CheckCircle2 size={36} className="text-white" /></div>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-700 border border-green-200 mb-2"><Sparkles size={13} /> Verified Member Added</span>
-            <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Registration Successful!</h3>
-            <p className="text-sm text-gray-600 mb-6 leading-relaxed">Welcome, <strong className="text-gray-900">{createdMember.name}</strong>! Your alumni profile is now verified and live in the directory.</p>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 mb-2"><Sparkles size={13} /> Submission Received</span>
+            <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Pending Review</h3>
+            <p className="text-sm text-gray-600 mb-6 leading-relaxed">Thank you, <strong className="text-gray-900">{createdMember.name}</strong>. The alumni office will review your profile before it appears in the directory.</p>
             <div className="bg-gray-50 rounded-2xl p-4 mb-6 text-left text-xs space-y-2 border border-gray-200/80">
               <div className="flex justify-between"><span className="text-gray-500">Degree &amp; Batch:</span><span className="font-bold text-gray-800">{createdMember.degree} ({createdMember.year})</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Department:</span><span className="font-bold text-gray-800">{createdMember.dept}</span></div>

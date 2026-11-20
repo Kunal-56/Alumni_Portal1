@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { ALUMNI_NAME_MAX_LENGTH, sanitizeIndianMobileInput, sanitizeNameInput, validateAlumniName } from "@/lib/inputValidation";
 import { X, CheckCircle2, AlertCircle, Database, Sparkles, UserPlus, Loader2 } from "lucide-react";
 
 interface AddAlumniModalProps {
@@ -20,7 +21,7 @@ export function AddAlumniModal({
 }: AddAlumniModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("+91 ");
+  const [phone, setPhone] = useState("");
   const [graduationYear, setGraduationYear] = useState("2025");
   const [degree, setDegree] = useState("B.Tech");
   const [company, setCompany] = useState("");
@@ -41,6 +42,11 @@ export function AddAlumniModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    const nameError = validateAlumniName(name);
+    if (nameError) {
+      setError(nameError);
+      return;
+    }
     setLoading(true);
 
     try {
@@ -88,7 +94,7 @@ export function AddAlumniModal({
   const handleReset = () => {
     setName("");
     setEmail("");
-    setPhone("+91 ");
+    setPhone("");
     setCompany("");
     setRole("");
     setLocation("");
@@ -198,11 +204,13 @@ export function AddAlumniModal({
                   <input
                     type="text"
                     required
+                    maxLength={ALUMNI_NAME_MAX_LENGTH}
                     placeholder="e.g. Rahul Sharma"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(sanitizeNameInput(e.target.value))}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#9B2335] focus:ring-1 focus:ring-[#9B2335]"
                   />
+                  <p className="mt-1 text-[11px] text-gray-500">Enter 10–15 characters.</p>
                 </div>
 
                 <div>
@@ -224,10 +232,11 @@ export function AddAlumniModal({
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1">Phone Number</label>
                   <input
-                    type="text"
-                    placeholder="+91 98765 43210"
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="10-digit mobile number"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
+                    onChange={(e) => setPhone(sanitizeIndianMobileInput(e.target.value))}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#9B2335] focus:ring-1 focus:ring-[#9B2335]"
                   />
                 </div>

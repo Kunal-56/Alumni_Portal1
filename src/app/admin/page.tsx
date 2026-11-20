@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
@@ -535,27 +535,36 @@ export default function AdminPortalPage() {
 
   // Check authentication
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const isAdmin =
-        sessionStorage.getItem("tolani_admin_authenticated") === "true" ||
-        localStorage.getItem("tolani_admin_authenticated") === "true" ||
-        sessionStorage.getItem("tolani_user_role") === "admin" ||
-        localStorage.getItem("tolani_user_role") === "admin";
-
-      if (isAdmin) {
+    let cancelled = false;
+    const checkAdminSession = async () => {
+      try {
+        const response = await fetch("/api/auth/me", { cache: "no-store" });
+        const data = await response.json();
+        if (!cancelled && response.ok && data.success && data.user?.role === "admin") {
         setIsAuthenticated(true);
         setIsCheckingAuth(false);
         fetchLiveMembers();
         fetchLiveEvents();
         fetchLiveGallery();
         fetchLiveNews();
-      } else {
+        } else if (!cancelled) {
         setIsAuthenticated(false);
         setIsCheckingAuth(false);
         router.replace("/login");
+        }
+      } catch {
+        if (!cancelled) {
+          setIsAuthenticated(false);
+          setIsCheckingAuth(false);
+          router.replace("/login");
+        }
       }
-    }
+    };
+    checkAdminSession();
+    return () => { cancelled = true; };
   }, [router]);
+
+  const getAdminHeaders = (extra: Record<string, string> = {}) => extra;
 
   const triggerToast = (msg: string) => {
     setToastMessage(msg);
@@ -564,7 +573,7 @@ export default function AdminPortalPage() {
     }, 4000);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("tolani_admin_authenticated");
       sessionStorage.removeItem("tolani_logged_in");
@@ -578,6 +587,7 @@ export default function AdminPortalPage() {
       localStorage.removeItem("tolani_user_email");
       localStorage.removeItem("tolani_user_name");
     }
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
     setIsAuthenticated(false);
     router.push("/login");
   };
@@ -730,7 +740,7 @@ export default function AdminPortalPage() {
       if (editingEvent) {
         const res = await fetch(`/api/events/${editingEvent.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: getAdminHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify(payload),
         });
         const json = await res.json();
@@ -875,7 +885,7 @@ export default function AdminPortalPage() {
       if (editingGallery) {
         const res = await fetch(`/api/gallery/${editingGallery.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: getAdminHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify(payload),
         });
         const json = await res.json();
@@ -1028,7 +1038,7 @@ export default function AdminPortalPage() {
       if (editingNews) {
         const res = await fetch(`/api/news/${editingNews.id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: getAdminHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify(payload),
         });
         const json = await res.json();
@@ -1100,7 +1110,7 @@ export default function AdminPortalPage() {
     try {
       await fetch(`/api/alumni/${member.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAdminHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ verified: nextStatus }),
       });
       setMembers((prev) =>
@@ -1191,7 +1201,7 @@ export default function AdminPortalPage() {
 
     if (type === "event") {
       try {
-        const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/events/${id}`, { method: "DELETE", headers: getAdminHeaders() });
         if (res.ok) {
           setEvents((prev) => prev.filter((e) => String(e.id) !== String(id)));
           triggerToast(`Event "${title}" permanently removed from database!`);
@@ -1205,7 +1215,7 @@ export default function AdminPortalPage() {
       }
     } else if (type === "gallery") {
       try {
-        const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/gallery/${id}`, { method: "DELETE", headers: getAdminHeaders() });
         if (res.ok) {
           setGallery((prev) => prev.filter((g) => String(g.id) !== String(id)));
           triggerToast(`Gallery photo "${title}" permanently removed from database!`);
@@ -1219,7 +1229,7 @@ export default function AdminPortalPage() {
       }
     } else if (type === "news") {
       try {
-        const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/news/${id}`, { method: "DELETE", headers: getAdminHeaders() });
         if (res.ok) {
           setNews((prev) => prev.filter((n) => String(n.id) !== String(id)));
           triggerToast(`News article "${title}" permanently removed from database!`);
@@ -1233,7 +1243,7 @@ export default function AdminPortalPage() {
       }
     } else if (type === "member") {
       try {
-        const res = await fetch(`/api/alumni/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/alumni/${id}`, { method: "DELETE", headers: getAdminHeaders() });
         if (res.ok) {
           setMembers((prev) => prev.filter((m) => String(m.id) !== String(id)));
           triggerToast(`Member "${title}" removed from database!`);

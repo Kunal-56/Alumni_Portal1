@@ -51,6 +51,12 @@ const dbPort = parseInt(fileEnv.PGPORT || process.env.PGPORT || "5432", 10);
 const dbUser = fileEnv.PGUSER || process.env.PGUSER || "postgres";
 const dbPassword = fileEnv.PGPASSWORD || process.env.PGPASSWORD || "";
 const dbDatabase = fileEnv.PGDATABASE || process.env.PGDATABASE || "Alumni_Portal";
+const hasExplicitDatabaseConfig = Boolean(
+  connectionString ||
+  ((fileEnv.PGHOST || process.env.PGHOST) &&
+    (fileEnv.PGUSER || process.env.PGUSER) &&
+    (fileEnv.PGDATABASE || process.env.PGDATABASE))
+);
 
 const configKey = connectionString
   ? connectionString
@@ -94,6 +100,9 @@ export async function query<T extends QueryResultRow = any>(
   text: string,
   params?: any[]
 ): Promise<QueryResult<T>> {
+  if (process.env.NODE_ENV === "production" && !hasExplicitDatabaseConfig) {
+    throw new Error("Database configuration is required in production.");
+  }
   const start = Date.now();
   try {
     const res = await pool.query<T>(text, params);
@@ -103,12 +112,15 @@ export async function query<T extends QueryResultRow = any>(
     }
     return res;
   } catch (error) {
-    console.error("Database query error:", { text, error });
+    console.error("Database query failed:", { code: (error as { code?: string })?.code });
     throw error;
   }
 }
 
 export async function getClient(): Promise<PoolClient> {
+  if (process.env.NODE_ENV === "production" && !hasExplicitDatabaseConfig) {
+    throw new Error("Database configuration is required in production.");
+  }
   return await pool.connect();
 }
 
@@ -206,26 +218,6 @@ export async function createMember(input: CreateAlumniInput) {
         $8, $9, $10, $11, $12, $13,
         $14, $15, $16, $17, $18, $19
       )
-      ON CONFLICT (email) DO UPDATE SET
-        name = EXCLUDED.name,
-        phone = COALESCE(EXCLUDED.phone, members.phone),
-        dob = COALESCE(EXCLUDED.dob, members.dob),
-        gender = COALESCE(EXCLUDED.gender, members.gender),
-        degree = EXCLUDED.degree,
-        graduation_year = EXCLUDED.graduation_year,
-        department_id = EXCLUDED.department_id,
-        institute = EXCLUDED.institute,
-        company = EXCLUDED.company,
-        role = EXCLUDED.role,
-        industry = EXCLUDED.industry,
-        location = EXCLUDED.location,
-        experience_years = COALESCE(EXCLUDED.experience_years, members.experience_years),
-        linkedin_url = COALESCE(EXCLUDED.linkedin_url, members.linkedin_url),
-        bio = COALESCE(EXCLUDED.bio, members.bio),
-        avatar_url = COALESCE(EXCLUDED.avatar_url, members.avatar_url),
-        verified = EXCLUDED.verified,
-        verification_method = EXCLUDED.verification_method,
-        updated_at = now()
       RETURNING *;
     `;
 

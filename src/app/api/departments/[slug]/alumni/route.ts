@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query, getDepartment, createMember } from "@/lib/db";
+import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
+import { checkRateLimit } from "@/lib/rateLimit";
+import { normalizeEmail, validateAlumniProfileInput } from "@/lib/inputValidation";
+
+function maskPhoneNumber(phone?: string | null): string | null {
+  if (!phone) return null;
+  const cleaned = phone.trim();
+  if (cleaned.length < 6) return "****";
+  const start = cleaned.slice(0, 6);
+  const end = cleaned.slice(-2);
+  return `${start}*** **${end}`;
+}
 
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const isAdmin = await isAuthorizedAdmin(request);
     const { slug } = await context.params;
     const department = await getDepartment(slug);
 
@@ -19,11 +32,13 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search")?.trim() || "";
     const year = searchParams.get("year")?.trim() || searchParams.get("graduation_year")?.trim() || "";
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
-    const page = Math.max(parseInt(searchParams.get("page") || "1", 10), 1);
+    const requestedLimit = Number.parseInt(searchParams.get("limit") || "50", 10);
+    const requestedPage = Number.parseInt(searchParams.get("page") || "1", 10);
+    const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 100) : 50;
+    const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
     const offset = (page - 1) * limit;
 
-    let whereClause = "WHERE department_id = $1";
+    let whereClause = isAdmin ? "WHERE department_id = $1" : "WHERE department_id = $1 AND verified = true";
     const params: any[] = [department.id];
     let pIdx = 2;
 
@@ -47,7 +62,7 @@ export async function GET(
     // Fetch members with skills and achievements
     const listQuery = `
       SELECT 
-        id, name, email, phone, degree, graduation_year, department_id,
+        id, ${isAdmin ? "user_id," : ""} name, email, phone, degree, graduation_year, department_id,
         department_name, department_short, company, role, industry,
         location, experience_years, linkedin_url, bio, avatar_url,
         verified, institute, skills, achievements, created_at
@@ -74,23 +89,40 @@ export async function GET(
         limit,
         totalPages: Math.ceil(total / limit),
       },
-      alumni: listRes.rows,
+      alumni: listRes.rows.map((r) => ({
+        ...r,
+        email: isAdmin ? r.email : null,
+        phone: isAdmin ? r.phone : maskPhoneNumber(r.phone),
+        dob: isAdmin ? r.dob : null,
+        gender: isAdmin ? r.gender : null,
+      })),
     });
   } catch (error: any) {
-    console.error("GET /api/departments/[slug]/alumni error:", error);
+    console.error("GET /api/departments/[slug]/alumni failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: "Unable to fetch department alumni." },
       { status: 500 }
     );
   }
 }
 
-let body: any = {};
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ slug: string }> }
 ) {
+  let body: any = {};
+  let isAdmin = false;
   try {
+    if (!hasSameOrigin(request)) {
+      return NextResponse.json({ success: false, error: "Invalid request origin." }, { status: 403 });
+    }
+    isAdmin = await isAuthorizedAdmin(request);
+    if (!isAdmin) {
+      const rate = checkRateLimit(request, "alumni-submit", 5, 60 * 60 * 1000);
+      if (!rate.allowed) {
+        return NextResponse.json({ success: false, error: "Too many submissions. Please try again later." }, { status: 429 });
+      }
+    }
     const { slug } = await context.params;
     const department = await getDepartment(slug);
 
@@ -103,28 +135,16 @@ export async function POST(
 
     body = await request.json();
 
-    // Validation
-    if (!body.name || !body.name.trim()) {
-      return NextResponse.json(
-        { success: false, error: "Full Name is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!body.email || !body.email.trim()) {
-      return NextResponse.json(
-        { success: false, error: "Email is required" },
-        { status: 400 }
-      );
-    }
+    const validationError = validateAlumniProfileInput(body);
+    if (validationError) return NextResponse.json({ success: false, error: validationError }, { status: 400 });
 
     // Insert into PostgreSQL database
     const newMember = await createMember({
       name: body.name,
-      email: body.email,
-      phone: body.phone,
+      email: normalizeEmail(body.email),
+      phone: typeof body.phone === "string" ? body.phone.trim() : undefined,
       dob: body.dob,
-      gender: body.gender,
+      gender: typeof body.gender === "string" ? body.gender.toLowerCase() : undefined,
       degree: body.degree || "B.Tech",
       graduation_year: String(body.graduation_year || body.year || "2025"),
       department_id: department.id,
@@ -137,8 +157,8 @@ export async function POST(
       linkedin_url: body.linkedin_url || body.linkedin,
       bio: body.bio,
       avatar_url: body.avatar_url || body.avatar || "/avatars/m1.jpg",
-      verified: body.verified !== undefined ? Boolean(body.verified) : true,
-      verification_method: body.verification_method || "email",
+      verified: isAdmin ? (body.verified !== undefined ? Boolean(body.verified) : true) : false,
+      verification_method: isAdmin ? body.verification_method || "email" : "admin_approval",
       skills: Array.isArray(body.skills) ? body.skills : [],
       achievements: Array.isArray(body.achievements) ? body.achievements : [],
     });
@@ -159,9 +179,9 @@ export async function POST(
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("POST /api/departments/[slug]/alumni error:", error);
+    console.error("POST /api/departments/[slug]/alumni error:", { code: error?.code });
     // Handle unique constraint violation on email
-    if (error.code === "23505") {
+    if (error.code === "23505" && isAdmin) {
       try {
         const email = (body.email || "").trim().toLowerCase();
         if (email) {
@@ -195,7 +215,7 @@ export async function POST(
           }
         }
       } catch (inner) {
-        console.error("Auto-recovery update error:", inner);
+        console.error("Auto-recovery update failed:", { code: (inner as { code?: string })?.code });
       }
       return NextResponse.json(
         {
@@ -206,7 +226,7 @@ export async function POST(
       );
     }
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to store data in database" },
+      { success: false, error: "Failed to store alumni information." },
       { status: 500 }
     );
   }

@@ -20,6 +20,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ALUMNI_NAME_MAX_LENGTH, normalizeEmail, sanitizeNameInput, validateAlumniName, validateEmail } from "@/lib/inputValidation";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(true);
+  const [agreeTerms, setAgreeTerms] = useState(false);
 
   // Status & feedback
   const [isLoading, setIsLoading] = useState(false);
@@ -40,10 +41,12 @@ export default function RegisterPage() {
 
   // If already logged in, redirect to dashboard
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem("tolani_logged_in");
-      if (stored === "true") router.push("/");
-    }
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (response.ok && data.success) router.replace("/");
+      })
+      .catch(() => undefined);
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,13 +59,20 @@ export default function RegisterPage() {
       return;
     }
 
-    if (!email.includes("@") || !email.includes(".")) {
-      setMessage({ type: "error", text: "Please enter a valid email address." });
+    const nameError = validateAlumniName(fullName);
+    if (nameError) {
+      setMessage({ type: "error", text: nameError });
       return;
     }
 
-    if (password.length < 6) {
-      setMessage({ type: "error", text: "Password must be at least 6 characters long." });
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setMessage({ type: "error", text: emailError });
+      return;
+    }
+
+    if (password.length < 10 || new TextEncoder().encode(password).length > 72) {
+      setMessage({ type: "error", text: "Password must be at least 10 characters and no more than 72 UTF-8 bytes." });
       return;
     }
 
@@ -86,7 +96,7 @@ export default function RegisterPage() {
         },
         body: JSON.stringify({
           fullName: fullName.trim(),
-          email: email.trim().toLowerCase(),
+          email: normalizeEmail(email),
           password,
         }),
       });
@@ -109,7 +119,7 @@ export default function RegisterPage() {
       });
 
       setTimeout(() => {
-        router.push(`/login?registered=true&email=${encodeURIComponent(email.trim().toLowerCase())}`);
+        router.push(`/login?registered=true&email=${encodeURIComponent(normalizeEmail(email))}`);
       }, 1300);
     } catch (err: any) {
       setIsLoading(false);
@@ -306,14 +316,16 @@ export default function RegisterPage() {
                   <input
                     type="text"
                     id="register-fullname"
+                    maxLength={ALUMNI_NAME_MAX_LENGTH}
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => setFullName(sanitizeNameInput(e.target.value))}
                     placeholder="Enter your full name"
                     className="w-full pl-10 pr-4 py-2 sm:py-2.5 bg-gray-50/60 rounded-xl border border-gray-200 text-gray-900 text-xs sm:text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-[#9B2335] transition-all duration-200"
                     style={{ "--tw-ring-color": "rgba(155,35,53,0.3)" } as React.CSSProperties}
                     required
                   />
                 </div>
+                <p className="text-[11px] text-gray-500">Enter 10–15 characters.</p>
               </div>
 
               {/* Email Address */}
@@ -328,6 +340,7 @@ export default function RegisterPage() {
                   <input
                     type="email"
                     id="register-email"
+                    maxLength={254}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email"
@@ -352,7 +365,7 @@ export default function RegisterPage() {
                     id="register-password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password (min 6 characters)"
+                    placeholder="Create a password (min 10 characters)"
                     className="w-full pl-10 pr-10 py-2 sm:py-2.5 bg-gray-50/60 rounded-xl border border-gray-200 text-gray-900 text-xs sm:text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-[#9B2335] transition-all duration-200"
                     required
                   />
@@ -410,6 +423,7 @@ export default function RegisterPage() {
                   checked={agreeTerms}
                   onChange={(e) => setAgreeTerms(e.target.checked)}
                   className="w-4 h-4 rounded text-[#9B2335] focus:ring-[#9B2335] border-gray-300 cursor-pointer"
+                  required
                 />
                 <label htmlFor="agree-terms" className="text-[11px] sm:text-xs text-gray-600 cursor-pointer">
                   I agree to the{" "}

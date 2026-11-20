@@ -1,0 +1,34 @@
+Test ID,Test Type,Scenario,Expected Result,Priority,Status
+FT-API-001,API,Health endpoint,HTTP 200 and status healthy,High,Not Run
+FT-API-002,API,Login missing email,HTTP 400 and validation message,High,Not Run
+FT-API-003,API,Login missing password,HTTP 400 and validation message,High,Not Run
+FT-API-004,API,Registration invalid email,HTTP 400 and validation message,High,Not Run
+FT-API-005,API,Registration short password,HTTP 400 and validation message,High,Not Run
+FT-API-006,API,Current-user missing email,HTTP 400 and validation message,Medium,Not Run
+FT-API-007,API,Alumni listing,Structured alumni and pagination response,High,Not Run
+FT-API-008,API,Events listing,Structured events response,High,Not Run
+FT-API-009,API,News listing,Structured news response,Medium,Not Run
+FT-API-010,API,Gallery listing,Structured gallery response,Medium,Not Run
+FT-API-011,API,Unknown department,HTTP 404 and failure response,Medium,Not Run
+FT-API-012,API,Department alumni listing,Structured response for valid department,Medium,Not Run
+FT-API-013,API,Upload without file,HTTP 400 validation response,Medium,Not Run
+FT-BR-001,Browser,Home route,Route content visible,High,Not Run
+FT-BR-002,Browser,Login route,Route content visible,High,Not Run
+FT-BR-003,Browser,Registration route,Route content visible,High,Not Run
+FT-BR-004,Browser,Invite route,Route content visible,Medium,Not Run
+FT-BR-005,Browser,Members route,Route content visible,High,Not Run
+FT-BR-006,Browser,Events route,Route content visible,High,Not Run
+FT-BR-007,Browser,Event registration route,Route content visible,Medium,Not Run
+FT-BR-008,Browser,Gallery route,Route content visible,Medium,Not Run
+FT-BR-009,Browser,News route,Route content visible,Medium,Not Run
+FT-BR-010,Browser,Contact route,Route content visible,Medium,Not Run
+FT-BR-011,Browser,Donation route,Route content visible,Medium,Not Run
+FT-BR-012,Browser,Donation campaigns route,Route content visible,Medium,Not Run
+FT-BR-013,Browser,Computer department route,Route content visible,Medium,Not Run
+FT-BR-014,Browser,Civil department route,Route content visible,Medium,Not Run
+FT-BR-015,Browser,Electrical department route,Route content visible,Medium,Not Run
+FT-BR-016,Browser,Mechanical department route,Route content visible,Medium,Not Run
+FT-BR-017,Browser,CDDM department route,Route content visible,Medium,Not Run
+FT-BR-018,Browser,Login fields,Email and password inputs visible,High,Not Run
+FT-BR-019,Browser,Registration fields,Email and password inputs visible,High,Not Run
+FT-BR-020,Browser,Members search,Search input accepts text when present,Low,Not Run

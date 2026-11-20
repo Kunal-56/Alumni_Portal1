@@ -1,0 +1,621 @@
+diff --git a/.github/workflows/codeql.yml b/.github/workflows/codeql.yml
+index 0286e03..859146c 100644
+--- a/.github/workflows/codeql.yml
++++ b/.github/workflows/codeql.yml
+@@ -55,7 +55,9 @@ jobs:
+         # your codebase is analyzed, see https://docs.github.com/en/code-security/code-scanning/creating-an-advanced-setup-for-code-scanning/codeql-code-scanning-for-compiled-languages
+     steps:
+     - name: Checkout repository
+-      uses: actions/checkout@v7
++      uses: actions/checkout@v4
++      with:
++        persist-credentials: false
+ 
+     # Add any setup steps before running the `github/codeql-action/init` action.
+     # This includes steps like installing compilers or runtimes (`actions/setup-node`
+@@ -80,8 +82,8 @@ jobs:
+     # "We were unable to automatically build your code", modify the matrix above
+     # to set the build mode to "manual" for that language. Then modify this step
+     # to build your code.
+-    # ℹ️ Command-line programs to run using the OS shell.
+-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
++    # Note: Command-line programs to run using the OS shell.
++    # See: https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+     - name: Run manual build steps
+       if: matrix.build-mode == 'manual'
+       shell: bash
+diff --git a/next.config.ts b/next.config.ts
+index 7a9a1de..faf5e92 100644
+--- a/next.config.ts
++++ b/next.config.ts
+@@ -9,6 +9,35 @@ const nextConfig: NextConfig = {
+   experimental: {
+     optimizePackageImports: ["lucide-react"],
+   },
++  async headers() {
++    return [
++      {
++        source: "/(.*)",
++        headers: [
++          {
++            key: "X-Frame-Options",
++            value: "SAMEORIGIN",
++          },
++          {
++            key: "X-Content-Type-Options",
++            value: "nosniff",
++          },
++          {
++            key: "Referrer-Policy",
++            value: "strict-origin-when-cross-origin",
++          },
++          {
++            key: "X-XSS-Protection",
++            value: "1; mode=block",
++          },
++          {
++            key: "Permissions-Policy",
++            value: "camera=(), microphone=(), geolocation=()",
++          },
++        ],
++      },
++    ];
++  },
+ };
+ 
+ export default nextConfig;
+diff --git a/src/app/admin/page.tsx b/src/app/admin/page.tsx
+index b853277..5554b8c 100644
+--- a/src/app/admin/page.tsx
++++ b/src/app/admin/page.tsx
+@@ -1,4 +1,4 @@
+-﻿"use client";
++"use client";
+ 
+ import React, { useState, useEffect, useRef } from "react";
+ import Image from "next/image";
+@@ -557,6 +557,12 @@ export default function AdminPortalPage() {
+     }
+   }, [router]);
+ 
++  const getAdminHeaders = (extra: Record<string, string> = {}) => ({
++    "x-role": "admin",
++    "x-admin-auth": "true",
++    ...extra,
++  });
++
+   const triggerToast = (msg: string) => {
+     setToastMessage(msg);
+     setTimeout(() => {
+@@ -730,7 +736,7 @@ export default function AdminPortalPage() {
+       if (editingEvent) {
+         const res = await fetch(`/api/events/${editingEvent.id}`, {
+           method: "PUT",
+-          headers: { "Content-Type": "application/json" },
++          headers: getAdminHeaders({ "Content-Type": "application/json" }),
+           body: JSON.stringify(payload),
+         });
+         const json = await res.json();
+@@ -875,7 +881,7 @@ export default function AdminPortalPage() {
+       if (editingGallery) {
+         const res = await fetch(`/api/gallery/${editingGallery.id}`, {
+           method: "PUT",
+-          headers: { "Content-Type": "application/json" },
++          headers: getAdminHeaders({ "Content-Type": "application/json" }),
+           body: JSON.stringify(payload),
+         });
+         const json = await res.json();
+@@ -1028,7 +1034,7 @@ export default function AdminPortalPage() {
+       if (editingNews) {
+         const res = await fetch(`/api/news/${editingNews.id}`, {
+           method: "PUT",
+-          headers: { "Content-Type": "application/json" },
++          headers: getAdminHeaders({ "Content-Type": "application/json" }),
+           body: JSON.stringify(payload),
+         });
+         const json = await res.json();
+@@ -1100,7 +1106,7 @@ export default function AdminPortalPage() {
+     try {
+       await fetch(`/api/alumni/${member.id}`, {
+         method: "PATCH",
+-        headers: { "Content-Type": "application/json" },
++        headers: getAdminHeaders({ "Content-Type": "application/json" }),
+         body: JSON.stringify({ verified: nextStatus }),
+       });
+       setMembers((prev) =>
+@@ -1191,7 +1197,7 @@ export default function AdminPortalPage() {
+ 
+     if (type === "event") {
+       try {
+-        const res = await fetch(`/api/events/${id}`, { method: "DELETE" });
++        const res = await fetch(`/api/events/${id}`, { method: "DELETE", headers: getAdminHeaders() });
+         if (res.ok) {
+           setEvents((prev) => prev.filter((e) => String(e.id) !== String(id)));
+           triggerToast(`Event "${title}" permanently removed from database!`);
+@@ -1205,7 +1211,7 @@ export default function AdminPortalPage() {
+       }
+     } else if (type === "gallery") {
+       try {
+-        const res = await fetch(`/api/gallery/${id}`, { method: "DELETE" });
++        const res = await fetch(`/api/gallery/${id}`, { method: "DELETE", headers: getAdminHeaders() });
+         if (res.ok) {
+           setGallery((prev) => prev.filter((g) => String(g.id) !== String(id)));
+           triggerToast(`Gallery photo "${title}" permanently removed from database!`);
+@@ -1219,7 +1225,7 @@ export default function AdminPortalPage() {
+       }
+     } else if (type === "news") {
+       try {
+-        const res = await fetch(`/api/news/${id}`, { method: "DELETE" });
++        const res = await fetch(`/api/news/${id}`, { method: "DELETE", headers: getAdminHeaders() });
+         if (res.ok) {
+           setNews((prev) => prev.filter((n) => String(n.id) !== String(id)));
+           triggerToast(`News article "${title}" permanently removed from database!`);
+@@ -1233,7 +1239,7 @@ export default function AdminPortalPage() {
+       }
+     } else if (type === "member") {
+       try {
+-        const res = await fetch(`/api/alumni/${id}`, { method: "DELETE" });
++        const res = await fetch(`/api/alumni/${id}`, { method: "DELETE", headers: getAdminHeaders() });
+         if (res.ok) {
+           setMembers((prev) => prev.filter((m) => String(m.id) !== String(id)));
+           triggerToast(`Member "${title}" removed from database!`);
+diff --git a/src/app/api/alumni/[id]/route.ts b/src/app/api/alumni/[id]/route.ts
+index 3c5d443..0e06acf 100644
+--- a/src/app/api/alumni/[id]/route.ts
++++ b/src/app/api/alumni/[id]/route.ts
+@@ -1,5 +1,6 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { query } from "@/lib/db";
++import { isAuthorizedAdmin } from "@/lib/auth";
+ 
+ export async function GET(
+   request: NextRequest,
+@@ -64,6 +65,13 @@ export async function DELETE(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json(
++        { success: false, error: "Unauthorized: Administrator privileges required to delete a member profile." },
++        { status: 403 }
++      );
++    }
++
+     const { id } = await context.params;
+     const memberId = parseInt(id, 10);
+ 
+@@ -104,6 +112,13 @@ export async function PATCH(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json(
++        { success: false, error: "Unauthorized: Administrator privileges required to update member status." },
++        { status: 403 }
++      );
++    }
++
+     const { id } = await context.params;
+     const memberId = parseInt(id, 10);
+ 
+diff --git a/src/app/api/alumni/route.ts b/src/app/api/alumni/route.ts
+index 0165e5a..3c1984a 100644
+--- a/src/app/api/alumni/route.ts
++++ b/src/app/api/alumni/route.ts
+@@ -1,5 +1,15 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { query, getDepartment, createMember } from "@/lib/db";
++import { isAuthorizedAdmin } from "@/lib/auth";
++
++function maskPhoneNumber(phone?: string | null): string | null {
++  if (!phone) return null;
++  const cleaned = phone.trim();
++  if (cleaned.length < 6) return "****";
++  const start = cleaned.slice(0, 6);
++  const end = cleaned.slice(-2);
++  return `${start}*** **${end}`;
++}
+ 
+ export async function GET(request: NextRequest) {
+   try {
+@@ -62,8 +72,10 @@ export async function GET(request: NextRequest) {
+     ]);
+     const total = parseInt(countRes.rows[0]?.total || "0", 10);
+ 
++    const isAdmin = isAuthorizedAdmin(request);
+     const mappedAlumni = listRes.rows.map((r) => ({
+       ...r,
++      phone: isAdmin ? r.phone : maskPhoneNumber(r.phone),
+       year: r.graduation_year,
+       dept: r.department_short || r.department_name,
+       linkedin: r.linkedin_url,
+diff --git a/src/app/api/auth/login/route.ts b/src/app/api/auth/login/route.ts
+index fc9fdd6..6665f89 100644
+--- a/src/app/api/auth/login/route.ts
++++ b/src/app/api/auth/login/route.ts
+@@ -24,28 +24,6 @@ export async function POST(request: NextRequest) {
+ 
+     const cleanEmail = email.trim().toLowerCase();
+ 
+-    // ── Direct Admin Authentication for Tolani Portal ──
+-    if (
+-      (cleanEmail === "admin@tolani.edu" ||
+-        cleanEmail === "admin@alumni.tolani.edu" ||
+-        cleanEmail === "admin") &&
+-      (password === "admin@123" || password === "TolaniAdmin@2026")
+-    ) {
+-      return NextResponse.json(
+-        {
+-          success: true,
+-          message: "Welcome back, Administrator!",
+-          user: {
+-            id: 999999,
+-            email: "admin@tolani.edu",
+-            role: "admin",
+-            name: "Tolani Super Admin",
+-          },
+-        },
+-        { status: 200 }
+-      );
+-    }
+-
+     // 2. Fetch user from PostgreSQL "users" table
+     const findUserQuery = `
+       SELECT 
+diff --git a/src/app/api/auth/me/route.ts b/src/app/api/auth/me/route.ts
+index 4a13c09..23c8598 100644
+--- a/src/app/api/auth/me/route.ts
++++ b/src/app/api/auth/me/route.ts
+@@ -1,5 +1,15 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { query } from "@/lib/db";
++import { isAuthorizedAdmin } from "@/lib/auth";
++
++function maskPhoneNumber(phone?: string | null): string | null {
++  if (!phone) return null;
++  const cleaned = phone.trim();
++  if (cleaned.length < 6) return "****";
++  const start = cleaned.slice(0, 6);
++  const end = cleaned.slice(-2);
++  return `${start}*** **${end}`;
++}
+ 
+ export async function GET(request: NextRequest) {
+   try {
+@@ -46,13 +56,15 @@ export async function GET(request: NextRequest) {
+     }
+ 
+     const user = userRes.rows[0];
++    const isSelf = request.headers.get("x-user-email")?.toLowerCase() === cleanEmail;
++    const isAuth = isAuthorizedAdmin(request) || isSelf;
+ 
+     return NextResponse.json({
+       success: true,
+       user: {
+         id: user.id,
+         email: user.email,
+-        phone: user.phone,
++        phone: isAuth ? user.phone : maskPhoneNumber(user.phone),
+         role: user.role,
+         isActive: user.is_active,
+         name: user.member_name || user.email.split("@")[0],
+diff --git a/src/app/api/departments/[slug]/alumni/route.ts b/src/app/api/departments/[slug]/alumni/route.ts
+index 92151fd..c581eb8 100644
+--- a/src/app/api/departments/[slug]/alumni/route.ts
++++ b/src/app/api/departments/[slug]/alumni/route.ts
+@@ -1,5 +1,15 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { query, getDepartment, createMember } from "@/lib/db";
++import { isAuthorizedAdmin } from "@/lib/auth";
++
++function maskPhoneNumber(phone?: string | null): string | null {
++  if (!phone) return null;
++  const cleaned = phone.trim();
++  if (cleaned.length < 6) return "****";
++  const start = cleaned.slice(0, 6);
++  const end = cleaned.slice(-2);
++  return `${start}*** **${end}`;
++}
+ 
+ export async function GET(
+   request: NextRequest,
+@@ -74,7 +84,10 @@ export async function GET(
+         limit,
+         totalPages: Math.ceil(total / limit),
+       },
+-      alumni: listRes.rows,
++      alumni: listRes.rows.map((r) => ({
++        ...r,
++        phone: isAuthorizedAdmin(request) ? r.phone : maskPhoneNumber(r.phone),
++      })),
+     });
+   } catch (error: any) {
+     console.error("GET /api/departments/[slug]/alumni error:", error);
+@@ -85,11 +98,11 @@ export async function GET(
+   }
+ }
+ 
+-let body: any = {};
+ export async function POST(
+   request: NextRequest,
+   context: { params: Promise<{ slug: string }> }
+ ) {
++  let body: any = {};
+   try {
+     const { slug } = await context.params;
+     const department = await getDepartment(slug);
+diff --git a/src/app/api/events/[id]/route.ts b/src/app/api/events/[id]/route.ts
+index 80ad8cf..18e10b2 100644
+--- a/src/app/api/events/[id]/route.ts
++++ b/src/app/api/events/[id]/route.ts
+@@ -1,5 +1,6 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { query } from "@/lib/db";
++import { isAuthorizedAdmin } from "@/lib/auth";
+ 
+ export const dynamic = "force-dynamic";
+ 
+@@ -148,6 +149,10 @@ export async function PUT(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
++    }
++
+     const { id } = await context.params;
+     const eventId = parseInt(id, 10);
+     if (isNaN(eventId)) {
+@@ -253,6 +258,10 @@ export async function DELETE(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
++    }
++
+     const { id } = await context.params;
+     const eventId = parseInt(id, 10);
+     if (isNaN(eventId)) {
+diff --git a/src/app/api/gallery/[id]/route.ts b/src/app/api/gallery/[id]/route.ts
+index 3162c48..ff4a895 100644
+--- a/src/app/api/gallery/[id]/route.ts
++++ b/src/app/api/gallery/[id]/route.ts
+@@ -1,5 +1,6 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { query } from "@/lib/db";
++import { isAuthorizedAdmin } from "@/lib/auth";
+ 
+ export const dynamic = "force-dynamic";
+ 
+@@ -83,6 +84,10 @@ export async function PUT(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
++    }
++
+     const { id } = await context.params;
+     const galleryId = parseInt(id, 10);
+     if (isNaN(galleryId)) {
+@@ -155,6 +160,10 @@ export async function DELETE(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
++    }
++
+     const { id } = await context.params;
+     const galleryId = parseInt(id, 10);
+     if (isNaN(galleryId)) {
+diff --git a/src/app/api/news/[id]/route.ts b/src/app/api/news/[id]/route.ts
+index db9f8ab..1961fc6 100644
+--- a/src/app/api/news/[id]/route.ts
++++ b/src/app/api/news/[id]/route.ts
+@@ -1,5 +1,6 @@
+ import { NextRequest, NextResponse } from "next/server";
+ import { query } from "@/lib/db";
++import { isAuthorizedAdmin } from "@/lib/auth";
+ 
+ export const dynamic = "force-dynamic";
+ 
+@@ -109,6 +110,10 @@ export async function PUT(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
++    }
++
+     const { id } = await context.params;
+     const newsId = parseInt(id, 10);
+     if (isNaN(newsId)) {
+@@ -205,6 +210,10 @@ export async function DELETE(
+   context: { params: Promise<{ id: string }> }
+ ) {
+   try {
++    if (!isAuthorizedAdmin(request)) {
++      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
++    }
++
+     const { id } = await context.params;
+     const newsId = parseInt(id, 10);
+     if (isNaN(newsId)) {
+diff --git a/src/app/api/upload/route.ts b/src/app/api/upload/route.ts
+index 4e22538..26d085f 100644
+--- a/src/app/api/upload/route.ts
++++ b/src/app/api/upload/route.ts
+@@ -17,21 +17,37 @@ export async function POST(request: NextRequest) {
+       );
+     }
+ 
+-    // Validate image mime type
++    // Allowed folders allowlist to prevent arbitrary directory creation / traversal
++    const ALLOWED_FOLDERS = ["events", "gallery", "news", "avatars"];
++    const requestedFolder = String(folder || "").trim().toLowerCase();
++    const safeFolder = ALLOWED_FOLDERS.includes(requestedFolder) ? requestedFolder : "events";
++
++    // Strict allowed image extensions to prevent arbitrary file upload and Stored XSS
++    const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".avif"];
++    const rawExt = path.extname(file.name || "").toLowerCase();
++    if (!rawExt || !ALLOWED_EXTENSIONS.includes(rawExt)) {
++      return NextResponse.json(
++        {
++          success: false,
++          error: "Invalid file extension. Only safe image files (JPG, PNG, WEBP, GIF, AVIF) are allowed. SVG and scripts are blocked.",
++        },
++        { status: 400 }
++      );
++    }
++
++    // Validate safe image mime types (SVG deliberately excluded to prevent Stored XSS)
+     const validMimes = [
+       "image/jpeg",
+       "image/jpg",
+       "image/png",
+       "image/webp",
+       "image/gif",
+-      "image/svg+xml",
+-      "image/bmp",
+       "image/avif",
+     ];
+ 
+-    if (!validMimes.includes(file.type) && !file.type.startsWith("image/")) {
++    if (!validMimes.includes(file.type.toLowerCase())) {
+       return NextResponse.json(
+-        { success: false, error: "Invalid file type. Only image files (JPG, PNG, WEBP, GIF, SVG) are allowed." },
++        { success: false, error: "Invalid file type. Only standard raster image files (JPG, PNG, WEBP, GIF, AVIF) are allowed." },
+         { status: 400 }
+       );
+     }
+@@ -48,29 +64,44 @@ export async function POST(request: NextRequest) {
+     const bytes = await file.arrayBuffer();
+     const buffer = Buffer.from(bytes);
+ 
+-    // Target directory: public/uploads/<folder>
+-    const safeFolder = folder.replace(/[^a-zA-Z0-9_-]/g, "");
+-    const uploadDir = path.join(process.cwd(), "public", "uploads", safeFolder || "events");
++    // Target directory: public/uploads/<safeFolder> with path confinement check
++    const uploadBaseDir = path.resolve(process.cwd(), "public", "uploads");
++    const uploadDir = path.resolve(uploadBaseDir, safeFolder);
++    if (!uploadDir.startsWith(uploadBaseDir)) {
++      return NextResponse.json(
++        { success: false, error: "Access denied: invalid upload directory path." },
++        { status: 400 }
++      );
++    }
++
+     if (!fs.existsSync(uploadDir)) {
+       fs.mkdirSync(uploadDir, { recursive: true });
+     }
+ 
+     // Generate safe, unique filename
+-    const originalExt = path.extname(file.name) || ".png";
++    const originalExt = rawExt;
+     const baseName = path
+       .basename(file.name, originalExt)
+       .toLowerCase()
+       .replace(/[^a-z0-9_-]/g, "-")
+       .slice(0, 30);
+     const uniqueId = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+-    const filename = `${baseName || "event"}-${uniqueId}${originalExt}`;
+-    const destinationPath = path.join(uploadDir, filename);
++    const filename = `${baseName || "image"}-${uniqueId}${originalExt}`;
++    const destinationPath = path.resolve(uploadDir, filename);
++
++    // Ensure destination remains strictly confined within target uploadDir
++    if (!destinationPath.startsWith(uploadDir)) {
++      return NextResponse.json(
++        { success: false, error: "Path traversal detected. Upload aborted." },
++        { status: 400 }
++      );
++    }
+ 
+     // Write file to disk
+     fs.writeFileSync(destinationPath, buffer);
+ 
+     // Public URL accessible by browser and stored in database
+-    const publicUrl = `/uploads/${safeFolder || "events"}/${filename}`;
++    const publicUrl = `/uploads/${safeFolder}/${filename}`;
+ 
+     return NextResponse.json({
+       success: true,
+diff --git a/src/app/invite/page.tsx b/src/app/invite/page.tsx
+index 99bb66c..16d815a 100644
+--- a/src/app/invite/page.tsx
++++ b/src/app/invite/page.tsx
+@@ -116,7 +116,9 @@ export default function InviteAlumniPage() {
+       dob: dob || undefined,
+       gender: gender || undefined,
+       location: currentLocation.trim(),
+-      linkedin_url: linkedin.trim() || `https://linkedin.com/in/${fullName.toLowerCase().replace(/\s+/g, "-")}`,
++      linkedin_url: (linkedin.trim() && !/^(javascript|data|vbscript):/i.test(linkedin.trim()))
++        ? (linkedin.trim().startsWith("http") ? linkedin.trim() : `https://${linkedin.trim()}`)
++        : `https://linkedin.com/in/${fullName.toLowerCase().replace(/[^a-z0-9_-]/g, "-")}`,
+       bio: shortBio.trim() || bioAchievements.trim(),
+       degree,
+       department: dept,
+diff --git a/src/app/members/[id]/page.tsx b/src/app/members/[id]/page.tsx
+index 9ab08ae..f0d6df9 100644
+--- a/src/app/members/[id]/page.tsx
++++ b/src/app/members/[id]/page.tsx
+@@ -16,7 +16,11 @@ import "../../dashboard.css";
+ 
+ const getLinkedInUrl = (url: string) => {
+   if (!url) return "#";
+-  return url.startsWith("http") ? url : `https://${url}`;
++  const trimmed = url.trim();
++  if (/^(javascript|data|vbscript):/i.test(trimmed)) {
++    return "#";
++  }
++  return trimmed.startsWith("http://") || trimmed.startsWith("https://") ? trimmed : `https://${trimmed}`;
+ };
+ 
+ const AVATAR_COLORS = [
+diff --git a/src/components/LoginForm.tsx b/src/components/LoginForm.tsx
+index 81ed143..43012a9 100644
+--- a/src/components/LoginForm.tsx
++++ b/src/components/LoginForm.tsx
+@@ -11,7 +11,7 @@ export const LoginForm: React.FC = () => {
+   const [isLoading, setIsLoading] = useState(false);
+   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+ 
+-  const handleSubmit = (e: React.FormEvent) => {
++  const handleSubmit = async (e: React.FormEvent) => {
+     e.preventDefault();
+     setMessage(null);
+ 
+@@ -21,10 +21,28 @@ export const LoginForm: React.FC = () => {
+     }
+ 
+     setIsLoading(true);
+-    setTimeout(() => {
++    try {
++      const res = await fetch("/api/auth/login", {
++        method: "POST",
++        headers: { "Content-Type": "application/json" },
++        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
++      });
++      const data = await res.json();
++      if (!res.ok || !data.success) {
++        setIsLoading(false);
++        setMessage({ type: "error", text: data.message || "Invalid email or password." });
++        return;
++      }
+       setIsLoading(false);
+-      setMessage({ type: "success", text: "Welcome back! Redirecting to alumni dashboard..." });
+-    }, 1200);
++      setMessage({ type: "success", text: `Welcome back, ${data.user?.name || "Member"}! Redirecting to alumni dashboard...` });
++      if (typeof window !== "undefined") {
++        sessionStorage.setItem("tolani_logged_in", "true");
++        sessionStorage.setItem("tolani_user_role", data.user?.role || "alumni");
++      }
++    } catch {
++      setIsLoading(false);
++      setMessage({ type: "error", text: "Authentication service currently unreachable." });
++    }
+   };
+ 
+   return (

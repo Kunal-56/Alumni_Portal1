@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { isAuthorizedAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -70,9 +71,9 @@ export async function GET(
 
     return NextResponse.json({ success: true, item });
   } catch (error: any) {
-    console.error("GET /api/gallery/[id] error:", error);
+    console.error("GET /api/gallery/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch gallery item" },
+      { success: false, error: "Unable to fetch gallery item." },
       { status: 500 }
     );
   }
@@ -83,6 +84,10 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
+    }
+
     const { id } = await context.params;
     const galleryId = parseInt(id, 10);
     if (isNaN(galleryId)) {
@@ -142,9 +147,9 @@ export async function PUT(
       item,
     });
   } catch (error: any) {
-    console.error("PUT /api/gallery/[id] error:", error);
+    console.error("PUT /api/gallery/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to update gallery item" },
+      { success: false, error: "Failed to update gallery item." },
       { status: 500 }
     );
   }
@@ -155,6 +160,10 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Unauthorized: Administrator privileges required" }, { status: 403 });
+    }
+
     const { id } = await context.params;
     const galleryId = parseInt(id, 10);
     if (isNaN(galleryId)) {
@@ -171,9 +180,9 @@ export async function DELETE(
       message: `Gallery item "${res.rows[0].label}" removed from database successfully`,
     });
   } catch (error: any) {
-    console.error("DELETE /api/gallery/[id] error:", error);
+    console.error("DELETE /api/gallery/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to delete gallery item" },
+      { success: false, error: "Failed to delete gallery item." },
       { status: 500 }
     );
   }

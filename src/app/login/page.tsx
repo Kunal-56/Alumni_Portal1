@@ -6,6 +6,7 @@ import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { normalizeEmail, validateEmail } from "@/lib/inputValidation";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,31 +18,18 @@ export default function LoginPage() {
 
   // If already logged in, redirect accordingly
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedAdmin = sessionStorage.getItem("tolani_admin_authenticated");
-      if (storedAdmin === "true") {
-        router.push("/admin");
-        return;
-      }
-
-      const stored = sessionStorage.getItem("tolani_logged_in");
-      if (stored === "true") {
-        router.push("/");
-        return;
-      }
-
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("registered") === "true") {
-        setMessage({
-          type: "success",
-          text: "Registration successful! Please login with your password.",
-        });
-      }
-      const emailParam = params.get("email");
-      if (emailParam) {
-        setEmail(emailParam);
-      }
+    let cancelled = false;
+    fetch("/api/auth/me", { cache: "no-store" }).then(async (res) => {
+      const data = await res.json();
+      if (!cancelled && res.ok && data.success) router.replace(data.user.role === "admin" ? "/admin" : "/");
+    }).catch(() => undefined);
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("registered") === "true") {
+      setMessage({ type: "success", text: "Registration successful. Your profile is pending alumni office verification; you can now sign in." });
     }
+    const emailParam = params.get("email");
+    if (emailParam) setEmail(emailParam);
+    return () => { cancelled = true; };
   }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +38,12 @@ export default function LoginPage() {
 
     if (!email.trim() || !password) {
       setMessage({ type: "error", text: "Please enter your email and password." });
+      return;
+    }
+
+    const emailError = validateEmail(email);
+    if (emailError) {
+      setMessage({ type: "error", text: emailError });
       return;
     }
 
@@ -62,7 +56,7 @@ export default function LoginPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email: email.trim().toLowerCase(),
+          email: normalizeEmail(email),
           password,
         }),
       });
@@ -78,33 +72,7 @@ export default function LoginPage() {
         return;
       }
 
-      const isAdmin =
-        data.user?.role === "admin" ||
-        data.user?.email === "admin@tolani.edu" ||
-        email.trim().toLowerCase() === "admin@tolani.edu";
-
-      // Save user session
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("tolani_logged_in", "true");
-        sessionStorage.setItem("tolani_user_id", String(data.user?.id || ""));
-        sessionStorage.setItem("tolani_user_email", data.user?.email || email.trim().toLowerCase());
-        sessionStorage.setItem("tolani_user_name", data.user?.name || "");
-        sessionStorage.setItem("tolani_user_role", data.user?.role || (isAdmin ? "admin" : "alumni"));
-
-        localStorage.setItem("tolani_logged_in", "true");
-        localStorage.setItem("tolani_user_id", String(data.user?.id || ""));
-        localStorage.setItem("tolani_user_email", data.user?.email || email.trim().toLowerCase());
-        localStorage.setItem("tolani_user_name", data.user?.name || "");
-        localStorage.setItem("tolani_user_role", data.user?.role || (isAdmin ? "admin" : "alumni"));
-
-        if (isAdmin) {
-          sessionStorage.setItem("tolani_admin_authenticated", "true");
-          localStorage.setItem("tolani_admin_authenticated", "true");
-        } else {
-          sessionStorage.removeItem("tolani_admin_authenticated");
-          localStorage.removeItem("tolani_admin_authenticated");
-        }
-      }
+      const isAdmin = data.user?.role === "admin";
 
       setIsLoading(false);
 

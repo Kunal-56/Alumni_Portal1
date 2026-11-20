@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, MapPin, Clock, Users, Building, Mail, Phone, CheckCircle2 } from 'lucide-react';
 import { Header } from '@/components/Header';
+import { sanitizeIndianMobileInput, sanitizeNameInput, validateEmail, validateFullName, validateGraduationYear, validateIntegerRange, validateIndianMobile, validateText } from '@/lib/inputValidation';
 
 export default function EventRegistrationPage() {
   const router = useRouter();
   const [eventTitle, setEventTitle] = useState('Global Alumni Meet 2026');
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -24,8 +26,37 @@ export default function EventRegistrationPage() {
     }
   };
 
-  const handleRegister = () => {
-    const registered = JSON.parse(localStorage.getItem('registeredEvents') || '[]');
+  const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fields = new FormData(e.currentTarget);
+    const errors = [
+      validateFullName(fields.get('first_name'), 100),
+      validateFullName(fields.get('last_name'), 100),
+      validateEmail(fields.get('email')),
+      validateIndianMobile(fields.get('phone')),
+      validateGraduationYear(fields.get('graduation_year')),
+      validateText(fields.get('department'), 'Department', 150, true),
+      validateIntegerRange(fields.get('guest_count'), 0, 3, 'Guest count'),
+      validateText(fields.get('special_requirements'), 'Special requirements', 1000),
+      fields.get('agreed_to_terms') === 'on' ? null : 'Please confirm the event terms.',
+    ].filter((error): error is string => Boolean(error));
+    if (errors.length) {
+      setFormError(errors[0]);
+      return;
+    }
+    setFormError('');
+    let registered: unknown;
+    try {
+      const stored = localStorage.getItem('registeredEvents');
+      registered = stored ? JSON.parse(stored) : [];
+    } catch {
+      setFormError('Saved event registration data is invalid. Please clear browser storage and try again.');
+      return;
+    }
+    if (!Array.isArray(registered) || !registered.every((entry) => typeof entry === 'string')) {
+      setFormError('Saved event registration data is invalid. Please clear browser storage and try again.');
+      return;
+    }
     if (!registered.includes(eventTitle)) {
       registered.push(eventTitle);
       localStorage.setItem('registeredEvents', JSON.stringify(registered));
@@ -76,7 +107,7 @@ export default function EventRegistrationPage() {
 
           {/* Registration Form */}
           <div className="p-6 sm:p-8">
-            <form className="space-y-6">
+            <form className="space-y-6" onSubmit={handleRegister} noValidate>
               
               {/* Personal Details */}
               <div>
@@ -87,24 +118,24 @@ export default function EventRegistrationPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">First Name <span className="text-red-500">*</span></label>
-                    <input type="text" placeholder="John" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
+                    <input type="text" name="first_name" maxLength={100} autoComplete="given-name" onChange={(e) => { e.currentTarget.value = sanitizeNameInput(e.currentTarget.value); }} placeholder="John" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">Last Name <span className="text-red-500">*</span></label>
-                    <input type="text" placeholder="Doe" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
+                    <input type="text" name="last_name" maxLength={100} autoComplete="family-name" onChange={(e) => { e.currentTarget.value = sanitizeNameInput(e.currentTarget.value); }} placeholder="Doe" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">Email Address <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="email" placeholder="john@example.com" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
+                      <input type="email" name="email" maxLength={254} autoComplete="email" placeholder="john@example.com" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
                     </div>
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">Phone Number <span className="text-red-500">*</span></label>
                     <div className="relative">
                       <Phone size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="tel" placeholder="+91 98765 43210" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
+                      <input type="tel" name="phone" inputMode="numeric" autoComplete="tel-national" onChange={(e) => { e.currentTarget.value = sanitizeIndianMobileInput(e.currentTarget.value); }} placeholder="9876543210" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" required />
                     </div>
                   </div>
                 </div>
@@ -121,7 +152,7 @@ export default function EventRegistrationPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">Graduation Year <span className="text-red-500">*</span></label>
-                    <select className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium appearance-none" required defaultValue="">
+                    <select name="graduation_year" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium appearance-none" required defaultValue="">
                       <option value="" disabled>Select Year</option>
                       {Array.from({ length: 30 }, (_, i) => 2026 - i).map(year => (
                         <option key={year} value={year}>{year}</option>
@@ -130,7 +161,7 @@ export default function EventRegistrationPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">Department <span className="text-red-500">*</span></label>
-                    <select className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium appearance-none" required defaultValue="">
+                    <select name="department" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium appearance-none" required defaultValue="">
                       <option value="" disabled>Select Department</option>
                       <option value="Computer">Computer Engineering</option>
                       <option value="Civil">Civil Engineering</option>
@@ -143,7 +174,7 @@ export default function EventRegistrationPage() {
                     <label className="text-sm font-bold text-gray-700">Current Company & Designation (Optional)</label>
                     <div className="relative">
                       <Building size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                      <input type="text" placeholder="e.g. Software Engineer at Google" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" />
+                    <input type="text" name="company_designation" maxLength={300} placeholder="e.g. Software Engineer at Google" className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium" />
                     </div>
                   </div>
                 </div>
@@ -160,7 +191,7 @@ export default function EventRegistrationPage() {
                 <div className="grid grid-cols-1 gap-5">
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">Number of Guests (Excluding you) <span className="text-red-500">*</span></label>
-                    <select className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium appearance-none" required>
+                    <select name="guest_count" className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium appearance-none" required>
                       <option value="0">None - Just me</option>
                       <option value="1">1 Guest</option>
                       <option value="2">2 Guests</option>
@@ -169,7 +200,7 @@ export default function EventRegistrationPage() {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-sm font-bold text-gray-700">Special Requirements or Dietary Restrictions</label>
-                    <textarea rows={3} placeholder="Let us know if you have any specific needs..." className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium resize-none"></textarea>
+                    <textarea name="special_requirements" rows={3} maxLength={1000} placeholder="Let us know if you have any specific needs..." className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#9B2335]/20 focus:border-[#9B2335] transition-all text-sm font-medium resize-none"></textarea>
                   </div>
                 </div>
               </div>
@@ -178,7 +209,7 @@ export default function EventRegistrationPage() {
               <div className="pt-4">
                 <label className="flex items-start gap-3 cursor-pointer group mb-6">
                   <div className="relative flex items-center justify-center w-5 h-5 mt-0.5">
-                    <input type="checkbox" className="peer w-5 h-5 appearance-none rounded border-2 border-gray-300 checked:bg-[#9B2335] checked:border-[#9B2335] transition-colors cursor-pointer" required />
+                    <input type="checkbox" name="agreed_to_terms" className="peer w-5 h-5 appearance-none rounded border-2 border-gray-300 checked:bg-[#9B2335] checked:border-[#9B2335] transition-colors cursor-pointer" required />
                     <CheckCircle2 size={14} className="absolute text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" />
                   </div>
                   <span className="text-sm text-gray-600 font-medium leading-relaxed group-hover:text-gray-900 transition-colors">
@@ -186,7 +217,8 @@ export default function EventRegistrationPage() {
                   </span>
                 </label>
 
-                <button type="button" onClick={handleRegister} className="w-full py-4 rounded-xl text-white font-extrabold text-base shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2" style={{ background: "linear-gradient(135deg, #9B2335 0%, #7a1b28 100%)" }}>
+                {formError && <p role="alert" className="mb-3 text-sm font-semibold text-red-700">{formError}</p>}
+                <button type="submit" className="w-full py-4 rounded-xl text-white font-extrabold text-base shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 flex justify-center items-center gap-2" style={{ background: "linear-gradient(135deg, #9B2335 0%, #7a1b28 100%)" }}>
                   Confirm Registration
                 </button>
               </div>

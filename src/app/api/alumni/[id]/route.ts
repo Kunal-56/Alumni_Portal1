@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { isAuthorizedAdmin } from "@/lib/auth";
 
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const isAdmin = await isAuthorizedAdmin(request);
     const { id } = await context.params;
     const memberId = parseInt(id, 10);
 
@@ -25,8 +27,8 @@ export async function GET(
         m.dob, m.gender, m.verification_method
       FROM v_member_directory v
       LEFT JOIN members m ON m.id = v.id
-      WHERE v.id = $1`,
-      [memberId]
+      WHERE v.id = $1 AND ($2::boolean OR v.verified = true)`,
+      [memberId, isAdmin]
     );
 
     if (res.rows.length === 0) {
@@ -39,6 +41,10 @@ export async function GET(
     const r = res.rows[0];
     const member = {
       ...r,
+      email: isAdmin ? r.email : null,
+      phone: isAdmin ? r.phone : null,
+      dob: isAdmin ? r.dob : null,
+      gender: isAdmin ? r.gender : null,
       year: r.graduation_year,
       dept: r.department_short || r.department_name,
       linkedin: r.linkedin_url,
@@ -49,11 +55,11 @@ export async function GET(
     return NextResponse.json({
       success: true,
       member,
-    });
+    }, { headers: { "Cache-Control": "no-store" } });
   } catch (error: any) {
-    console.error("GET /api/alumni/[id] error:", error);
+    console.error("GET /api/alumni/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Internal server error" },
+      { success: false, error: "Unable to process member request." },
       { status: 500 }
     );
   }
@@ -64,6 +70,13 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Administrator privileges required to delete a member profile." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await context.params;
     const memberId = parseInt(id, 10);
 
@@ -91,9 +104,9 @@ export async function DELETE(
       message: `Member ${res.rows[0].name} deleted successfully`,
     });
   } catch (error: any) {
-    console.error("DELETE /api/alumni/[id] error:", error);
+    console.error("DELETE /api/alumni/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to delete member" },
+      { success: false, error: "Failed to delete member." },
       { status: 500 }
     );
   }
@@ -104,6 +117,13 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Administrator privileges required to update member status." },
+        { status: 403 }
+      );
+    }
+
     const { id } = await context.params;
     const memberId = parseInt(id, 10);
 
@@ -128,9 +148,9 @@ export async function PATCH(
       message: "Member updated successfully",
     });
   } catch (error: any) {
-    console.error("PATCH /api/alumni/[id] error:", error);
+    console.error("PATCH /api/alumni/[id] failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to update member" },
+      { success: false, error: "Failed to update member." },
       { status: 500 }
     );
   }

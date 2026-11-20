@@ -1,0 +1,17 @@
+warning: in the working copy of 'next.config.ts', LF will be replaced by CRLF the next time Git touches it
+ .github/workflows/codeql.yml                   |  8 [32m++[m[31m--[m
+ next.config.ts                                 | 29 [32m++++++++++++++[m
+ src/app/admin/page.tsx                         | 24 [32m++++++[m[31m-----[m
+ src/app/api/alumni/[id]/route.ts               | 15 [32m+++++++[m
+ src/app/api/alumni/route.ts                    | 12 [32m++++++[m
+ src/app/api/auth/login/route.ts                | 22 [31m-----------[m
+ src/app/api/auth/me/route.ts                   | 14 [32m++++++[m[31m-[m
+ src/app/api/departments/[slug]/alumni/route.ts | 17 [32m+++++++[m[31m-[m
+ src/app/api/events/[id]/route.ts               |  9 [32m+++++[m
+ src/app/api/gallery/[id]/route.ts              |  9 [32m+++++[m
+ src/app/api/news/[id]/route.ts                 |  9 [32m+++++[m
+ src/app/api/upload/route.ts                    | 55 [32m++++++++++++++++++++[m[31m------[m
+ src/app/invite/page.tsx                        |  4 [32m+[m[31m-[m
+ src/app/members/[id]/page.tsx                  |  6 [32m++[m[31m-[m
+ src/components/LoginForm.tsx                   | 26 [32m++++++++++[m[31m--[m
+ 15 files changed, 204 insertions(+), 55 deletions(-)

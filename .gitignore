@@ -5,4 +5,41 @@ node_modules
 .env.local
 .env.*
 !.env.example
+.local-postgres/
+/next-local-dev.out.log
+/next-local-dev.err.log
+/postgres-local-startup.log
 tsconfig.tsbuildinfo
+
+# Confidential files
+.env
+.env.*
+!.env.example
+**/*credentials*
+**/*secrets*
+**/*password*
+**/*.pem
+**/*.key
+**/Main Database.sql
+**/database-backup*
+**/database-backups/
+**/*.bak
+
+# Generated files
+node_modules/
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Testing reports
+playwright-report/
+test-results/
+blob-report/
+
+# Temporary files
+*.log
+.DS_Store
+Thumbs.db

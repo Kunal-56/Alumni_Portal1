@@ -33,6 +33,10 @@ export const INITIAL_MEMBERS: Member[] = [];
 
 const STORAGE_KEY = "tolani_alumni_db_cache_v2";
 
+function redactMemberForCache(member: Member): Member {
+  return { ...member, email: "", phone: "", dob: undefined, gender: undefined };
+}
+
 /* ─── LocalStorage Helpers (DB Cache Only) ─── */
 export function getStoredMembers(): Member[] {
   if (typeof window === "undefined") return [];
@@ -42,7 +46,11 @@ export function getStoredMembers(): Member[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed)) {
+      const safeMembers = parsed.map((member) => redactMemberForCache(member as Member));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(safeMembers));
+      return safeMembers;
+    }
   } catch (err) {
     console.error("Error reading cached alumni members:", err);
   }
@@ -52,7 +60,7 @@ export function getStoredMembers(): Member[] {
 export function saveMembers(members: Member[]) {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(members.map(redactMemberForCache)));
     window.dispatchEvent(new Event("alumni_members_updated"));
   } catch (err) {
     console.error("Error saving alumni members cache:", err);

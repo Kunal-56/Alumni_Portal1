@@ -279,17 +279,14 @@ export default function MechanicalDepartmentPage() {
           {FEATURES.map((f, i) => (
             <div
               key={i}
-              className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-1 flex flex-col justify-between group cursor-pointer"
+              className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs hover:shadow-md transition-shadow duration-200"
             >
               <div>
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4 transition-transform group-hover:scale-110" style={{ background: "#fdf2f4", color: "#9B2335" }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ background: "#fdf2f4", color: "#9B2335" }}>
                   {f.icon}
                 </div>
-                <h3 className="text-sm font-extrabold text-gray-900 mb-1.5 group-hover:text-[#9B2335] transition-colors">{f.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed font-medium mb-4">{f.desc}</p>
-              </div>
-              <div className="flex justify-end">
-                <ChevronRight size={15} className="text-gray-300 group-hover:text-[#9B2335] group-hover:translate-x-1 transition-all" />
+                <h3 className="text-sm font-extrabold text-gray-900 mb-1.5">{f.title}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed font-medium">{f.desc}</p>
               </div>
             </div>
           ))}

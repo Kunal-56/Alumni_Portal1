@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -190,9 +191,9 @@ export async function GET(request: NextRequest) {
       events: mappedEvents,
     });
   } catch (error: any) {
-    console.error("GET /api/events error:", error);
+    console.error("GET /api/events failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch events from database" },
+      { success: false, error: "Unable to fetch events." },
       { status: 500 }
     );
   }
@@ -200,6 +201,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!hasSameOrigin(request)) {
+      return NextResponse.json({ success: false, error: "Invalid request origin." }, { status: 403 });
+    }
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Administrator access required." }, { status: 403 });
+    }
     const body = await request.json();
 
     if (!body.title || !body.title.trim()) {
@@ -297,9 +304,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("POST /api/events error:", error);
+    console.error("POST /api/events failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to create event in database" },
+      { success: false, error: "Failed to create event." },
       { status: 500 }
     );
   }

@@ -16,7 +16,11 @@ import "../../dashboard.css";
 
 const getLinkedInUrl = (url: string) => {
   if (!url) return "#";
-  return url.startsWith("http") ? url : `https://${url}`;
+  const trimmed = url.trim();
+  if (/^(javascript|data|vbscript):/i.test(trimmed)) {
+    return "#";
+  }
+  return trimmed.startsWith("http://") || trimmed.startsWith("https://") ? trimmed : `https://${trimmed}`;
 };
 
 const AVATAR_COLORS = [

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
+import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -95,9 +96,9 @@ export async function GET(request: NextRequest) {
       gallery: mapped,
     });
   } catch (error: any) {
-    console.error("GET /api/gallery error:", error);
+    console.error("GET /api/gallery failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to fetch gallery items" },
+      { success: false, error: "Unable to fetch gallery items." },
       { status: 500 }
     );
   }
@@ -105,6 +106,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!hasSameOrigin(request)) {
+      return NextResponse.json({ success: false, error: "Invalid request origin." }, { status: 403 });
+    }
+    if (!(await isAuthorizedAdmin(request))) {
+      return NextResponse.json({ success: false, error: "Administrator access required." }, { status: 403 });
+    }
     const body = await request.json();
 
     if (!body.label || !body.label.trim()) {
@@ -163,9 +170,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("POST /api/gallery error:", error);
+    console.error("POST /api/gallery failed:", { code: error?.code });
     return NextResponse.json(
-      { success: false, error: error.message || "Failed to create gallery item in database" },
+      { success: false, error: "Failed to create gallery item." },
       { status: 500 }
     );
   }
