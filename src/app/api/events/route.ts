@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
+import { sanitizeInput, sanitizeStoredUrl } from "@/lib/inputValidation";
 
 export const dynamic = "force-dynamic";
 
@@ -216,7 +217,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const title = body.title.trim();
+    const title = sanitizeInput(body.title);
+    if (!title) {
+      return NextResponse.json({ success: false, error: "Event Title / Name is required" }, { status: 400 });
+    }
     const day = String(body.day || "15").padStart(2, "0");
     const month = String(body.month || "SEP").toUpperCase();
     const year = String(body.year || "2026");
@@ -228,18 +232,18 @@ export async function POST(request: NextRequest) {
     const eventType = TYPE_TO_ENUM[rawType] || "virtual_event";
 
     const isOnline = body.mode === "Online" || body.is_online === true;
-    const location = (body.location || (isOnline ? "Online" : "Tolani Campus")).trim();
+    const location = sanitizeInput(body.location || (isOnline ? "Online" : "Tolani Campus")) || (isOnline ? "Online" : "Tolani Campus");
     const startTime = parseToSqlTime(body.time || body.start_time || "10:00 AM");
-    const desc = (body.desc || body.description || "").trim();
-    const imageUrl = (body.img || body.image_url || "/campus-building.png").trim();
+    const desc = sanitizeInput(body.desc || body.description || "");
+    const imageUrl = sanitizeStoredUrl(body.img || body.image_url || "/campus-building.png", "/campus-building.png");
 
     let tags: string[] = [];
     if (Array.isArray(body.tags)) {
-      tags = body.tags.map((t: any) => String(t).trim()).filter(Boolean);
+      tags = body.tags.map((t: any) => sanitizeInput(String(t))).filter(Boolean);
     } else if (typeof body.tagsInput === "string") {
-      tags = body.tagsInput.split(",").map((t: string) => t.trim()).filter(Boolean);
+      tags = body.tagsInput.split(",").map((t: string) => sanitizeInput(t)).filter(Boolean);
     } else if (typeof body.tags === "string") {
-      tags = body.tags.split(",").map((t: string) => t.trim()).filter(Boolean);
+      tags = body.tags.split(",").map((t: string) => sanitizeInput(t)).filter(Boolean);
     }
     if (tags.length === 0) tags = [isOnline ? "Virtual" : "Campus", "Alumni"];
 

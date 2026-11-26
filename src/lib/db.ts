@@ -1,4 +1,5 @@
 ﻿import { Pool, PoolClient, QueryResult, QueryResultRow } from "pg";
+import { sanitizeInput, sanitizeUrl } from "@/lib/inputValidation";
 import fs from "fs";
 import path from "path";
 
@@ -197,7 +198,12 @@ export async function createMember(input: CreateAlumniInput) {
     await client.query("BEGIN");
 
     // Clean and validate inputs
-    const cleanBio = input.bio ? input.bio.slice(0, 500) : null;
+    const cleanText = (value?: string | null, max = 500) => {
+      if (!value) return null;
+      const cleaned = sanitizeInput(value).slice(0, max);
+      return cleaned || null;
+    };
+    const cleanBio = cleanText(input.bio, 500);
     const cleanYear = String(input.graduation_year || "2025").slice(0, 4);
     const degree = input.degree || "B.Tech";
     const institute = input.institute || "Tolani F. G. Polytechnic";
@@ -222,23 +228,23 @@ export async function createMember(input: CreateAlumniInput) {
     `;
 
     const memberValues = [
-      input.name.trim(),
+      sanitizeInput(input.name),
       input.email.trim().toLowerCase(),
-      input.phone?.trim() || null,
+      cleanText(input.phone, 30),
       dob,
       gender,
-      degree,
+      cleanText(degree, 50) || "B.Tech",
       cleanYear,
       input.department_id,
-      institute,
-      input.company?.trim() || null,
-      input.role?.trim() || null,
-      input.industry?.trim() || null,
-      input.location?.trim() || null,
+      cleanText(institute, 200) || "Tolani F. G. Polytechnic",
+      cleanText(input.company, 200),
+      cleanText(input.role, 200),
+      cleanText(input.industry, 100),
+      cleanText(input.location, 200),
       expYears,
-      input.linkedin_url?.trim() || null,
+      input.linkedin_url ? sanitizeUrl(input.linkedin_url.trim()) : null,
       cleanBio,
-      input.avatar_url || "/avatars/m1.jpg",
+      sanitizeUrl(input.avatar_url || "") || "/avatars/m1.jpg",
       verified,
       verificationMethod,
     ];
@@ -250,7 +256,7 @@ export async function createMember(input: CreateAlumniInput) {
     const skillList: string[] = [];
     if (Array.isArray(input.skills) && input.skills.length > 0) {
       for (const rawSkill of input.skills) {
-        const skillName = rawSkill.trim();
+        const skillName = sanitizeInput(rawSkill);
         if (!skillName) continue;
 
         // Upsert skill in skills master
@@ -277,7 +283,7 @@ export async function createMember(input: CreateAlumniInput) {
     const achievementList: string[] = [];
     if (Array.isArray(input.achievements) && input.achievements.length > 0) {
       for (const rawAch of input.achievements) {
-        const title = typeof rawAch === "string" ? rawAch.trim() : "";
+        const title = typeof rawAch === "string" ? sanitizeInput(rawAch) : "";
         if (!title) continue;
 
         await client.query(

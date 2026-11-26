@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { isAuthorizedAdmin } from "@/lib/auth";
+import { sanitizeInput, sanitizeUrl } from "@/lib/inputValidation";
 
 export const dynamic = "force-dynamic";
 
@@ -96,13 +97,15 @@ export async function PUT(
 
     const body = await request.json();
 
-    const label = body.label !== undefined ? body.label.trim() : null;
+    const label = body.label !== undefined ? sanitizeInput(body.label) : null;
     const rawCat = body.category;
     const category = rawCat ? (CATEGORY_TO_ENUM[rawCat] || rawCat.toLowerCase().replace(/[^a-z0-9]/g, "_")) : null;
-    const year = body.year !== undefined ? String(body.year).trim().slice(0, 4) : null;
-    const desc = body.desc !== undefined ? body.desc.trim() : (body.description !== undefined ? body.description.trim() : null);
-    const imageUrl = body.img !== undefined ? body.img.trim() : (body.image_url !== undefined ? body.image_url.trim() : null);
-    const bg = body.bg !== undefined ? body.bg : body.bg_color;
+    const year = body.year !== undefined ? sanitizeInput(String(body.year)).slice(0, 4) : null;
+    const desc = body.desc !== undefined ? sanitizeInput(body.desc) : (body.description !== undefined ? sanitizeInput(body.description) : null);
+    const rawImage = body.img !== undefined ? body.img : body.image_url;
+    const imageUrl = rawImage !== undefined ? sanitizeUrl(String(rawImage)) : null;
+    const rawBg = body.bg !== undefined ? body.bg : body.bg_color;
+    const bg = rawBg !== undefined ? sanitizeInput(String(rawBg)) : null;
 
     const updateSql = `
       UPDATE gallery_items SET

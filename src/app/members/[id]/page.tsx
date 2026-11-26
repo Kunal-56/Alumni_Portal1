@@ -51,6 +51,9 @@ export default function MemberProfilePage() {
   const { members, isLoaded } = useAlumniMembers();
   const [dbMember, setDbMember] = useState<any>(null);
   const [loadingDirect, setLoadingDirect] = useState(false);
+  const [revealedContact, setRevealedContact] = useState<{ email?: string | null; phone?: string | null } | null>(null);
+  const [revealMessage, setRevealMessage] = useState("");
+  const [revealing, setRevealing] = useState(false);
 
   const foundInStore = members.find((m) => m.id === id);
 
@@ -69,7 +72,39 @@ export default function MemberProfilePage() {
     }
   }, [foundInStore, id]);
 
+  useEffect(() => {
+    setRevealedContact(null);
+    setRevealMessage("");
+  }, [id]);
+
   const member = foundInStore || dbMember;
+  const contactIsMasked = Boolean(member?.contactMasked) && !revealedContact;
+  const shownEmail = revealedContact?.email ?? member?.email;
+  const shownPhone = revealedContact?.phone ?? member?.phone;
+  const mailTarget = revealedContact?.email || (member?.contactMasked ? "alumni@tolani.ac.in" : member?.email) || "alumni@tolani.ac.in";
+
+  const revealContact = async () => {
+    if (!id || revealing) return;
+    setRevealing(true);
+    setRevealMessage("");
+    try {
+      const res = await fetch(`/api/alumni/${id}/contact`, { credentials: "same-origin" });
+      const data = await res.json();
+      if (res.status === 401) {
+        setRevealMessage("Sign in to view contact details.");
+        return;
+      }
+      if (!res.ok || !data.success) {
+        setRevealMessage(data.error || "Unable to show contact details.");
+        return;
+      }
+      setRevealedContact({ email: data.email, phone: data.phone });
+    } catch {
+      setRevealMessage("Unable to show contact details.");
+    } finally {
+      setRevealing(false);
+    }
+  };
 
   if (!isLoaded || (loadingDirect && !member)) {
     return (
@@ -289,22 +324,46 @@ export default function MemberProfilePage() {
                     <Mail size={15} style={{ color: "#9B2335" }} /> Contact Info
                   </h2>
                   <div className="space-y-3">
-                    {member.email && (
+                    {shownEmail && (
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef0f2" }}>
                           <Mail size={13} style={{ color: "#9B2335" }} />
                         </div>
-                        <a href={`mailto:${member.email}`} className="text-xs text-gray-600 hover:text-[#9B2335] transition-colors break-all">
-                          {member.email}
-                        </a>
+                        {contactIsMasked ? (
+                          <span className="text-xs text-gray-600 break-all">{shownEmail}</span>
+                        ) : (
+                          <a href={`mailto:${shownEmail}`} className="text-xs text-gray-600 hover:text-[#9B2335] transition-colors break-all">
+                            {shownEmail}
+                          </a>
+                        )}
                       </div>
                     )}
-                    {member.phone && (
+                    {shownPhone && (
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef0f2" }}>
                           <Phone size={13} style={{ color: "#9B2335" }} />
                         </div>
-                        <span className="text-xs text-gray-600">{member.phone}</span>
+                        <span className="text-xs text-gray-600">{shownPhone}</span>
+                      </div>
+                    )}
+                    {contactIsMasked && (
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={revealContact}
+                          disabled={revealing}
+                          className="text-xs font-bold text-[#9B2335] hover:underline disabled:opacity-60"
+                        >
+                          {revealing ? "Checking session..." : "Show contact"}
+                        </button>
+                        {revealMessage && (
+                          <p className="text-[11px] text-gray-500 mt-1">
+                            {revealMessage}{" "}
+                            {revealMessage.startsWith("Sign in") && (
+                              <Link href="/login" className="font-bold text-[#9B2335] hover:underline">Sign in</Link>
+                            )}
+                          </p>
+                        )}
                       </div>
                     )}
                     {member.linkedin && (
@@ -354,7 +413,7 @@ export default function MemberProfilePage() {
                   </div>
                   <p className="text-sm font-extrabold text-gray-900 mb-1">Part of Alumni Network</p>
                   <p className="text-[11px] text-gray-500 mb-3">Verified Tolani alumni member since {member.year}</p>
-                  <a href={`mailto:${member.email || "alumni@tolani.ac.in"}`} className="inline-block btn-maroon px-4 py-2 text-xs w-full text-center">
+                  <a href={`mailto:${mailTarget}`} className="inline-block btn-maroon px-4 py-2 text-xs w-full text-center">
                     Send Message
                   </a>
                 </div>

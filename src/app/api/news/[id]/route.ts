@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { isAuthorizedAdmin } from "@/lib/auth";
+import { sanitizeInput, sanitizeUrl } from "@/lib/inputValidation";
 
 export const dynamic = "force-dynamic";
 
@@ -122,14 +123,15 @@ export async function PUT(
 
     const body = await request.json();
 
-    const title = body.title !== undefined ? body.title.trim() : null;
+    const title = body.title !== undefined ? sanitizeInput(body.title) : null;
     const rawCat = body.category;
     const category = rawCat ? (CATEGORY_TO_ENUM[rawCat] || rawCat.toLowerCase().replace(/[^a-z0-9]/g, "_")) : null;
-    const author = body.author !== undefined ? body.author.trim() : null;
-    const readTime = body.readTime !== undefined ? body.readTime.trim() : (body.read_time !== undefined ? body.read_time.trim() : null);
-    const excerpt = body.excerpt !== undefined ? body.excerpt.trim() : null;
-    const content = body.content !== undefined ? body.content.trim() : null;
-    const imageUrl = body.img !== undefined ? body.img.trim() : (body.image_url !== undefined ? body.image_url.trim() : null);
+    const author = body.author !== undefined ? sanitizeInput(body.author) : null;
+    const readTime = body.readTime !== undefined ? sanitizeInput(body.readTime) : (body.read_time !== undefined ? sanitizeInput(body.read_time) : null);
+    const excerpt = body.excerpt !== undefined ? sanitizeInput(body.excerpt) : null;
+    const content = body.content !== undefined ? sanitizeInput(body.content) : null;
+    const rawImage = body.img !== undefined ? body.img : body.image_url;
+    const imageUrl = rawImage !== undefined ? sanitizeUrl(String(rawImage)) : null;
     const isFeatured = body.featured !== undefined ? Boolean(body.featured) : (body.is_featured !== undefined ? Boolean(body.is_featured) : null);
     const publishedAt = body.date || body.published_at ? parseNewsDate(body.date || body.published_at) : null;
 

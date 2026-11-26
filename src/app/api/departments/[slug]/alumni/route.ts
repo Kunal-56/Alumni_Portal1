@@ -3,15 +3,7 @@ import { query, getDepartment, createMember } from "@/lib/db";
 import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { normalizeEmail, validateAlumniProfileInput } from "@/lib/inputValidation";
-
-function maskPhoneNumber(phone?: string | null): string | null {
-  if (!phone) return null;
-  const cleaned = phone.trim();
-  if (cleaned.length < 6) return "****";
-  const start = cleaned.slice(0, 6);
-  const end = cleaned.slice(-2);
-  return `${start}*** **${end}`;
-}
+import { presentDirectoryContact } from "@/lib/contactPrivacy";
 
 export async function GET(
   request: NextRequest,
@@ -89,13 +81,7 @@ export async function GET(
         limit,
         totalPages: Math.ceil(total / limit),
       },
-      alumni: listRes.rows.map((r) => ({
-        ...r,
-        email: isAdmin ? r.email : null,
-        phone: isAdmin ? r.phone : maskPhoneNumber(r.phone),
-        dob: isAdmin ? r.dob : null,
-        gender: isAdmin ? r.gender : null,
-      })),
+      alumni: listRes.rows.map((r) => presentDirectoryContact(r, isAdmin)),
     });
   } catch (error: any) {
     console.error("GET /api/departments/[slug]/alumni failed:", { code: error?.code });

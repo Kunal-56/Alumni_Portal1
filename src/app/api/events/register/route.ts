@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { hasSameOrigin } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
-import { normalizeEmail, validateEmail, validateFullName, validateGraduationYear, validateIntegerRange, validateIndianMobile, validateText } from "@/lib/inputValidation";
+import { normalizeEmail, sanitizeInput, validateEmail, validateFullName, validateGraduationYear, validateIntegerRange, validateIndianMobile, validateText } from "@/lib/inputValidation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,15 +68,15 @@ export async function POST(request: NextRequest) {
 
     const regValues = [
       Number(eventId),
-      (firstName as string).trim(),
-      (lastName as string).trim(),
+      sanitizeInput(firstName as string),
+      sanitizeInput(lastName as string),
       normalizeEmail(email as string),
-      (phone as string).trim(),
+      sanitizeInput(phone as string),
       String(graduationYear),
-      (department as string).trim(),
-      typeof companyDesignation === "string" ? companyDesignation.trim() || null : null,
+      sanitizeInput(department as string),
+      typeof companyDesignation === "string" ? sanitizeInput(companyDesignation) || null : null,
       Number(guestCount),
-      typeof specialRequirements === "string" ? specialRequirements.trim() || null : null,
+      typeof specialRequirements === "string" ? sanitizeInput(specialRequirements) || null : null,
     ];
 
     const result = await query(regQuery, regValues);

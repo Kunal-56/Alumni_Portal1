@@ -1,12 +1,11 @@
 import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
 
-type WindowEntry = { count: number; resetAt: number };
 declare global {
-  var _alumniPortalRateLimits: Map<string, WindowEntry> | undefined;
+  var _alumniPortalSlidingLimits: Map<string, number[]> | undefined;
 }
 
-const store = (global._alumniPortalRateLimits ??= new Map());
+const store: Map<string, number[]> = (global._alumniPortalSlidingLimits ??= new Map<string, number[]>());
 
 function clientAddress(request: NextRequest): string {
   // These headers must be set/overwritten by the trusted reverse proxy in deployment.
@@ -18,11 +17,14 @@ export function checkRateLimit(
   action: string,
   limit: number,
   windowMs: number,
-  identity = ""
+  identity = "",
+  dimension: "ip" | "account" = "ip"
 ): { allowed: boolean; retryAfterSeconds: number } {
   const now = Date.now();
   if (store.size > 5000) {
-    for (const [key, value] of store) if (value.resetAt <= now) store.delete(key);
+    for (const [key, hits] of store) {
+      if (!hits.some((timestamp: number) => now - timestamp < windowMs)) store.delete(key);
+    }
     if (store.size > 5000) {
       const overflow = store.size - 4500;
       let removed = 0;
@@ -33,16 +35,17 @@ export function checkRateLimit(
     }
   }
 
-  const address = clientAddress(request);
-  const key = createHash("sha256").update(`${action}:${address}:${identity.toLowerCase()}`).digest("hex");
-  const entry = store.get(key);
-  if (!entry || entry.resetAt <= now) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
-    return { allowed: true, retryAfterSeconds: 0 };
+  const subject = dimension === "account"
+    ? identity.toLowerCase()
+    : clientAddress(request);
+  const key = createHash("sha256").update(`${action}:${dimension}:${subject}`).digest("hex");
+  const hits = (store.get(key) ?? []).filter((timestamp: number) => now - timestamp < windowMs);
+  if (hits.length >= limit) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((hits[0] + windowMs - now) / 1000));
+    store.set(key, hits);
+    return { allowed: false, retryAfterSeconds };
   }
-  if (entry.count >= limit) {
-    return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((entry.resetAt - now) / 1000)) };
-  }
-  entry.count += 1;
+  hits.push(now);
+  store.set(key, hits);
   return { allowed: true, retryAfterSeconds: 0 };
 }

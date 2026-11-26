@@ -24,6 +24,7 @@ export interface Member {
   institute?: string;
   avatar?: string;
   verified: boolean;
+  contactMasked?: boolean;
   verificationMethod?: "email" | "mobile";
   createdAt?: string;
 }

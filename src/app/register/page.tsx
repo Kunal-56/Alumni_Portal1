@@ -121,7 +121,7 @@ export default function RegisterPage() {
       setTimeout(() => {
         router.push(`/login?registered=true&email=${encodeURIComponent(normalizeEmail(email))}`);
       }, 1300);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsLoading(false);
       setMessage({
         type: "error",
@@ -325,7 +325,7 @@ export default function RegisterPage() {
                     required
                   />
                 </div>
-                <p className="text-[11px] text-gray-500">Enter 10–15 characters.</p>
+                <p className="text-[11px] text-gray-500">Enter 2–30 characters.</p>
               </div>
 
               {/* Email Address */}

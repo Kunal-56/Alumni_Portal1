@@ -193,13 +193,29 @@ export default function InviteAlumniPage() {
       // Direct PostgreSQL Database insertion via REST API
       const res = await fetch("/api/alumni", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.error || "Failed to store alumni member in PostgreSQL database");
+      const responseText = await res.text();
+
+      let json: any;
+
+      try {
+        json = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        throw new Error(
+          `API returned invalid JSON. HTTP status: ${res.status}. Response: ${responseText.slice(0, 300)}`
+        );
+      }
+
+      if (!json.success) {
+        const debugError = json.debugError?.trim();
+        const debugCode = json.debugCode?.trim();
+        console.error("POST /api/alumni failed:", { status: res.status, code: debugCode, error: debugError || json.error });
+        throw new Error(debugError || json.error || json.message || `Alumni registration failed. HTTP status: ${res.status}${debugCode ? ` (code: ${debugCode})` : ""}`);
       }
 
       const dbMember: Member = {
@@ -284,16 +300,14 @@ export default function InviteAlumniPage() {
               { num: 3, label: "Verification" },
             ].map(({ num, label }) => (
               <div key={num} className="flex flex-col items-center relative z-10">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${
-                  step === num ? "bg-[#9B2335] text-white ring-4 ring-rose-100 shadow-md scale-110"
-                    : step > num ? "bg-[#9B2335] text-white"
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${step === num ? "bg-[#9B2335] text-white ring-4 ring-rose-100 shadow-md scale-110"
+                  : step > num ? "bg-[#9B2335] text-white"
                     : "bg-white border-2 border-gray-300 text-gray-400"
-                }`}>
+                  }`}>
                   {step > num ? <Check size={18} strokeWidth={3} /> : num}
                 </div>
-                <span className={`text-xs mt-2 font-bold tracking-wide transition-colors ${
-                  step === num ? "text-[#9B2335]" : "text-gray-500"
-                }`}>{label}</span>
+                <span className={`text-xs mt-2 font-bold tracking-wide transition-colors ${step === num ? "text-[#9B2335]" : "text-gray-500"
+                  }`}>{label}</span>
               </div>
             ))}
           </div>
@@ -315,7 +329,7 @@ export default function InviteAlumniPage() {
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">Full Name <span className="text-[#9B2335]">*</span></label>
                   <input type="text" maxLength={ALUMNI_NAME_MAX_LENGTH} value={fullName} onChange={(e) => { setFullName(sanitizeNameInput(e.target.value)); clearErr("fullName"); }} placeholder="Enter your full name" className={inputCls("fullName")} />
-                  <p className="mt-1 text-xs text-slate-500">Enter 10–15 characters.</p>
+                  <p className="mt-1 text-xs text-slate-500">Enter 2–30 characters.</p>
                   {errMsg("fullName")}
                 </div>
                 {/* Email */}
@@ -541,8 +555,8 @@ export default function InviteAlumniPage() {
                     {verificationMethod === "email" ? <div className="w-5 h-5 rounded-full bg-[#9B2335] flex items-center justify-center text-white"><Check size={12} strokeWidth={3} /></div> : <div className="w-5 h-5 rounded-full border-2 border-gray-300" />}
                   </div>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 mt-1" style={{ background: "#fef0f2", border: "1px solid #fcdde1", color: "#9B2335" }}><Mail size={22} /></div>
-            <h4 className="text-sm font-bold text-gray-900 mb-1">Email for Review</h4>
-            <p className="text-xs text-gray-500 leading-relaxed">The alumni office can use this address to review your submission.</p>
+                  <h4 className="text-sm font-bold text-gray-900 mb-1">Email for Review</h4>
+                  <p className="text-xs text-gray-500 leading-relaxed">The alumni office can use this address to review your submission.</p>
                 </div>
                 {/* Mobile */}
                 <div onClick={() => setVerificationMethod("mobile")} className={`relative p-5 rounded-2xl cursor-pointer transition-all flex flex-col items-center text-center ${verificationMethod === "mobile" ? "ring-2 ring-[#9B2335] bg-[#fffafb] shadow-sm" : "border border-gray-200 hover:border-gray-300 bg-white"}`}>
@@ -550,7 +564,7 @@ export default function InviteAlumniPage() {
                     {verificationMethod === "mobile" ? <div className="w-5 h-5 rounded-full bg-[#9B2335] flex items-center justify-center text-white"><Check size={12} strokeWidth={3} /></div> : <div className="w-5 h-5 rounded-full border-2 border-gray-300" />}
                   </div>
                   <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-3 mt-1" style={{ background: "#fef0f2", border: "1px solid #fcdde1", color: "#9B2335" }}><Smartphone size={22} /></div>
-            <h4 className="text-sm font-bold text-gray-900 mb-1">Mobile for Review</h4>
+                  <h4 className="text-sm font-bold text-gray-900 mb-1">Mobile for Review</h4>
                   <p className="text-xs text-gray-500 leading-relaxed">The alumni office can use this number to review your submission.</p>
                 </div>
               </div>

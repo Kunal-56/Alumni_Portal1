@@ -1,0 +1,8 @@
+# Tolani Alumni Portal — Security Policy Disclosure
+# See https://tools.ietf.org/html/draft-feltwell-securitytxt
+
+Contact: mailto:security@tolaniportal.local
+Preferred-Languages: en
+Canonical: http://localhost:3000/.well-known/security.txt
+Policy: http://localhost:3000/security-policy
+Hiring: http://localhost:3000/security-jobs

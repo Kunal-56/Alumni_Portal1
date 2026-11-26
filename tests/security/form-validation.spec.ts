@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
-import { sanitizeIndianMobileInput, sanitizeNameInput, validateAlumniName, validateFullName, validateIndianMobile } from "../../src/lib/inputValidation";
+import { sanitizeIndianMobileInput, sanitizeInput, sanitizeNameInput, sanitizeUrl, validateAlumniName, validateFullName, validateIndianMobile } from "../../src/lib/inputValidation";
+import { maskEmail, maskPhone } from "../../src/lib/contactPrivacy";
 
 function sameOriginHeader(baseURL: string | undefined): string {
   if (!baseURL) throw new Error("Playwright baseURL must be configured for API validation tests.");
@@ -9,11 +10,12 @@ function sameOriginHeader(baseURL: string | undefined): string {
 }
 
 test.describe("name and mobile validation helpers", () => {
-  test("accepts alumni names from 10 to 15 characters and rejects names outside that range", () => {
-    expect(validateAlumniName("A")).toMatch(/between 10 and 15 characters/i);
+  test("accepts alumni names from 2 to 30 characters and rejects names outside that range", () => {
+    expect(validateAlumniName("A")).toMatch(/between 2 and 30 characters/i);
     expect(validateAlumniName("Asha Patel")).toBeNull();
     expect(validateAlumniName("Alexandra Patel")).toBeNull();
-    expect(validateAlumniName("Alexandra Morgan")).toMatch(/between 10 and 15 characters/i);
+    expect(validateAlumniName("Alexandra Morgan the Third")).toBeNull();
+    expect(validateAlumniName("A very long alumni name that exceeds thirty characters limit now")).toMatch(/between 2 and 30 characters/i);
   });
 
   test("filters name digits while preserving Unicode letters and legitimate separators", () => {
@@ -22,10 +24,36 @@ test.describe("name and mobile validation helpers", () => {
     expect(validateFullName(filtered)).toBeNull();
   });
 
-  test("filters non-digits from mobile input and accepts exactly ten digits", () => {
+  test("keeps digits and common phone separators and accepts practical lengths", () => {
     const filtered = sanitizeIndianMobileInput("98a-765 43210");
-    expect(filtered).toBe("9876543210");
+    expect(filtered).toBe("98-765 43210");
     expect(validateIndianMobile(filtered)).toBeNull();
+    expect(validateIndianMobile("+91-98765 43210")).toBeNull();
+    expect(validateIndianMobile("98765432101")).toMatch(/exactly 10 digits/i); // 11 local digits
+  });
+
+  test("rejects mobile numbers with invalid characters or out-of-range digit count", () => {
+    expect(validateIndianMobile("987654321")).toMatch(/exactly 10 digits/i); // 9 local digits
+    expect(validateIndianMobile("9876543210123456")).toMatch(/exactly 10 digits/i); // 16 local digits
+    expect(validateIndianMobile("+91-987654321")).toMatch(/exactly 12 digits/i); // +91 = 11 total
+    expect(validateIndianMobile("+91-98765432101")).toMatch(/exactly 12 digits/i); // +91 = 13 total
+    expect(validateIndianMobile("+44-20 7946 095812")).toMatch(/between 10 and 13 digits/i); // international 14 digits
+    expect(validateIndianMobile("1234567890!")).toMatch(/valid mobile number/i); // invalid special char
+  });
+
+  test("strips HTML tags and rejects non-http URLs", () => {
+    expect(sanitizeInput("Hello <script>alert(1)</script> world")).toBe("Hello alert(1) world");
+    expect(sanitizeInput("<b>Hi</b>")).toBe("Hi");
+    expect(sanitizeInput("Asha Patel")).toBe("Asha Patel");
+    expect(sanitizeUrl("javascript:alert(1)")).toBeNull();
+    expect(sanitizeUrl("https://linkedin.com/in/asha")).toBe("https://linkedin.com/in/asha");
+    expect(sanitizeUrl("/uploads/avatars/a.jpg")).toBe("/uploads/avatars/a.jpg");
+  });
+
+  test("masks directory email and mobile while keeping a recognizable fragment", () => {
+    expect(maskEmail("asha.patel@tolani.ac.in")).toBe("a***@t***.ac.in");
+    expect(maskPhone("9876543210")).toBe("******3210");
+    expect(maskEmail("asha.patel@tolani.ac.in")).not.toContain("asha.patel");
   });
 
   test("does not silently truncate an overlong mobile number", () => {
@@ -125,7 +153,7 @@ test.describe("public form validation feedback", () => {
     await mobile.fill("98765abc-432109876");
 
     await expect(name).toHaveValue("李 Mei O'Neil");
-    await expect(mobile).toHaveValue("98765432109876");
+    await expect(mobile).toHaveValue("98765-432109876");
     await page.getByRole("button", { name: /next step/i }).click();
     await expect(page.getByText(/exactly 10 digits/i)).toBeVisible();
   });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
+import { sanitizeInput, sanitizeStoredUrl } from "@/lib/inputValidation";
 
 export const dynamic = "force-dynamic";
 
@@ -64,7 +65,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
     const featured = searchParams.get("featured");
     const search = searchParams.get("search")?.trim() || "";
-    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : null;
+    const requestedLimit = Number.parseInt(searchParams.get("limit") || "", 10);
+    const limit = Number.isInteger(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 100) : null;
 
     const conditions: string[] = ["is_published = true"];
     const params: any[] = [];
@@ -90,7 +92,8 @@ export async function GET(request: NextRequest) {
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-    const limitClause = limit ? `LIMIT ${limit}` : "";
+    const limitClause = limit ? `LIMIT $${pIdx}` : "";
+    if (limit) params.push(limit);
 
     const sql = `
       SELECT *
@@ -157,14 +160,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const title = body.title.trim();
+    const title = sanitizeInput(body.title);
+    if (!title) {
+      return NextResponse.json({ success: false, error: "Article headline / title is required" }, { status: 400 });
+    }
     const rawCat = body.category || "Reunion";
     const category = CATEGORY_TO_ENUM[rawCat] || "reunion";
-    const author = (body.author || "Alumni Relations Team").trim();
-    const readTime = (body.readTime || body.read_time || "3 min read").trim();
-    const excerpt = (body.excerpt || "").trim();
-    const content = (body.content || body.excerpt || "").trim();
-    const imageUrl = (body.img || body.image_url || "/campus-building.png").trim();
+    const author = sanitizeInput(body.author || "Alumni Relations Team") || "Alumni Relations Team";
+    const readTime = sanitizeInput(body.readTime || body.read_time || "3 min read") || "3 min read";
+    const excerpt = sanitizeInput(body.excerpt || "");
+    const content = sanitizeInput(body.content || body.excerpt || "");
+    const imageUrl = sanitizeStoredUrl(body.img || body.image_url || "/campus-building.png", "/campus-building.png");
     const isFeatured = body.featured === true || body.is_featured === true;
     const publishedAt = parseNewsDate(body.date || body.published_at);
     const slug = body.slug ? String(body.slug).trim() : generateSlug(title);

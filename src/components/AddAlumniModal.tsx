@@ -210,7 +210,7 @@ export function AddAlumniModal({
                     onChange={(e) => setName(sanitizeNameInput(e.target.value))}
                     className="w-full text-xs px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:border-[#9B2335] focus:ring-1 focus:ring-[#9B2335]"
                   />
-                  <p className="mt-1 text-[11px] text-gray-500">Enter 10–15 characters.</p>
+                  <p className="mt-1 text-[11px] text-gray-500">Enter 2–30 characters.</p>
                 </div>
 
                 <div>

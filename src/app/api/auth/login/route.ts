@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     const cleanEmail = normalizeEmail(email);
-    const accountRate = checkRateLimit(request, "login-account", 20, 15 * 60 * 1000, cleanEmail);
+    const accountRate = checkRateLimit(request, "login-account", 20, 15 * 60 * 1000, cleanEmail, "account");
     if (!accountRate.allowed) {
       return NextResponse.json(
         { success: false, message: "Too many login attempts. Please try again later." },

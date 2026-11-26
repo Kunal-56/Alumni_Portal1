@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
+import { sanitizeInput, sanitizeStoredUrl } from "@/lib/inputValidation";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const search = searchParams.get("search")?.trim() || "";
-    const limit = searchParams.get("limit") ? parseInt(searchParams.get("limit")!, 10) : null;
+    const requestedLimit = Number.parseInt(searchParams.get("limit") || "", 10);
+    const limit = Number.isInteger(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 100) : null;
 
     const conditions: string[] = ["is_published = true"];
     const params: any[] = [];
@@ -59,7 +61,8 @@ export async function GET(request: NextRequest) {
     }
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-    const limitClause = limit ? `LIMIT ${limit}` : "";
+    const limitClause = limit ? `LIMIT $${pIdx}` : "";
+    if (limit) params.push(limit);
 
     const sql = `
       SELECT *
@@ -121,13 +124,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const label = body.label.trim();
+    const label = sanitizeInput(body.label);
+    if (!label) {
+      return NextResponse.json({ success: false, error: "Photo label / event name is required" }, { status: 400 });
+    }
     const rawCat = body.category || "Annual Event";
     const category = CATEGORY_TO_ENUM[rawCat] || "annual_event";
-    const year = String(body.year || "2026").trim().slice(0, 4);
-    const desc = (body.desc || body.description || "").trim();
-    const imageUrl = (body.img || body.image_url || "/campus-building.png").trim();
-    const bg = body.bg || body.bg_color || "#2a1a1f";
+    const year = sanitizeInput(String(body.year || "2026")).slice(0, 4) || "2026";
+    const desc = sanitizeInput(body.desc || body.description || "");
+    const imageUrl = sanitizeStoredUrl(body.img || body.image_url || "/campus-building.png", "/campus-building.png");
+    const bg = sanitizeInput(body.bg || body.bg_color || "#2a1a1f") || "#2a1a1f";
     const sortOrder = typeof body.sort_order === "number" ? body.sort_order : 0;
 
     const insertSql = `

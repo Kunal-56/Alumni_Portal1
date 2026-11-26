@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { isAuthorizedAdmin } from "@/lib/auth";
+import { presentDirectoryContact } from "@/lib/contactPrivacy";
 
 export async function GET(
   request: NextRequest,
@@ -40,11 +41,7 @@ export async function GET(
 
     const r = res.rows[0];
     const member = {
-      ...r,
-      email: isAdmin ? r.email : null,
-      phone: isAdmin ? r.phone : null,
-      dob: isAdmin ? r.dob : null,
-      gender: isAdmin ? r.gender : null,
+      ...presentDirectoryContact(r, isAdmin),
       year: r.graduation_year,
       dept: r.department_short || r.department_name,
       linkedin: r.linkedin_url,

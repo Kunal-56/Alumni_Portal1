@@ -1,19 +1,69 @@
 const EMAIL_PATTERN = /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>.]+$/;
+const HTML_TAG_PATTERN = /<\/?[^>]*>/g;
+
+/** Strips HTML tags and ASCII control characters from untrusted text. */
+export function sanitizeInput(value: string): string {
+  return value
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, "")
+    .replace(HTML_TAG_PATTERN, "")
+    .replace(/[<>]/g, "")
+    .trim();
+}
+
+/** Allows only local paths and http(s) URLs. Rejects javascript:, data:, and other protocols. */
+export function sanitizeUrl(value: string): string | null {
+  const cleaned = value.trim().replace(/[\u0000-\u001F\u007F]/g, "");
+  if (!cleaned || /\s/.test(cleaned)) return null;
+  if (cleaned.startsWith("/") && !cleaned.startsWith("//")) return cleaned;
+  try {
+    const url = new URL(cleaned);
+    if (url.username || url.password) return null;
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+export function sanitizeStoredUrl(value: string, fallback: string): string {
+  return sanitizeUrl(value) ?? fallback;
+}
 const NAME_PATTERN = /^[\p{L}\p{M}]+(?:[ '\u2019.\-][\p{L}\p{M}]+)*$/u;
-export const ALUMNI_NAME_MIN_LENGTH = 10;
-export const ALUMNI_NAME_MAX_LENGTH = 15;
+export const ALUMNI_NAME_MIN_LENGTH = 2;
+export const ALUMNI_NAME_MAX_LENGTH = 30;
 
 export function sanitizeNameInput(value: string): string {
   return value.replace(/[^\p{L}\p{M} '\u2019.\-]/gu, "");
 }
 
 export function sanitizeIndianMobileInput(value: string): string {
-  return value.replace(/\D/g, "");
+  return value.replace(/[^\d+\s\-()]/g, "").trim();
 }
 
 export function validateIndianMobile(value: unknown): string | null {
   if (typeof value !== "string" || !value.trim()) return "Mobile number is required.";
-  return /^\d{10}$/.test(value.trim()) ? null : "Enter exactly 10 digits for the mobile number.";
+  const cleaned = value.trim();
+  const digitsOnly = cleaned.replace(/\D/g, "");
+
+  if (cleaned.startsWith("+91")) {
+    if (digitsOnly.length !== 12) {
+      return "Indian mobile number (+91) must be exactly 12 digits including country code.";
+    }
+  } else if (cleaned.startsWith("+")) {
+    if (digitsOnly.length < 10 || digitsOnly.length > 13) {
+      return "International mobile number must be between 10 and 13 digits.";
+    }
+  } else {
+    if (digitsOnly.length !== 10) {
+      return "Mobile number must be exactly 10 digits.";
+    }
+  }
+
+  if (!/^[\d\s+\-()]+$/.test(cleaned)) {
+    return "Enter a valid mobile number.";
+  }
+
+  return null;
 }
 
 export function validateFullName(value: unknown, maxLength = 200): string | null {

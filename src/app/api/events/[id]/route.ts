@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { isAuthorizedAdmin } from "@/lib/auth";
+import { sanitizeInput, sanitizeUrl } from "@/lib/inputValidation";
 
 export const dynamic = "force-dynamic";
 
@@ -161,7 +162,7 @@ export async function PUT(
 
     const body = await request.json();
 
-    const title = body.title ? body.title.trim() : null;
+    const title = body.title ? sanitizeInput(body.title) : null;
     const day = String(body.day || "15").padStart(2, "0");
     const month = String(body.month || "SEP").toUpperCase();
     const year = String(body.year || "2026");
@@ -172,16 +173,17 @@ export async function PUT(
     const eventType = rawType ? (TYPE_TO_ENUM[rawType] || "virtual_event") : null;
 
     const isOnline = body.mode !== undefined ? (body.mode === "Online" || body.is_online === true) : null;
-    const location = body.location !== undefined ? body.location.trim() : null;
+    const location = body.location !== undefined ? sanitizeInput(body.location) : null;
     const startTime = body.time ? parseToSqlTime(body.time) : null;
-    const desc = body.desc !== undefined ? body.desc.trim() : (body.description !== undefined ? body.description.trim() : null);
-    const imageUrl = body.img !== undefined ? body.img.trim() : (body.image_url !== undefined ? body.image_url.trim() : null);
+    const desc = body.desc !== undefined ? sanitizeInput(body.desc) : (body.description !== undefined ? sanitizeInput(body.description) : null);
+    const rawImage = body.img !== undefined ? body.img : body.image_url;
+    const imageUrl = rawImage !== undefined ? sanitizeUrl(String(rawImage)) : null;
 
     let tags: string[] | null = null;
     if (Array.isArray(body.tags)) {
-      tags = body.tags.map((t: any) => String(t).trim()).filter(Boolean);
+      tags = body.tags.map((t: any) => sanitizeInput(String(t))).filter(Boolean);
     } else if (typeof body.tagsInput === "string") {
-      tags = body.tagsInput.split(",").map((t: string) => t.trim()).filter(Boolean);
+      tags = body.tagsInput.split(",").map((t: string) => sanitizeInput(t)).filter(Boolean);
     }
 
     const updateSql = `

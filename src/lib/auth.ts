@@ -97,6 +97,19 @@ export async function isAuthenticatedSelf(request: NextRequest, email: string): 
 }
 
 export function hasSameOrigin(request: NextRequest): boolean {
+  const expected = request.nextUrl.origin;
   const origin = request.headers.get("origin");
-  return !origin || origin === request.nextUrl.origin;
+  if (origin) return origin !== "null" && origin === expected;
+
+  const referer = request.headers.get("referer");
+  if (referer) {
+    try {
+      return new URL(referer).origin === expected;
+    } catch {
+      return false;
+    }
+  }
+
+  const fetchSite = request.headers.get("sec-fetch-site");
+  return fetchSite !== "cross-site";
 }

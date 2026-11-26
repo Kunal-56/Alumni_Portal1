@@ -3,15 +3,7 @@ import { query, getDepartment, createMember } from "@/lib/db";
 import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { normalizeEmail, validateAlumniProfileInput } from "@/lib/inputValidation";
-
-function maskPhoneNumber(phone?: string | null): string | null {
-  if (!phone) return null;
-  const cleaned = phone.trim();
-  if (cleaned.length < 6) return "****";
-  const start = cleaned.slice(0, 6);
-  const end = cleaned.slice(-2);
-  return `${start}*** **${end}`;
-}
+import { presentDirectoryContact } from "@/lib/contactPrivacy";
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,11 +70,7 @@ export async function GET(request: NextRequest) {
     const total = parseInt(countRes.rows[0]?.total || "0", 10);
 
     const mappedAlumni = listRes.rows.map((r) => ({
-      ...r,
-      email: isAdmin ? r.email : null,
-      phone: isAdmin ? r.phone : maskPhoneNumber(r.phone),
-      dob: isAdmin ? r.dob : null,
-      gender: isAdmin ? r.gender : null,
+      ...presentDirectoryContact(r, isAdmin),
       year: r.graduation_year,
       dept: r.department_short || r.department_name,
       linkedin: r.linkedin_url,
@@ -112,6 +100,18 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   let body: any = {};
   let isAdmin = false;
+
+  // Determine department_id early (accessible in catch block)
+  let deptId = 1;
+  const tempBody = await request.json().catch(() => ({}));
+  body = tempBody;
+  if (tempBody.department_id) deptId = Number(tempBody.department_id);
+  const deptSearch = tempBody.department || tempBody.dept || tempBody.department_name;
+  if (deptSearch) {
+    const foundDept = await getDepartment(deptSearch);
+    if (foundDept) deptId = foundDept.id;
+  }
+
   try {
     if (!hasSameOrigin(request)) {
       return NextResponse.json({ success: false, error: "Invalid request origin." }, { status: 403 });
@@ -123,20 +123,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: false, error: "Too many submissions. Please try again later." }, { status: 429 });
       }
     }
-    body = await request.json();
-
+    // body already parsed above for deptId
     const validationError = validateAlumniProfileInput(body);
-    if (validationError) return NextResponse.json({ success: false, error: validationError }, { status: 400 });
-
-    // Determine department_id
-    let deptId = body.department_id ? Number(body.department_id) : 1;
-    const deptSearch = body.department || body.dept || body.department_name;
-    if (deptSearch) {
-      const foundDept = await getDepartment(deptSearch);
-      if (foundDept) {
-        deptId = foundDept.id;
-      }
-    }
 
     const newMember = await createMember({
       name: body.name,
@@ -177,44 +165,127 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("POST /api/alumni error:", { code: error?.code });
+    console.error("POST /api/alumni error:", error);
     if (error.code === "23505") {
-      if (isAdmin) {
-        try {
-          const email = (body.email || "").trim().toLowerCase();
-          if (email) {
-            const existingRes = await query("SELECT * FROM members WHERE email = $1", [email]);
-            if (existingRes.rows.length > 0) {
-              const memberId = existingRes.rows[0].id;
-              const updatedRes = await query(
-                `UPDATE members SET
-                  name = COALESCE($1, name),
-                  company = COALESCE($2, company),
-                  role = COALESCE($3, role),
-                  location = COALESCE($4, location),
-                  graduation_year = COALESCE($5, graduation_year),
-                  updated_at = now()
-                 WHERE id = $6
-                 RETURNING *`,
-                [
-                  body.name?.trim() || null,
-                  body.company?.trim() || null,
-                  body.role?.trim() || null,
-                  body.location?.trim() || null,
-                  body.graduation_year ? String(body.graduation_year).slice(0, 4) : null,
-                  memberId,
-                ]
-              );
-              return NextResponse.json({
-                success: true,
-                message: "Member profile updated successfully in database!",
-                member: updatedRes.rows[0],
-              });
+      try {
+        const email = (body.email || "").trim().toLowerCase();
+        if (email) {
+          const existingRes = await query("SELECT * FROM members WHERE email = $1", [email]);
+          if (existingRes.rows.length > 0) {
+            const memberId = existingRes.rows[0].id;
+            const updatedRes = await query(
+              `UPDATE members SET
+                name = COALESCE($1, name),
+                email = COALESCE($2, email),
+                phone = COALESCE($3, phone),
+                dob = COALESCE($4, dob),
+                gender = COALESCE($5, gender),
+                degree = COALESCE($6, degree),
+                graduation_year = COALESCE($7, graduation_year),
+                department_id = COALESCE($8, department_id),
+                institute = COALESCE($9, institute),
+                company = COALESCE($10, company),
+                role = COALESCE($11, role),
+                industry = COALESCE($12, industry),
+                location = COALESCE($13, location),
+                experience_years = COALESCE($14, experience_years),
+                linkedin_url = COALESCE($15, linkedin_url),
+                bio = COALESCE($16, bio),
+                avatar_url = COALESCE($17, avatar_url),
+                verified = COALESCE($18, verified),
+                verification_method = COALESCE($19, verification_method),
+                skills = COALESCE($20, skills),
+                achievements = COALESCE($21, achievements),
+                updated_at = now()
+               WHERE id = $22
+               RETURNING *`,
+              [
+                body.name?.trim() || null,
+                normalizeEmail(body.email) || null,
+                typeof body.phone === "string" ? body.phone.trim() : null,
+                body.dob || null,
+                typeof body.gender === "string" ? body.gender.toLowerCase() : null,
+                body.degree || "B.Tech",
+                String(body.graduation_year || body.year || "2025"),
+                body.department_id || deptId,
+                body.institute || "Tolani F. G. Polytechnic",
+                body.company || null,
+                body.role || body.jobTitle || null,
+                body.industry || null,
+                body.location || null,
+                body.experience_years ? Number(body.experience_years) : null,
+                body.linkedin_url || body.linkedin || null,
+                body.bio || null,
+                body.avatar_url || body.avatar || "/avatars/m1.jpg",
+                isAdmin ? (body.verified !== undefined ? Boolean(body.verified) : true) : false,
+                isAdmin ? body.verification_method || "email" : "admin_approval",
+                Array.isArray(body.skills) ? body.skills : [],
+                Array.isArray(body.achievements) ? body.achievements : [],
+                memberId,
+              ]
+            );
+
+            // Also update skills and achievements
+            if (Array.isArray(body.skills) && body.skills.length > 0) {
+              await query("DELETE FROM member_skills WHERE member_id = $1", [memberId]);
+              for (const rawSkill of body.skills) {
+                const skillName = rawSkill?.trim();
+                if (!skillName) continue;
+                const skillRes = await query(
+                  `INSERT INTO skills (name) VALUES ($1)
+                   ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+                   RETURNING id;`,
+                  [skillName]
+                );
+                await query(
+                  `INSERT INTO member_skills (member_id, skill_id) VALUES ($1, $2)`,
+                  [memberId, skillRes.rows[0].id]
+                );
+              }
             }
+            if (Array.isArray(body.achievements) && body.achievements.length > 0) {
+              await query("DELETE FROM member_achievements WHERE member_id = $1", [memberId]);
+              for (const rawAch of body.achievements) {
+                const title = typeof rawAch === "string" ? rawAch.trim() : "";
+                if (!title) continue;
+                await query(
+                  `INSERT INTO member_achievements (member_id, title, year) VALUES ($1, $2, $3)`,
+                  [memberId, title, String(body.graduation_year || body.year || "2025")]
+                );
+              }
+            }
+
+            // Audit log
+            await query(
+              `INSERT INTO audit_log (action, entity_type, entity_id, metadata)
+               VALUES ($1, $2, $3, $4)`,
+              [
+                "UPDATE_ALUMNI",
+                "members",
+                String(memberId),
+                JSON.stringify({ name: body.name, email: body.email, department_id: deptId }),
+              ]
+            );
+
+            const updatedMember = updatedRes.rows[0];
+            const updatedDept = await query(
+              "SELECT id, name, slug, alumni_count FROM departments WHERE id = $1",
+              [deptId]
+            );
+
+            return NextResponse.json(
+              {
+                success: true,
+                message: "Member profile updated successfully!",
+                member: updatedMember,
+                department: updatedDept.rows[0],
+              },
+              { status: 200 }
+            );
           }
-        } catch (inner) {
-          console.error("Admin duplicate-member update failed:", { code: (inner as { code?: string })?.code });
         }
+      } catch (inner) {
+        console.error("Duplicate-member update failed:", { code: (inner as { code?: string })?.code });
       }
       return NextResponse.json(
         {
@@ -225,7 +296,7 @@ export async function POST(request: NextRequest) {
       );
     }
     return NextResponse.json(
-      { success: false, error: "Failed to store alumni information." },
+      { success: false, error: "Failed to store alumni information.", debugError: error?.message, debugCode: error?.code, debugStack: error?.stack },
       { status: 500 }
     );
   }
