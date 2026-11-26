@@ -13,6 +13,8 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState("");
+  const [memberId, setMemberId] = useState<number | null>(null);
+  const [profileComplete, setProfileComplete] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -25,11 +27,15 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
         if (response.ok && data.success && data.user) {
           setLoggedIn(true);
           setUserEmail(data.user.email || "");
+          setMemberId(typeof data.user.memberId === "number" ? data.user.memberId : null);
+          setProfileComplete(Boolean(data.user.profileComplete));
           setIsAdmin(data.user.role === "admin");
         } else {
           setLoggedIn(false);
           setIsAdmin(false);
           setUserEmail("");
+          setMemberId(null);
+          setProfileComplete(false);
         }
       })
       .catch(() => {
@@ -37,6 +43,8 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
         setLoggedIn(false);
         setIsAdmin(false);
         setUserEmail("");
+        setMemberId(null);
+        setProfileComplete(false);
       });
     return () => { cancelled = true; };
   }, []);
@@ -65,9 +73,12 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
       localStorage.removeItem("tolani_admin_authenticated");
     }
     await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+    window.dispatchEvent(new Event("alumni_members_updated"));
     setLoggedIn(false);
     setIsAdmin(false);
     setUserEmail("");
+    setMemberId(null);
+    setProfileComplete(false);
     setDropdownOpen(false);
     setMobileMenuOpen(false);
   };
@@ -209,6 +220,14 @@ export const Header: React.FC<HeaderProps> = ({ activePage = "home" }) => {
 
                   {/* Links */}
                   <div className="space-y-1">
+                    <Link
+                      href={memberId && profileComplete ? `/members/${memberId}` : "/invite"}
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-colors"
+                    >
+                      <Users size={14} className="text-[#9B2335]" />
+                      {memberId && profileComplete ? "My Alumni Profile" : "Complete My Profile"}
+                    </Link>
                     <Link
                       href="/members"
                       onClick={() => setDropdownOpen(false)}

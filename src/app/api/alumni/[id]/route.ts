@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { query } from "@/lib/db";
-import { isAuthorizedAdmin } from "@/lib/auth";
+import { getAuthenticatedUser, isAuthorizedAdmin } from "@/lib/auth";
 import { presentDirectoryContact } from "@/lib/contactPrivacy";
 
 export async function GET(
@@ -9,6 +9,7 @@ export async function GET(
 ) {
   try {
     const isAdmin = await isAuthorizedAdmin(request);
+    const currentUser = isAdmin ? null : await getAuthenticatedUser(request);
     const { id } = await context.params;
     const memberId = parseInt(id, 10);
 
@@ -28,8 +29,11 @@ export async function GET(
         m.dob, m.gender, m.verification_method
       FROM v_member_directory v
       LEFT JOIN members m ON m.id = v.id
-      WHERE v.id = $1 AND ($2::boolean OR v.verified = true)`,
-      [memberId, isAdmin]
+      WHERE v.id = $1 AND (
+        $2::boolean OR v.verified = true OR
+        (v.user_id = $3 AND m.dob IS NOT NULL AND m.gender IS NOT NULL AND m.bio IS NOT NULL AND m.department_id IS NOT NULL AND m.company IS NOT NULL AND m.role IS NOT NULL)
+      )`,
+      [memberId, isAdmin, currentUser?.id || null]
     );
 
     if (res.rows.length === 0) {

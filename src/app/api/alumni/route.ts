@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { query, getDepartment, createMember } from "@/lib/db";
-import { hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
+import { query, getDepartment, createMember, getClient } from "@/lib/db";
+import { getAuthenticatedUser, hasSameOrigin, isAuthorizedAdmin } from "@/lib/auth";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { normalizeEmail, validateAlumniProfileInput } from "@/lib/inputValidation";
 import { presentDirectoryContact } from "@/lib/contactPrivacy";
@@ -8,6 +8,7 @@ import { presentDirectoryContact } from "@/lib/contactPrivacy";
 export async function GET(request: NextRequest) {
   try {
     const isAdmin = await isAuthorizedAdmin(request);
+    const currentUser = isAdmin ? null : await getAuthenticatedUser(request);
     const { searchParams } = new URL(request.url);
     const departmentQuery = searchParams.get("department") || searchParams.get("dept");
     const search = searchParams.get("search")?.trim() || "";
@@ -21,6 +22,13 @@ export async function GET(request: NextRequest) {
     const conditions: string[] = isAdmin ? [] : ["v.verified = true"];
     const params: any[] = [];
     let pIdx = 1;
+
+    // A member can see their own completed profile while it awaits admin review.
+    if (!isAdmin && currentUser) {
+      conditions[0] = `(v.verified = true OR (v.user_id = $${pIdx} AND m.dob IS NOT NULL AND m.gender IS NOT NULL AND m.bio IS NOT NULL AND m.department_id IS NOT NULL AND m.company IS NOT NULL AND m.role IS NOT NULL))`;
+      params.push(currentUser.id);
+      pIdx++;
+    }
 
     if (departmentQuery && departmentQuery.toUpperCase() !== "ALL") {
       const dept = await getDepartment(departmentQuery);
@@ -64,7 +72,7 @@ export async function GET(request: NextRequest) {
 
     // Run count and paginated list queries in parallel
     const [countRes, listRes] = await Promise.all([
-      query(`SELECT count(*) as total FROM v_member_directory v ${whereClause}`, params),
+      query(`SELECT count(*) as total FROM v_member_directory v LEFT JOIN members m ON m.id = v.id ${whereClause}`, params),
       query(listQuery, listParams)
     ]);
     const total = parseInt(countRes.rows[0]?.total || "0", 10);
@@ -117,6 +125,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Invalid request origin." }, { status: 403 });
     }
     isAdmin = await isAuthorizedAdmin(request);
+    const currentUser = isAdmin ? null : await getAuthenticatedUser(request);
+    if (!isAdmin && !currentUser) {
+      return NextResponse.json({ success: false, error: "Please sign in before registering your alumni profile." }, { status: 401 });
+    }
     if (!isAdmin) {
       const rate = checkRateLimit(request, "alumni-submit", 5, 60 * 60 * 1000);
       if (!rate.allowed) {
@@ -125,10 +137,71 @@ export async function POST(request: NextRequest) {
     }
     // body already parsed above for deptId
     const validationError = validateAlumniProfileInput(body);
+    if (validationError) {
+      return NextResponse.json({ success: false, error: validationError }, { status: 400 });
+    }
 
-    const newMember = await createMember({
+    const memberEmail = isAdmin ? normalizeEmail(body.email) : currentUser!.email;
+    if (!isAdmin && body.email && normalizeEmail(body.email) !== currentUser!.email.toLowerCase()) {
+      return NextResponse.json({ success: false, error: "Your profile email must match your signed-in account." }, { status: 403 });
+    }
+
+    let newMember;
+    if (currentUser) {
+      const client = await getClient();
+      try {
+        await client.query("BEGIN");
+        const owned = await client.query("SELECT id FROM members WHERE user_id = $1 FOR UPDATE", [currentUser.id]);
+        if (owned.rows[0]) {
+          const update = await client.query(
+            `UPDATE members SET
+              name = $1, email = $2, phone = $3, dob = $4, gender = $5, degree = $6,
+              graduation_year = $7, department_id = $8, institute = $9, company = $10,
+              role = $11, industry = $12, location = $13, experience_years = $14,
+              linkedin_url = $15, bio = $16, avatar_url = $17, verified = false,
+              verification_method = $18, updated_at = NOW()
+             WHERE user_id = $19 RETURNING *`,
+            [body.name.trim(), memberEmail, body.phone?.trim() || null, body.dob || null,
+              body.gender?.toLowerCase() || null, body.degree || "B.Tech",
+              String(body.graduation_year || body.year || "2025"), deptId,
+              body.institute || "Tolani F. G. Polytechnic", body.company || null,
+              body.role || body.jobTitle || null, body.industry || null, body.location || null,
+              body.experience_years ? Number(body.experience_years) : 0,
+              body.linkedin_url || body.linkedin || null, body.bio || null,
+              body.avatar_url || body.avatar || "/avatars/m1.jpg", body.verification_method || "admin_approval",
+              currentUser.id]
+          );
+          const memberId = update.rows[0].id;
+          await client.query("DELETE FROM member_skills WHERE member_id = $1", [memberId]);
+          for (const rawSkill of (Array.isArray(body.skills) ? body.skills : [])) {
+            const skill = typeof rawSkill === "string" ? rawSkill.trim() : "";
+            if (!skill) continue;
+            const result = await client.query(
+              "INSERT INTO skills (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id",
+              [skill]
+            );
+            await client.query("INSERT INTO member_skills (member_id, skill_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", [memberId, result.rows[0].id]);
+          }
+          await client.query("DELETE FROM member_achievements WHERE member_id = $1", [memberId]);
+          for (const rawAchievement of (Array.isArray(body.achievements) ? body.achievements : [])) {
+            const title = typeof rawAchievement === "string" ? rawAchievement.trim() : "";
+            if (title) await client.query("INSERT INTO member_achievements (member_id, title, year) VALUES ($1, $2, $3)", [memberId, title, String(body.graduation_year || body.year || "2025")]);
+          }
+          newMember = { ...update.rows[0], skills: body.skills || [], achievements: body.achievements || [] };
+        }
+        await client.query("COMMIT");
+      } catch (error) {
+        await client.query("ROLLBACK");
+        throw error;
+      } finally {
+        client.release();
+      }
+    }
+
+    newMember ||= await createMember({
+      user_id: currentUser?.id,
       name: body.name,
-      email: normalizeEmail(body.email),
+      email: memberEmail,
       phone: typeof body.phone === "string" ? body.phone.trim() : undefined,
       dob: body.dob,
       gender: typeof body.gender === "string" ? body.gender.toLowerCase() : undefined,

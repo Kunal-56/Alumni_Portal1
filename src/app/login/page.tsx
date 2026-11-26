@@ -19,11 +19,13 @@ export default function LoginPage() {
   // If already logged in, redirect accordingly
   useEffect(() => {
     let cancelled = false;
+    const params = new URLSearchParams(window.location.search);
+    const requestedReturnTo = params.get("returnTo");
+    const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//") ? requestedReturnTo : null;
     fetch("/api/auth/me", { cache: "no-store" }).then(async (res) => {
       const data = await res.json();
-      if (!cancelled && res.ok && data.success) router.replace(data.user.role === "admin" ? "/admin" : "/");
+      if (!cancelled && res.ok && data.success) router.replace(data.user.role === "admin" ? "/admin" : returnTo || "/");
     }).catch(() => undefined);
-    const params = new URLSearchParams(window.location.search);
     if (params.get("registered") === "true") {
       setMessage({ type: "success", text: "Registration successful. Your profile is pending alumni office verification; you can now sign in." });
     }
@@ -73,6 +75,8 @@ export default function LoginPage() {
       }
 
       const isAdmin = data.user?.role === "admin";
+      const requestedReturnTo = new URLSearchParams(window.location.search).get("returnTo");
+      const returnTo = requestedReturnTo?.startsWith("/") && !requestedReturnTo.startsWith("//") ? requestedReturnTo : null;
 
       setIsLoading(false);
 
@@ -90,7 +94,7 @@ export default function LoginPage() {
           text: `Welcome back, ${data.user?.name}! Redirecting to dashboard...`,
         });
         setTimeout(() => {
-          router.push("/");
+          router.push(returnTo || "/");
         }, 1000);
       }
     } catch (err: any) {

@@ -20,6 +20,8 @@ const YEARS = ["2026", "2025", "2024", "2023", "2022", "2021", "2020", "2019", "
 export default function InviteAlumniPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [accountEmail, setAccountEmail] = useState("");
 
   // Step 1
   const [fullName, setFullName] = useState("");
@@ -44,6 +46,30 @@ export default function InviteAlumniPage() {
       }
     }
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/me", { cache: "no-store" })
+      .then(async (response) => {
+        const data = await response.json();
+        if (cancelled) return;
+        if (!response.ok || !data.success || !data.user) {
+          const returnTo = `${window.location.pathname}${window.location.search}`;
+          router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+          return;
+        }
+        setAccountEmail(data.user.email || "");
+        setEmail(data.user.email || "");
+        setFullName(data.user.name || "");
+        setIsCheckingAuth(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        const returnTo = `${window.location.pathname}${window.location.search}`;
+        router.replace(`/login?returnTo=${encodeURIComponent(returnTo)}`);
+      });
+    return () => { cancelled = true; };
+  }, [router]);
   const [batchYear, setBatchYear] = useState("2025");
   const [institute, setInstitute] = useState("Tolani F. & Polytechnic");
   const [company, setCompany] = useState("");
@@ -163,7 +189,7 @@ export default function InviteAlumniPage() {
     setIsSubmitting(true);
     setErrors({});
 
-    const memberEmail = normalizeEmail(verificationMethod === "email" ? (verificationEmail.trim() || email.trim()) : email.trim());
+    const memberEmail = normalizeEmail(accountEmail);
     const payload = {
       name: fullName.trim(),
       email: memberEmail,
@@ -239,6 +265,7 @@ export default function InviteAlumniPage() {
       };
 
       setCreatedMember(dbMember);
+      window.dispatchEvent(new Event("alumni_members_updated"));
       setIsSuccessModalOpen(true);
     } catch (err: any) {
       console.error("Error submitting alumni member to database:", err);
@@ -262,6 +289,14 @@ export default function InviteAlumniPage() {
         <AlertCircle size={12} /> {errors[key]}
       </p>
     ) : null;
+
+  if (isCheckingAuth) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-[#F8F5F3] text-sm font-semibold text-gray-600">
+        Checking your sign-in…
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "#faf8f8" }}>
@@ -335,7 +370,7 @@ export default function InviteAlumniPage() {
                 {/* Email */}
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">Email Address <span className="text-[#9B2335]">*</span></label>
-                  <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); clearErr("email"); }} placeholder="Enter your email" className={inputCls("email")} />
+                  <input type="email" value={email} readOnly={Boolean(accountEmail)} onChange={(e) => { setEmail(e.target.value); clearErr("email"); }} placeholder="Enter your email" className={inputCls("email")} />
                   {errMsg("email")}
                 </div>
                 {/* Phone */}
@@ -636,7 +671,7 @@ export default function InviteAlumniPage() {
             <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 ring-8 ring-green-50" style={{ background: "#22c55e" }}><CheckCircle2 size={36} className="text-white" /></div>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 mb-2"><Sparkles size={13} /> Submission Received</span>
             <h3 className="text-2xl font-extrabold text-gray-900 mb-2">Pending Review</h3>
-            <p className="text-sm text-gray-600 mb-6 leading-relaxed">Thank you, <strong className="text-gray-900">{createdMember.name}</strong>. The alumni office will review your profile before it appears in the directory.</p>
+            <p className="text-sm text-gray-600 mb-6 leading-relaxed">Thank you, <strong className="text-gray-900">{createdMember.name}</strong>. Your profile is now saved to your account and visible to you in Members. The alumni office will review it before it is shown to everyone.</p>
             <div className="bg-gray-50 rounded-2xl p-4 mb-6 text-left text-xs space-y-2 border border-gray-200/80">
               <div className="flex justify-between"><span className="text-gray-500">Degree &amp; Batch:</span><span className="font-bold text-gray-800">{createdMember.degree} ({createdMember.year})</span></div>
               <div className="flex justify-between"><span className="text-gray-500">Department:</span><span className="font-bold text-gray-800">{createdMember.dept}</span></div>

@@ -165,6 +165,7 @@ export async function getDepartment(identifier: string | number) {
  * Interface for new alumni registration input
  */
 export interface CreateAlumniInput {
+  user_id?: string;
   name: string;
   email: string;
   phone?: string;
@@ -216,18 +217,19 @@ export async function createMember(input: CreateAlumniInput) {
     // Insert into members table
     const memberInsertQuery = `
       INSERT INTO members (
-        name, email, phone, dob, gender, degree, graduation_year,
+        user_id, name, email, phone, dob, gender, degree, graduation_year,
         department_id, institute, company, role, industry, location,
         experience_years, linkedin_url, bio, avatar_url, verified, verification_method
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7,
-        $8, $9, $10, $11, $12, $13,
-        $14, $15, $16, $17, $18, $19
+        $1, $2, $3, $4, $5, $6, $7, $8,
+        $9, $10, $11, $12, $13, $14,
+        $15, $16, $17, $18, $19, $20
       )
       RETURNING *;
     `;
 
     const memberValues = [
+      input.user_id || null,
       sanitizeInput(input.name),
       input.email.trim().toLowerCase(),
       cleanText(input.phone, 30),

@@ -18,7 +18,9 @@ export async function GET(request: NextRequest) {
     const targetEmail = requestedEmail || session.email;
     const userRes = await query(
       `SELECT u.id, u.email, u.phone, u.role, u.is_active, u.email_verified,
-        u.last_login_at, u.created_at, m.name AS member_name, m.avatar_url,
+        u.last_login_at, u.created_at, m.id AS member_id, m.verified AS member_verified,
+        (m.dob IS NOT NULL AND m.gender IS NOT NULL AND m.bio IS NOT NULL AND m.department_id IS NOT NULL AND m.company IS NOT NULL AND m.role IS NOT NULL) AS profile_complete,
+        m.name AS member_name, m.avatar_url,
         m.degree, m.graduation_year, m.company, m.role AS member_job_role
        FROM users u
        LEFT JOIN members m ON m.user_id = u.id
@@ -37,6 +39,9 @@ export async function GET(request: NextRequest) {
         success: true,
         user: {
           id: user.id,
+          memberId: user.member_id,
+          memberVerified: user.member_verified,
+          profileComplete: Boolean(user.profile_complete),
           email: user.email,
           phone: user.phone,
           role: user.role,
